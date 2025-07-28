@@ -1,0 +1,373 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+.navbar {
+  width: 100%;
+  font-family: 'Outfit', sans-serif;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Top section */
+.navbar-top {
+  background: white;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.navbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Logo */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #00c896;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 120px;
+  height: auto;
+}
+
+/* Search */
+.search-container {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  max-width: 800px;
+  margin: 0 1rem;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e8e8e8;
+  border-radius: 6px 0 0 6px;
+  font-size: 0.9rem;
+  outline: none;
+  font-family: 'Outfit', sans-serif;
+}
+
+.search-input::placeholder {
+  color: #999;
+}
+
+.search-btn {
+  padding: 0.75rem 1.5rem;
+  background: #00c896;
+  color: white;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: background 0.2s ease;
+}
+
+.search-btn:hover {
+  background: #00b085;
+}
+
+/* Right section */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.85rem;
+  margin-left: 10rem;
+}
+
+.contact-label {
+  color: #666;
+  font-size: 0.75rem;
+}
+
+.contact-number-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.contact-number {
+  color: #00c896;
+  font-weight: 600;
+}
+
+.navbar-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-btn {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.6rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.icon-btn:hover {
+  background: #e9ecef;
+  border-color: #dee2e6;
+}
+
+.cart-count {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #00c896;
+  color: white;
+  font-size: 0.5rem;
+  padding: 0.1rem 0.25rem;
+  border-radius: 50%;
+  min-width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+/* Bottom section */
+.navbar-bottom {
+  background: #003c37;
+  color: white;
+}
+
+.navbar-bottom-container {
+  justify-content: space-between;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.navbar-right-bottom {
+  display: flex;
+  align-items: center;
+}
+
+.contact-info-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-size: 0.85rem;
+}
+
+.contact-info-bottom .contact-label {
+  color: #ccc;
+  font-size: 0.75rem;
+  margin-bottom: 0.2rem;
+}
+
+.contact-info-bottom .contact-number-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.contact-info-bottom .contact-number {
+  color: white;
+  font-weight: 600;
+}
+
+.categories-dropdown {
+  display: flex;
+  align-items: center;
+}
+
+.categories-btn {
+  background: #00c896;
+  color: white;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Outfit', sans-serif;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1001;
+}
+
+.categories-btn .dropdown-arrow {
+  transition: transform 0.3s ease;
+  font-size: 0.6rem;
+  margin-left: 0.25rem;
+}
+
+.categories-btn.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.categories-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 250px;
+  background: white;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.categories-dropdown:hover .categories-dropdown-menu,
+.categories-dropdown:focus-within .categories-dropdown-menu {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.category-link {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  border-left: 3px solid transparent;
+}
+
+.category-link:first-child {
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+  font-weight: 600;
+  color: #00c896;
+}
+
+.category-link:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.category-link:hover {
+  background-color: #f8f9fa;
+  color: #00c896;
+  border-left-color: #00c896;
+  padding-left: 1.75rem;
+}
+
+.category-link:active {
+  background-color: #f1f1f1;
+}
+
+.categories-btn:hover {
+  background: #00b085;
+}
+
+.hamburger {
+  font-size: 1.1rem;
+}
+
+/* Navigation links */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-left: 0;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 1rem 0;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: #00c896;
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #00c896;
+}
+
+.dropdown-arrow {
+  font-size: 0.7rem;
+  margin-left: 0.2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .search-container {
+    order: 3;
+    width: 100%;
+    margin: 1rem 0 0;
+    max-width: none;
+  }
+  
+  .contact-info {
+    display: none;
+  }
+  
+  .nav-links {
+    gap: 1rem;
+    margin-left: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-links {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .nav-link {
+    font-size: 0.85rem;
+    padding: 0.75rem 0;
+  }
+}

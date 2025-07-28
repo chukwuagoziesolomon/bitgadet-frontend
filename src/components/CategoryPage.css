@@ -1,0 +1,103 @@
+.category-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: 'Outfit', sans-serif;
+}
+
+.category-content {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  align-items: flex-start;
+}
+
+.products-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  align-content: flex-start;
+  min-width: 0; /* Prevent grid from overflowing */
+}
+
+.category-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.category-header h1 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+  font-size: 2.5rem;
+  line-height: 120%;
+  letter-spacing: -1%;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.product-count {
+  color: #666;
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Products grid styles are now defined above */
+
+.no-products {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 4rem 0;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .category-content {
+    flex-direction: column;
+  }
+  
+  .products-grid {
+    order: 2;
+  }
+  
+  .filter-sidebar {
+    order: 1;
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .category-header h1 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-page {
+    padding: 1rem 0.5rem;
+  }
+  
+  .products-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  
+  .category-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .product-count {
+    font-size: 0.9rem;
+  }
+}
