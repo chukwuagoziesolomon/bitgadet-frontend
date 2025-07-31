@@ -1,31 +1,17 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import logo from '../assets/logo.png';
 import HeartMinus from './icons/HeartMinus';
 import ShoppingCart from './icons/ShoppingCart';
 import User from './icons/User';
 import PhoneCall from './icons/PhoneCall';
+
 const Navbar: React.FC = () => {
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
+  const location = useLocation();
   
-  const categories = [
-    { name: 'All Categories', path: '/categories/all' },
-    { name: 'Smartphones', path: '/categories/smartphones' },
-    { name: 'Laptops', path: '/categories/laptops' },
-    { name: 'Tablets', path: '/categories/tablets' },
-    { name: 'Smartwatches', path: '/categories/smartwatches' },
-    { name: 'Accessories', path: '/categories/accessories' },
-    { name: 'Audio', path: '/categories/audio' },
-    { name: 'Gaming', path: '/categories/gaming' },
-  ];
-  
-  const toggleCategories = () => {
-    setIsCategoriesOpen(!isCategoriesOpen);
-  };
-  
-  const closeCategories = () => {
-    setIsCategoriesOpen(false);
+  const isActive = (path: string) => {
+    return location.pathname === path;
   };
   return (
     <nav className="navbar">
@@ -34,7 +20,9 @@ const Navbar: React.FC = () => {
         <div className="navbar-container">
           {/* Logo */}
           <div className="navbar-logo">
-            <img className="logo-icon" src="logo.png" alt="logo" />
+            <Link to="/brand">
+              <img className="logo-icon" src="logo.png" alt="logo" />
+            </Link>
           </div>
 
           {/* Search bar */}
@@ -80,45 +68,27 @@ const Navbar: React.FC = () => {
           {/* Left side - Categories only */}
           <div className="navbar-left">
             {/* Categories dropdown */}
-            <div className="categories-dropdown" onMouseLeave={closeCategories}>
-              <button 
-                className={`categories-btn ${isCategoriesOpen ? 'active' : ''}`}
-                onClick={toggleCategories}
-                onMouseEnter={() => setIsCategoriesOpen(true)}
-              >
+            <div className="categories-dropdown">
+              <Link to="/categories" className={`categories-btn ${isActive('/categories') ? 'active' : ''}`}>
                 <span className="hamburger">☰</span>
                 Categories
                 <span className="dropdown-arrow">▼</span>
-              </button>
-              
-              {isCategoriesOpen && (
-                <div className="categories-dropdown-menu">
-                  {categories.map((category, index) => (
-                    <Link
-                      key={index}
-                      to={category.path}
-                      className="category-link"
-                      onClick={closeCategories}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
+              </Link>
             </div>
           </div>
 
           {/* Right side - Navigation links */}
           <div className="navbar-right-bottom">
             <div className="nav-links">
-              <a href="/" className="nav-link active">Home</a>
-              <a href="/brands" className="nav-link">
+              <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>Home</Link>
+              <Link to="/brands" className={`nav-link ${isActive('/brands') ? 'active' : ''}`}>
                 Brands
                 <span className="dropdown-arrow">▼</span>
-              </a>
-              <a href="/service" className="nav-link">Service</a>
+              </Link>
+              <Link to="/products" className={`nav-link ${isActive('/products') ? 'active' : ''}`}>Products</Link>
+              <Link to="/service" className={`nav-link ${isActive('/service') ? 'active' : ''}`}>Service</Link>
               <a href="/about" className="nav-link">About Us</a>
-              <a href="/contact" className="nav-link">Contact Us</a>
+              <Link to="/contact" className={`nav-link ${isActive('/contact') ? 'active' : ''}`}>Contact Us</Link>
             </div>
           </div>
         </div>
