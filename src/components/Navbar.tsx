@@ -50,10 +50,10 @@ const Navbar: React.FC = () => {
               <button className="icon-btn">
                 <HeartMinus size={20} />
               </button>
-              <button className="icon-btn cart-btn">
+              <Link to="/cart" className="icon-btn cart-btn">
                 <ShoppingCart size={20} />
                 <span className="cart-count">0</span>
-              </button>
+              </Link>
               <button className="icon-btn">
                 <User size={20} />
               </button>
