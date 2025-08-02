@@ -26,14 +26,14 @@ const ContactPage: React.FC = () => {
 
   return (
     <div className="contact-page">
-      {/* Hero Banner */}
-      <div className="hero-banner">
-        <div className="hero-content">
-          <h1>Get in touch</h1>
+      {/* Page Header */}
+      <section className="page-header">
+        <div className="container">
+          <h1>Get in Touch</h1>
           <p>We're here to help! Reach out to us through any of these channels.</p>
           <button className="whatsapp-support-btn">24/7 WhatsApp Support Available</button>
         </div>
-      </div>
+      </section>
 
       {/* Main Content */}
       <div className="contact-container">

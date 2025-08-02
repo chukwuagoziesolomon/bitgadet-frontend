@@ -1,137 +1,105 @@
 import React, { useState } from 'react';
 import './ProductsPage.css';
-import ProductCard from './ProductCard';
 
 const ProductsPage: React.FC = () => {
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [inStockOnly, setInStockOnly] = useState(false);
-  const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState([0, 1000000]);
+  const [searchTerm, setSearchTerm] = useState('');
 
+  // Sample products data - exactly 9 products for 3x3 grid (3 rows)
   const products = [
     {
       id: 1,
-      name: 'Apple iPhone 15 Pro',
-      brand: 'Apple',
-      image: 'phone.png',
-      price: '₦1,850,000',
-      originalPrice: '₦2,100,000',
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 324,
-      badges: ['-12% OFF', 'New', 'Bestseller'],
-      inStock: true
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
     },
     {
       id: 2,
-      name: 'SONY Play Station (PS) 5 Console',
-      brand: 'SONY',
-      image: 'games.png',
-      price: '₦1,850,000',
-      originalPrice: '₦2,050,000',
-      usdtPrice: '650 USDT',
-      rating: 4.8,
-      reviews: 64,
-      badges: ['-14%'],
-      inStock: false
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
     },
     {
       id: 3,
-      name: 'DELL Laptop Dell XPS 13 9360',
-      brand: 'DELL',
-      image: 'laptop.png',
-      price: '₦2,500,000',
-      originalPrice: '₦2,800,000',
-      usdtPrice: '850 USDT',
-      rating: 4.7,
-      reviews: 120,
-      badges: ['-12% OFF', 'New'],
-      inStock: true
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
     },
     {
       id: 4,
-      name: 'Apple iPhone 15 Pro',
-      brand: 'Apple',
-      image: 'phone.png',
-      price: '₦1,850,000',
-      originalPrice: '₦2,100,000',
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 324,
-      badges: ['-12% OFF', 'New', 'Bestseller'],
-      inStock: true
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
     },
     {
       id: 5,
-      name: 'SONY Play Station (PS) 5 Console',
-      brand: 'SONY',
-      image: 'games.png',
-      price: '₦1,850,000',
-      originalPrice: '₦2,050,000',
-      usdtPrice: '650 USDT',
-      rating: 4.8,
-      reviews: 64,
-      badges: ['-14%'],
-      inStock: false
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
     },
     {
       id: 6,
-      name: 'DELL Laptop Dell XPS 13 9360',
-      brand: 'DELL',
-      image: 'laptop.png',
-      price: '₦2,500,000',
-      originalPrice: '₦2,800,000',
-      usdtPrice: '850 USDT',
-      rating: 4.7,
-      reviews: 120,
-      badges: ['-12% OFF', 'New'],
-      inStock: true
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
     },
     {
       id: 7,
-      name: 'SONY Play Station (PS) 5 Console',
-      brand: 'SONY',
-      image: 'games.png',
-      price: '₦1,850,000',
-      originalPrice: '₦2,050,000',
-      usdtPrice: '650 USDT',
-      rating: 4.8,
-      reviews: 64,
-      badges: ['-14%'],
-      inStock: false
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
     },
     {
       id: 8,
-      name: 'DELL Laptop Dell XPS 13 9360',
-      brand: 'DELL',
-      image: 'laptop.png',
-      price: '₦2,500,000',
-      originalPrice: '₦2,800,000',
-      usdtPrice: '850 USDT',
-      rating: 4.7,
-      reviews: 120,
-      badges: ['-12% OFF', 'New'],
-      inStock: true
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
+    },
+    {
+      id: 9,
+      name: 'Gadget Name',
+      image: '/phone.png',
+      price: 'N180,000',
+      originalPrice: 'N800000',
+      rating: 3.5,
+      reviews: 10
     }
   ];
 
   const categories = [
-    'Smartphones',
-    'Laptops', 
-    'Smartwatches',
-    'Accessories',
-    'Audio',
-    'Gaming'
+    'Electronics',
+    'Smartphones', 
+    'Laptops',
+    'Smart Watches',
+    'Headphones',
+    'Gaming',
+    'Accessories'
   ];
-
-  const ratings = [
-    '4+ Stars',
-    '3+ Stars', 
-    '2+ Stars',
-    '1+ Stars'
-  ];
-
-
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev => 
@@ -141,58 +109,64 @@ const ProductsPage: React.FC = () => {
     );
   };
 
-  const handleRatingChange = (rating: string) => {
-    setSelectedRatings(prev => 
-      prev.includes(rating) 
-        ? prev.filter(r => r !== rating)
-        : [...prev, rating]
-    );
-  };
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
 
-  const resetFilters = () => {
-    setPriceRange({ min: '', max: '' });
-    setSelectedCategories([]);
-    setInStockOnly(false);
-    setSelectedRatings([]);
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(<span key={i} className="star filled">★</span>);
+    }
+
+    if (hasHalfStar) {
+      stars.push(<span key="half" className="star half">★</span>);
+    }
+
+    const emptyStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(<span key={`empty-${i}`} className="star empty">★</span>);
+    }
+
+    return stars;
   };
 
   return (
     <div className="products-page">
-      {/* Hero Banner */}
-      <div className="hero-banner">
-        <div className="hero-content">
-          <h1>All Product</h1>
-          <p>Discover our complete collection of premium gadgets and accessories.</p>
-          <div className="hero-features">
-            <span>Categories</span>
-            <span>216+ Products</span>
-            <span>Fast Delivery</span>
+      {/* Page Header */}
+      <section className="page-header">
+        <div className="container">
+          <h1>All Products</h1>
+          <p>Discover our complete collection of premium gadgets and accessories</p>
+          <div className="breadcrumb">
+            <span>🏠 Categories</span>
+            <span>📱 All Products</span>
+            <span>🛍️ Best Delivery</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="products-container">
-        {/* Left Sidebar - Filters */}
-        <div className="filters-sidebar">
+      {/* Main Container */}
+      <div className="brands-container">
+        {/* Left Sidebar */}
+        <div className="sidebar">
           {/* Search */}
-          <div className="filter-section">
-            <div className="search-container">
-              <input 
-                type="text" 
-                placeholder="Search products..."
-                className="search-input"
-              />
-              <button className="search-btn">🔍</button>
-            </div>
+          <div className="search-section">
+            <input
+              type="text"
+              placeholder="Search..."
+              className="search-input"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
 
           {/* Categories */}
           <div className="filter-section">
             <h3>Categories</h3>
-            <div className="filter-options">
+            <div className="category-list">
               {categories.map((category) => (
-                <label key={category} className="filter-option">
-                  <input 
+                <label key={category} className="category-item">
+                  <input
                     type="checkbox"
                     checked={selectedCategories.includes(category)}
                     onChange={() => handleCategoryChange(category)}
@@ -207,83 +181,63 @@ const ProductsPage: React.FC = () => {
           <div className="filter-section">
             <h3>Price Range</h3>
             <div className="price-inputs">
-              <div className="price-input">
-                <label>Min</label>
-                <input 
-                  type="number" 
-                  placeholder="0"
-                  value={priceRange.min}
-                  onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-                />
-              </div>
-              <div className="price-input">
-                <label>Max</label>
-                <input 
-                  type="number" 
-                  placeholder="1000000"
-                  value={priceRange.max}
-                  onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                />
-              </div>
+              <input type="number" placeholder="Min" className="price-input" />
+              <input type="number" placeholder="Max" className="price-input" />
             </div>
           </div>
 
           {/* Availability */}
           <div className="filter-section">
             <h3>Availability</h3>
-            <div className="filter-options">
-              <label className="filter-option">
-                <input 
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
-                />
-                <span>In Stock Only</span>
-              </label>
-            </div>
+            <label className="category-item">
+              <input type="checkbox" />
+              <span>In Stock Only</span>
+            </label>
           </div>
 
           {/* Rating */}
           <div className="filter-section">
             <h3>Rating</h3>
-            <div className="filter-options">
-              {ratings.map((rating) => (
-                <label key={rating} className="filter-option">
-                  <input 
-                    type="checkbox"
-                    checked={selectedRatings.includes(rating)}
-                    onChange={() => handleRatingChange(rating)}
-                  />
-                  <span>{rating}</span>
-                </label>
-              ))}
-            </div>
+            <label className="category-item">
+              <input type="checkbox" />
+              <span>4+ Stars</span>
+            </label>
+            <label className="category-item">
+              <input type="checkbox" />
+              <span>3+ Stars</span>
+            </label>
           </div>
 
           {/* Reset Filters */}
-          <button className="reset-filters-btn" onClick={resetFilters}>
-            Reset Filters
-          </button>
+          <button className="reset-filters-btn">Reset Filters</button>
         </div>
 
-        {/* Right Side - Product Grid */}
-        <div className="products-section">
-          {/* Product Count and View Options */}
-          <div className="products-header">
-            <span className="product-count">{products.length} products found</span>
-            <div className="view-options">
-              <button className="view-btn active">📊</button>
-              <button className="view-btn">📋</button>
-            </div>
-          </div>
-
-          {/* Product Grid */}
-          <div className="products-grid">
+        {/* Main Content - 3x3 Grid */}
+        <div className="main-content">
+          {/* Products Grid - 3x3 Grid */}
+          <div className="brands-products-grid">
             {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                {...product}
-              />
+              <div key={product.id} className="brands-product-card">
+                <div className="brands-product-image-container">
+                  <img src={product.image} alt={product.name} className="brands-product-image" />
+                </div>
+
+                <div className="brands-product-info">
+                  <h3 className="brands-product-name">{product.name}</h3>
+
+                  <div className="brands-product-rating">
+                    <div className="brands-stars">
+                      {renderStars(product.rating)}
+                    </div>
+                    <span className="brands-rating-text">({product.rating} stars) • {product.reviews} reviews</span>
+                  </div>
+
+                  <div className="brands-product-pricing">
+                    <span className="brands-current-price">{product.price}</span>
+                    <span className="brands-original-price">{product.originalPrice}</span>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </div>
@@ -292,4 +246,4 @@ const ProductsPage: React.FC = () => {
   );
 };
 
-export default ProductsPage; 
+export default ProductsPage;

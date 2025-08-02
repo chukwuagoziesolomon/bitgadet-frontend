@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products Layout Test</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #ffffff;
+        }
+        
+        /* Products Section */
+        .products-section {
+            padding: 4rem 0;
+            background: white;
+            width: 100%;
+            overflow-x: hidden;
+            text-align: center;
+            position: relative;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        
+        .products-container {
+            max-width: 1450px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1f2937;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            width: 100%;
+            display: block;
+        }
+        
+        .products-underline {
+            width: 80px;
+            height: 3px;
+            background: #00c896;
+            margin: 0 auto 3rem;
+            border-radius: 2px;
+        }
+        
+        .products-tabs {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+        
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background: #00c896;
+            color: white;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 1.5rem;
+            margin: 0 auto 3rem auto;
+            width: 100%;
+            max-width: 1450px;
+            grid-auto-rows: min-content;
+            justify-content: center;
+            align-items: start;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .product-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+        
+        .product-brand {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        
+        .current-price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body>
+    <section class="products-section">
+        <div class="products-container">
+            <h2 class="section-title">Our Products</h2>
+            <div class="products-underline"></div>
+
+            <div class="products-tabs">
+                <button class="tab-button active">Featured</button>
+                <button class="tab-button">Best Sellers</button>
+                <button class="tab-button">New Arrivals</button>
+            </div>
+
+            <div class="products-grid">
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200x150/f0f0f0/666?text=iPhone+15+Pro" alt="iPhone 15 Pro" class="product-image">
+                    <div class="product-name">iPhone 15 Pro</div>
+                    <div class="product-brand">Apple</div>
+                    <div class="current-price">₦1,850,000</div>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200x150/f0f0f0/666?text=PlayStation+5" alt="PlayStation 5" class="product-image">
+                    <div class="product-name">PlayStation 5 Console</div>
+                    <div class="product-brand">SONY</div>
+                    <div class="current-price">₦1,850,000</div>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200x150/f0f0f0/666?text=Dell+XPS+15" alt="Dell XPS 15" class="product-image">
+                    <div class="product-name">Laptop Dell XPS 15 9560</div>
+                    <div class="product-brand">DELL</div>
+                    <div class="current-price">₦1,850,000</div>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200x150/f0f0f0/666?text=Smartwatch" alt="Sony Smartwatch" class="product-image">
+                    <div class="product-name">Sony Smartwatch 15</div>
+                    <div class="product-brand">SONY</div>
+                    <div class="current-price">₦1,850,000</div>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/200x150/f0f0f0/666?text=Smartwatch+2" alt="Sony Smartwatch 2" class="product-image">
+                    <div class="product-name">Sony Smartwatch 15</div>
+                    <div class="product-brand">SONY</div>
+                    <div class="current-price">₦1,850,000</div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

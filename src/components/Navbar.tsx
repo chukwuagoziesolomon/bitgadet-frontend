@@ -1,95 +1,119 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Search, ShoppingCart, User, ChevronDown, RefreshCw, MapPin } from 'lucide-react';
 import './Navbar.css';
-import logo from '../assets/logo.png';
-import HeartMinus from './icons/HeartMinus';
-import ShoppingCart from './icons/ShoppingCart';
-import User from './icons/User';
-import PhoneCall from './icons/PhoneCall';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
-  
+  const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const isActive = (path: string) => {
     return location.pathname === path;
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setServicesDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <nav className="navbar">
-      {/* Top section with search and contact */}
-      <div className="navbar-top">
-        <div className="navbar-container">
-          {/* Logo */}
-          <div className="navbar-logo">
-            <Link to="/brand">
-              <img className="logo-icon" src="logo.png" alt="logo" />
-            </Link>
-          </div>
+      <div className="navbar-container">
+        {/* Logo */}
+        <div className="navbar-logo">
+          <Link to="/" className="logo-link">
+            <img src="/logo.png" alt="BitGadgetz Logo" className="logo-image" />
+          
+          </Link>
+        </div>
 
-          {/* Search bar */}
-          <div className="search-container">
-            <input 
-              type="text" 
-              placeholder="Find your dream device here"
+        {/* Search bar */}
+        <div className="search-container">
+          <div className="search-wrapper">
+            <Search className="search-icon" size={20} />
+            <input
+              type="text"
+              placeholder="Search"
               className="search-input"
             />
-            <button className="search-btn">Search</button>
           </div>
+        </div>
 
-          {/* Phone section - between search and icons */}
-          <div className="contact-info">
-            <span className="contact-label">Call 24/7</span>
-            <div className="contact-number-wrapper">
-              <PhoneCall size={24} color="#000" />
-              <span className="contact-number">07042567844</span>
-            </div>
-          </div>
-
-          {/* Icons */}
-          <div className="navbar-right">
-            <div className="navbar-icons">
-              <button className="icon-btn">
-                <HeartMinus size={20} />
-              </button>
-              <Link to="/cart" className="icon-btn cart-btn">
-                <ShoppingCart size={20} />
-                <span className="cart-count">0</span>
-              </Link>
-              <button className="icon-btn">
-                <User size={20} />
-              </button>
-            </div>
-          </div>
+        {/* Right side icons */}
+        <div className="navbar-right">
+          <Link to="/cart" className="icon-btn">
+            <ShoppingCart size={20} />
+          </Link>
+          <button className="icon-btn">
+            <User size={20} />
+          </button>
         </div>
       </div>
 
-      {/* Bottom section with navigation */}
+      {/* Bottom navigation */}
       <div className="navbar-bottom">
-        <div className="navbar-container navbar-bottom-container">
-          {/* Left side - Categories only */}
-          <div className="navbar-left">
-            {/* Categories dropdown */}
-            <div className="categories-dropdown">
-              <Link to="/categories" className={`categories-btn ${isActive('/categories') ? 'active' : ''}`}>
-                <span className="hamburger">☰</span>
-                Categories
-                <span className="dropdown-arrow">▼</span>
-              </Link>
-            </div>
+        <div className="navbar-container">
+          {/* Categories dropdown */}
+          <div className="categories-dropdown">
+            <Link to="/categories" className={`categories-btn ${isActive('/categories') ? 'active' : ''}`}>
+              <span className="hamburger">☰</span>
+              All Categories
+              <span className="dropdown-arrow">▼</span>
+            </Link>
           </div>
 
-          {/* Right side - Navigation links */}
-          <div className="navbar-right-bottom">
-            <div className="nav-links">
-              <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>Home</Link>
-              <Link to="/brands" className={`nav-link ${isActive('/brands') ? 'active' : ''}`}>
-                Brands
-                <span className="dropdown-arrow">▼</span>
-              </Link>
-              <Link to="/products" className={`nav-link ${isActive('/products') ? 'active' : ''}`}>Products</Link>
-              <Link to="/service" className={`nav-link ${isActive('/service') ? 'active' : ''}`}>Service</Link>
-              <a href="/about" className="nav-link">About Us</a>
-              <Link to="/contact" className={`nav-link ${isActive('/contact') ? 'active' : ''}`}>Contact Us</Link>
+          {/* Navigation links */}
+          <div className="nav-links">
+            <Link to="/home" className={`nav-link ${isActive('/home') ? 'active' : ''}`}>Home</Link>
+            <Link to="/brands" className={`nav-link ${isActive('/brands') ? 'active' : ''}`}>
+              Brands
+              <span className="dropdown-arrow">▼</span>
+            </Link>
+            <Link to="/products" className={`nav-link ${isActive('/products') ? 'active' : ''}`}>Products</Link>
+
+            {/* Services Dropdown */}
+            <div className="services-dropdown" ref={dropdownRef}>
+              <button
+                className={`nav-link services-btn ${isActive('/phone-swap') || isActive('/phone-tracking') ? 'active' : ''}`}
+                onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
+              >
+                Services
+                <ChevronDown size={16} className={`dropdown-icon ${servicesDropdownOpen ? 'open' : ''}`} />
+              </button>
+
+              {servicesDropdownOpen && (
+                <div className="services-dropdown-menu">
+                  <Link
+                    to="/phone-swap"
+                    className="dropdown-item"
+                    onClick={() => setServicesDropdownOpen(false)}
+                  >
+                    <RefreshCw size={18} className="dropdown-icon" />
+                    Phone Swapping
+                  </Link>
+                  <Link
+                    to="/phone-tracking"
+                    className="dropdown-item"
+                    onClick={() => setServicesDropdownOpen(false)}
+                  >
+                    <MapPin size={18} className="dropdown-icon" />
+                    Phone Tracking
+                  </Link>
+                </div>
+              )}
             </div>
+
+            <Link to="/contact" className={`nav-link ${isActive('/contact') ? 'active' : ''}`}>Contact us</Link>
           </div>
         </div>
       </div>

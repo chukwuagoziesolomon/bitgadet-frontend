@@ -26,7 +26,7 @@ body {
 main {
   flex: 1 0 auto;
   width: 100%;
-  margin-top: 80px; /* Adjust based on your navbar height */
+  margin-top: 0; /* Remove spacing between navbar and body */
 }
 
 /* Container for content */
