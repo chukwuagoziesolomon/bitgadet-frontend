@@ -12,9 +12,9 @@
 }
 
 .navbar-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem 2rem;
+  width: 100%;
+  margin: 0;
+  padding: 1rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -51,41 +51,57 @@
 /* Search */
 .search-container {
   flex: 1;
-  max-width: 500px;
-  margin: 0 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
 }
 
 .search-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  width: 100%;
 }
 
-.search-icon {
-  position: absolute;
-  left: 1rem;
-  z-index: 1;
-  color: #00c896;
+.search-wrapper:focus-within {
+  border-color: #00c896;
+  box-shadow: 0 0 0 3px rgba(0, 200, 150, 0.1);
 }
 
 .search-input {
-  width: 100%;
-  padding: 0.75rem 1rem 0.75rem 3rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
+  flex: 1;
+  border: none;
+  background: transparent;
   outline: none;
-  transition: border-color 0.2s ease;
-  background: #f8fafc;
-}
-
-.search-input:focus {
-  border-color: #00c896;
-  background: white;
+  font-size: 0.875rem;
+  color: #374151;
+  padding: 0.75rem 1rem;
 }
 
 .search-input::placeholder {
   color: #9ca3af;
+}
+
+.search-button {
+  background: #00c896;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border-radius: 0;
+}
+
+.search-button:hover {
+  background: #00b085;
 }
 
 /* Right section */
@@ -94,6 +110,26 @@
   align-items: center;
   gap: 1rem;
   flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* Phone section */
+.phone-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.phone-icon {
+  color: #00c896;
+}
+
+.phone-number {
+  color: #374151;
 }
 
 .icon-btn {

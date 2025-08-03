@@ -1,5 +1,5 @@
 import React from 'react';
-import HeartMinus from '../icons/HeartMinus';
+import { HeartPlus } from 'lucide-react';
 import '../Home.css';
 
 export interface ProductCardProps {
@@ -64,7 +64,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         
         {/* Heart Icon */}
         <button className="wishlist-btn">
-          <HeartMinus size={16} />
+          <HeartPlus size={16} />
         </button>
       </div>
       
