@@ -1,59 +1,188 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Heart, Smartphone, Laptop, Tablet, Gamepad2, Watch, Headphones, TrendingUp, ArrowRight } from 'lucide-react';
+import { apiRequest, API_CONFIG } from '../config/api';
 import './NewHome.css';
 
+// Types for API response
+interface CategoryTrendData {
+  category_name: string;
+  display_name: string;
+  item_count: number;
+  trend_level: string;
+  trend_color: string;
+  has_items: boolean;
+}
+
+interface CategoryApiResponse {
+  categories: CategoryTrendData[];
+  total_categories: number;
+}
+
+// Enhanced category interface for UI
+interface CategoryWithUI extends CategoryTrendData {
+  image: string;
+  icon: React.ComponentType<any>;
+  description: string;
+}
+
 const NewHome: React.FC = () => {
-  const categories = [
+  const [categories, setCategories] = useState<CategoryWithUI[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Banner slides data
+  const bannerSlides = [
     {
-      name: 'Phones',
-      image: 'phone.png',
-      icon: Smartphone,
-      description: 'Latest smart phones and mobile devices',
-      itemCount: 97,
-      color: '#4CAF50'
+      id: 1,
+      title: "Welcome to BitGadgetz",
+      subtitle: "Your Premier Tech Destination",
+      description: "Discover the latest gadgets with crypto and Naira payment options",
+      backgroundColor: "#667eea",
+      textColor: "#ffffff"
     },
     {
-      name: 'Laptops',
-      image: 'laptop.png',
-      icon: Laptop,
-      description: 'High-performance laptops and notebooks',
-      itemCount: 45,
-      color: '#2196F3'
+      id: 2,
+      title: "Pay with Crypto",
+      subtitle: "Bitcoin & Ethereum Accepted",
+      description: "Seamless cryptocurrency payments for all your tech purchases",
+      backgroundColor: "#f093fb",
+      textColor: "#ffffff"
     },
     {
-      name: 'Tablets',
-      image: 'tablet.png',
-      icon: Tablet,
-      description: 'iPads, Android Tablets and e-Readers',
-      itemCount: 67,
-      color: '#E91E63'
+      id: 3,
+      title: "Premium Quality",
+      subtitle: "100% Authentic Products",
+      description: "All products come with manufacturer warranty and authenticity guarantee",
+      backgroundColor: "#4facfe",
+      textColor: "#ffffff"
     },
     {
-      name: 'Games',
-      image: 'games.png',
-      icon: Gamepad2,
-      description: 'Gaming consoles and accessories',
-      itemCount: 105,
-      color: '#FF9800'
-    },
-    {
-      name: 'Smartwatches',
-      image: 'watch.png',
-      icon: Watch,
-      description: 'Smart wearables and fitness trackers',
-      itemCount: 78,
-      color: '#9C27B0'
-    },
-    {
-      name: 'Accessories',
-      image: 'headphone.png',
-      icon: Headphones,
-      description: 'Phone cases, chargers, and more',
-      itemCount: 67,
-      color: '#F44336'
+      id: 4,
+      title: "Fast Delivery",
+      subtitle: "Express Shipping Available",
+      description: "Get your gadgets delivered quickly and safely to your doorstep",
+      backgroundColor: "#43e97b",
+      textColor: "#ffffff"
     }
   ];
+
+  // Carousel auto-slide effect
+  useEffect(() => {
+    const slideInterval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(slideInterval);
+  }, [bannerSlides.length]);
+
+  // Icon mapping for categories
+  const getIconForCategory = (categoryName: string) => {
+    const iconMap: { [key: string]: React.ComponentType<any> } = {
+      phones: Smartphone,
+      laptops: Laptop,
+      tablets: Tablet,
+      games: Gamepad2,
+      smartwatches: Watch,
+      accessories: Headphones,
+    };
+    return iconMap[categoryName.toLowerCase()] || Smartphone;
+  };
+
+  // Image mapping for categories
+  const getImageForCategory = (categoryName: string) => {
+    const imageMap: { [key: string]: string } = {
+      phones: 'phone.png',
+      laptops: 'laptop.png',
+      tablets: 'tablet.png',
+      games: 'games.png',
+      smartwatches: 'watch.png',
+      accessories: 'headphone.png',
+    };
+    return imageMap[categoryName.toLowerCase()] || 'phone.png';
+  };
+
+  // Description mapping for categories
+  const getDescriptionForCategory = (categoryName: string) => {
+    const descriptionMap: { [key: string]: string } = {
+      phones: 'Latest smart phones and mobile devices',
+      laptops: 'High-performance laptops and notebooks',
+      tablets: 'iPads, Android Tablets and e-Readers',
+      games: 'Gaming consoles and accessories',
+      smartwatches: 'Smart wearables and fitness trackers',
+      accessories: 'Phone cases, chargers, and more',
+    };
+    return descriptionMap[categoryName.toLowerCase()] || 'Quality tech products';
+  };
+
+  // Fetch categories from API
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const data: CategoryApiResponse = await apiRequest<CategoryApiResponse>(
+          API_CONFIG.ENDPOINTS.CATEGORIES_TREND
+        );
+
+        // Transform API data to include UI elements
+        const enhancedCategories: CategoryWithUI[] = data.categories.map(category => ({
+          ...category,
+          image: getImageForCategory(category.category_name),
+          icon: getIconForCategory(category.category_name),
+          description: getDescriptionForCategory(category.category_name),
+        }));
+
+        setCategories(enhancedCategories);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch categories:', err);
+        setError('Failed to load categories. Please try again later.');
+
+        // Fallback to static data if API fails
+        const fallbackCategories: CategoryWithUI[] = [
+          {
+            category_name: 'phones',
+            display_name: 'Phones',
+            item_count: 97,
+            trend_level: 'high',
+            trend_color: '#4CAF50',
+            has_items: true,
+            image: 'phone.png',
+            icon: Smartphone,
+            description: 'Latest smart phones and mobile devices'
+          },
+          {
+            category_name: 'laptops',
+            display_name: 'Laptops',
+            item_count: 45,
+            trend_level: 'medium',
+            trend_color: '#2196F3',
+            has_items: true,
+            image: 'laptop.png',
+            icon: Laptop,
+            description: 'High-performance laptops and notebooks'
+          },
+          {
+            category_name: 'tablets',
+            display_name: 'Tablets',
+            item_count: 67,
+            trend_level: 'low',
+            trend_color: '#E91E63',
+            has_items: true,
+            image: 'tablet.png',
+            icon: Tablet,
+            description: 'iPads, Android Tablets and e-Readers'
+          }
+        ];
+        setCategories(fallbackCategories);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const products = [
     {
@@ -125,38 +254,129 @@ const NewHome: React.FC = () => {
 
   return (
     <div className="home-page">
+      {/* Banner Carousel Section */}
+      <section className="banner-section">
+        <div className="banner-container">
+          <div className="banner-carousel">
+            {bannerSlides.map((slide, index) => (
+              <div
+                key={slide.id}
+                className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
+                style={{
+                  background: `linear-gradient(135deg, ${slide.backgroundColor} 0%, ${slide.backgroundColor}dd 100%)`,
+                  color: slide.textColor
+                }}
+              >
+                <div className="slide-content">
+                  <h1 className="slide-title">{slide.title}</h1>
+                  <h2 className="slide-subtitle">{slide.subtitle}</h2>
+                  <p className="slide-description">{slide.description}</p>
+                  <div className="slide-actions">
+                    <Link to="/products" className="cta-button primary">
+                      Shop Now
+                    </Link>
+                    <Link to="/contact" className="cta-button secondary">
+                      Learn More
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Carousel Indicators */}
+            <div className="carousel-indicators">
+              {bannerSlides.map((_, index) => (
+                <button
+                  key={index}
+                  className={`indicator ${index === currentSlide ? 'active' : ''}`}
+                  onClick={() => setCurrentSlide(index)}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Carousel Navigation */}
+            <button
+              className="carousel-nav prev"
+              onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
+              aria-label="Previous slide"
+            >
+              ‹
+            </button>
+            <button
+              className="carousel-nav next"
+              onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)}
+              aria-label="Next slide"
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Shop by Category Section */}
       <section className="shop-by-category">
         <div className="container">
           <h2 className="section-title">Shop by Category</h2>
           <p className="section-subtitle">Browse our wide range of products across various categories</p>
-          
-          <div className="categories-grid">
-            {categories.map((category, index) => {
-              const IconComponent = category.icon;
-              return (
-                <div key={index} className="category-card">
-                  <div className="category-image-container">
-                    <img src={category.image} alt={category.name} className="category-product-image" />
-                    <div className="category-icon-overlay">
-                      <IconComponent size={24} color="white" />
+
+          {loading ? (
+            <div className="loading-state">
+              <p>Loading categories...</p>
+            </div>
+          ) : error ? (
+            <div className="error-state">
+              <p>{error}</p>
+            </div>
+          ) : (
+            <div className="categories-grid">
+              {categories.map((category, index) => {
+                const IconComponent = category.icon;
+                return (
+                  <div key={category.category_name} className="category-card">
+                    <div className="category-image-container">
+                      <img src={category.image} alt={category.display_name} className="category-product-image" />
+                      <div className="category-icon-overlay">
+                        <IconComponent size={24} color="white" />
+                      </div>
+                      {/* Trend indicator */}
+                      <div className="trend-indicator" style={{ backgroundColor: category.trend_color }}>
+                        <TrendingUp size={12} color="white" />
+                        <span className="trend-level">{category.trend_level}</span>
+                      </div>
+                    </div>
+                    <div className="category-content">
+                      <h3 className="category-name">{category.display_name}</h3>
+                      <p className="category-description">{category.description}</p>
+
+                      {/* Centered trend stats box */}
+                      <div className="category-stats-box">
+                        <div className="trend-info">
+                          <TrendingUp size={16} color={category.trend_color} />
+                          <span className="trend-level-text" style={{ color: category.trend_color }}>
+                            {category.trend_level.toUpperCase()}
+                          </span>
+                        </div>
+                        <div className="item-info">
+                          <span className="item-count">{category.item_count} items</span>
+                          {!category.has_items && (
+                            <span className="no-items-badge">Coming Soon</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <Link
+                        to={`/categories/${category.category_name}`}
+                        className={`shop-now-link ${!category.has_items ? 'disabled' : ''}`}
+                      >
+                        {category.has_items ? 'Shop Now' : 'Coming Soon'} <ArrowRight size={14} />
+                      </Link>
                     </div>
                   </div>
-                  <div className="category-content">
-                    <h3 className="category-name">{category.name}</h3>
-                    <p className="category-description">{category.description}</p>
-                    <div className="category-stats">
-                      <TrendingUp size={14} color="#00c896" />
-                      <span className="item-count">{category.itemCount} items</span>
-                    </div>
-                    <Link to={`/categories/${category.name.toLowerCase()}`} className="shop-now-link">
-                      Shop Now <ArrowRight size={14} />
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
