@@ -1,5 +1,5 @@
 import React from 'react';
-import HeartMinus from './icons/HeartMinus';
+import { HeartPlus } from 'lucide-react';
 
 interface ProductCardProps {
   id: number;
@@ -54,7 +54,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <img src={image} alt={name} />
         {showWishlist && (
           <button className="wishlist-btn">
-            <HeartMinus size={20} />
+            <HeartPlus size={20} />
           </button>
         )}
         {showBadges && badges.length > 0 && (

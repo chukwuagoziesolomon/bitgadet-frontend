@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingCart, Heart, Smartphone, Laptop, Tablet, Gamepad2, Watch, Headphones, TrendingUp, ArrowRight } from 'lucide-react';
+import { Star, ShoppingCart, HeartPlus, Smartphone, Laptop, Tablet, Gamepad2, Watch, Headphones, TrendingUp, ArrowRight } from 'lucide-react';
 import { apiRequest, API_CONFIG } from '../config/api';
 import './NewHome.css';
 
@@ -356,7 +356,8 @@ const NewHome: React.FC = () => {
     fetchCategories();
   }, []);
 
-  const staticProducts = [
+  // Featured Products
+  const featuredProducts = [
     {
       id: 1,
       name: 'iPhone 15 Pro',
@@ -372,54 +373,192 @@ const NewHome: React.FC = () => {
     },
     {
       id: 2,
-      name: 'PlayStation (PS) 5 Console',
-      brand: 'SONY',
-      price: '₦1,850,000',
-      originalPrice: '₦2,100,000',
+      name: 'MacBook Pro 16"',
+      brand: 'Apple',
+      price: '₦2,450,000',
+      originalPrice: '₦2,800,000',
       image: '/api/placeholder/200/200',
       rating: 4.8,
-      reviews: 156,
-      discount: '12% OFF',
+      reviews: 289,
+      discount: '15% OFF',
       isNew: false,
-      outOfStock: true
+      outOfStock: false
     },
     {
       id: 3,
-      name: 'Laptop Dell XPS 15 9560',
-      brand: 'DELL',
-      price: '₦1,850,000',
-      originalPrice: '₦2,100,000',
+      name: 'Samsung Galaxy S24 Ultra',
+      brand: 'Samsung',
+      price: '₦1,650,000',
+      originalPrice: '₦1,900,000',
       image: '/api/placeholder/200/200',
       rating: 4.6,
-      reviews: 89,
-      discount: '12% OFF',
+      reviews: 412,
+      discount: '13% OFF',
       isNew: false,
       outOfStock: false
     },
     {
       id: 4,
-      name: 'Sony Smartwatch 15',
-      brand: 'SONY',
+      name: 'iPad Pro 12.9"',
+      brand: 'Apple',
+      price: '₦1,200,000',
+      originalPrice: '₦1,400,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.7,
+      reviews: 198,
+      discount: '14% OFF',
+      isNew: false,
+      outOfStock: false
+    },
+    {
+      id: 5,
+      name: 'Sony WH-1000XM5',
+      brand: 'Sony',
+      price: '₦450,000',
+      originalPrice: '₦520,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.9,
+      reviews: 567,
+      discount: '13% OFF',
+      isNew: false,
+      outOfStock: false
+    }
+  ];
+
+  // Best Sellers
+  const bestSellersProducts = [
+    {
+      id: 6,
+      name: 'PlayStation 5 Console',
+      brand: 'Sony',
+      price: '₦850,000',
+      originalPrice: '₦950,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.8,
+      reviews: 1234,
+      discount: '11% OFF',
+      isNew: false,
+      outOfStock: false
+    },
+    {
+      id: 7,
+      name: 'AirPods Pro (2nd Gen)',
+      brand: 'Apple',
+      price: '₦320,000',
+      originalPrice: '₦380,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.6,
+      reviews: 892,
+      discount: '16% OFF',
+      isNew: false,
+      outOfStock: false
+    },
+    {
+      id: 8,
+      name: 'Dell XPS 13',
+      brand: 'Dell',
       price: '₦1,850,000',
       originalPrice: '₦2,100,000',
       image: '/api/placeholder/200/200',
-      rating: 4.3,
-      reviews: 234,
+      rating: 4.5,
+      reviews: 456,
+      discount: '12% OFF',
+      isNew: false,
+      outOfStock: false
+    },
+    {
+      id: 9,
+      name: 'Apple Watch Series 9',
+      brand: 'Apple',
+      price: '₦650,000',
+      originalPrice: '₦750,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.7,
+      reviews: 723,
+      discount: '13% OFF',
+      isNew: false,
+      outOfStock: false
+    },
+    {
+      id: 10,
+      name: 'Samsung Galaxy Buds2 Pro',
+      brand: 'Samsung',
+      price: '₦280,000',
+      originalPrice: '₦320,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.4,
+      reviews: 634,
+      discount: '13% OFF',
+      isNew: false,
+      outOfStock: false
+    }
+  ];
+
+  // New Arrivals
+  const newArrivalsProducts = [
+    {
+      id: 11,
+      name: 'iPhone 15 Pro Max',
+      brand: 'Apple',
+      price: '₦2,150,000',
+      originalPrice: '₦2,150,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.9,
+      reviews: 89,
       discount: 'New',
       isNew: true,
       outOfStock: false
     },
     {
-      id: 5,
-      name: 'Sony Smartwatch 15',
-      brand: 'SONY',
-      price: '₦1,850,000',
-      originalPrice: '₦2,100,000',
+      id: 12,
+      name: 'MacBook Air M3',
+      brand: 'Apple',
+      price: '₦1,950,000',
+      originalPrice: '₦1,950,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.8,
+      reviews: 45,
+      discount: 'New',
+      isNew: true,
+      outOfStock: false
+    },
+    {
+      id: 13,
+      name: 'Samsung Galaxy Tab S9',
+      brand: 'Samsung',
+      price: '₦850,000',
+      originalPrice: '₦850,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.6,
+      reviews: 67,
+      discount: 'New',
+      isNew: true,
+      outOfStock: false
+    },
+    {
+      id: 14,
+      name: 'Google Pixel 8 Pro',
+      brand: 'Google',
+      price: '₦1,450,000',
+      originalPrice: '₦1,450,000',
       image: '/api/placeholder/200/200',
       rating: 4.7,
-      reviews: 178,
-      discount: '12% OFF',
-      isNew: false,
+      reviews: 123,
+      discount: 'New',
+      isNew: true,
+      outOfStock: false
+    },
+    {
+      id: 15,
+      name: 'Nothing Phone (2)',
+      brand: 'Nothing',
+      price: '₦750,000',
+      originalPrice: '₦750,000',
+      image: '/api/placeholder/200/200',
+      rating: 4.5,
+      reviews: 234,
+      discount: 'New',
+      isNew: true,
       outOfStock: false
     }
   ];
@@ -428,7 +567,7 @@ const NewHome: React.FC = () => {
   const getCurrentProducts = () => {
     switch (activeTab) {
       case 'featured':
-        return staticProducts;
+        return featuredProducts;
       case 'bestSellers':
         return bestSellers.map(product => ({
           id: product.id,
@@ -464,7 +603,7 @@ const NewHome: React.FC = () => {
           discountPercentage: product.discount_percentage
         }));
       default:
-        return staticProducts;
+        return featuredProducts;
     }
   };
 
@@ -676,7 +815,7 @@ const NewHome: React.FC = () => {
                     {product.outOfStock && <span className="badge stock-badge">Out of Stock</span>}
                   </div>
                   <button className="wishlist-btn">
-                    <Heart size={16} />
+                    <HeartPlus size={16} />
                   </button>
                 </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, ShoppingCart, User, ChevronDown, RefreshCw, MapPin } from 'lucide-react';
+import { ShoppingCart, User, ChevronDown, RefreshCw, MapPin, HeartPlus, Phone } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
@@ -40,17 +40,26 @@ const Navbar: React.FC = () => {
         {/* Search bar */}
         <div className="search-container">
           <div className="search-wrapper">
-            <Search className="search-icon" size={20} />
             <input
               type="text"
-              placeholder="Search"
+              placeholder="Find your dream device here"
               className="search-input"
             />
+            <button className="search-button">
+              Search
+            </button>
           </div>
         </div>
 
-        {/* Right side icons */}
+        {/* Phone and Right side icons */}
         <div className="navbar-right">
+          <div className="phone-section">
+            <Phone size={20} className="phone-icon" />
+            <span className="phone-number">07043567844</span>
+          </div>
+          <button className="icon-btn">
+            <HeartPlus size={20} />
+          </button>
           <Link to="/cart" className="icon-btn">
             <ShoppingCart size={20} />
           </Link>
