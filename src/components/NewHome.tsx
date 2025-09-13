@@ -4,7 +4,7 @@ import { Star, ShoppingCart, Heart, Smartphone, Laptop, Tablet, Gamepad2, Watch,
 import { apiRequest, API_CONFIG } from '../config/api';
 import './NewHome.css';
 
-// Types for API response
+// Types for API responses
 interface CategoryTrendData {
   category_name: string;
   display_name: string;
@@ -19,6 +19,64 @@ interface CategoryApiResponse {
   total_categories: number;
 }
 
+interface BannerData {
+  id: number;
+  title: string;
+  subtitle: string;
+  image: string;
+  banner_type: string;
+  link_type: string;
+  product_name?: string;
+  button_text: string;
+  generated_link_url: string;
+  is_currently_active: boolean;
+  display_order: number;
+}
+
+interface BannersApiResponse {
+  banners: {
+    hero: BannerData[];
+    promotional: BannerData[];
+    category: BannerData[];
+    seasonal: BannerData[];
+  };
+  total_banners: number;
+  banner_types: string[];
+}
+
+interface ProductData {
+  id: number;
+  name: string;
+  slug: string;
+  category_name: string;
+  category_slug: string;
+  short_description: string;
+  current_price: string;
+  current_price_usdt: string;
+  original_price: string;
+  original_price_usdt: string;
+  brand: string;
+  model: string;
+  main_image: string;
+  is_featured: boolean;
+  is_on_sale: boolean;
+  discount_percentage: number;
+  is_in_stock: boolean;
+  is_new_arrival: boolean;
+  is_best_seller: boolean;
+  stock_quantity: number;
+  total_sales: number;
+  views_count: number;
+  created_at: string;
+}
+
+interface ProductsApiResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ProductData[];
+}
+
 // Enhanced category interface for UI
 interface CategoryWithUI extends CategoryTrendData {
   image: string;
@@ -28,54 +86,166 @@ interface CategoryWithUI extends CategoryTrendData {
 
 const NewHome: React.FC = () => {
   const [categories, setCategories] = useState<CategoryWithUI[]>([]);
+  const [banners, setBanners] = useState<BannerData[]>([]);
+  const [newArrivals, setNewArrivals] = useState<ProductData[]>([]);
+  const [bestSellers, setBestSellers] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bannersLoading, setBannersLoading] = useState(true);
+  const [newArrivalsLoading, setNewArrivalsLoading] = useState(true);
+  const [bestSellersLoading, setBestSellersLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bannersError, setBannersError] = useState<string | null>(null);
+  const [newArrivalsError, setNewArrivalsError] = useState<string | null>(null);
+  const [bestSellersError, setBestSellersError] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeTab, setActiveTab] = useState<'featured' | 'bestSellers' | 'newArrivals'>('featured');
 
-  // Banner slides data
-  const bannerSlides = [
+  // Fallback banner data
+  const fallbackBanners: BannerData[] = [
     {
       id: 1,
       title: "Welcome to BitGadgetz",
       subtitle: "Your Premier Tech Destination",
-      description: "Discover the latest gadgets with crypto and Naira payment options",
-      backgroundColor: "#667eea",
-      textColor: "#ffffff"
+      image: "",
+      banner_type: "hero",
+      link_type: "page",
+      button_text: "Shop Now",
+      generated_link_url: "/products",
+      is_currently_active: true,
+      display_order: 1
     },
     {
       id: 2,
       title: "Pay with Crypto",
       subtitle: "Bitcoin & Ethereum Accepted",
-      description: "Seamless cryptocurrency payments for all your tech purchases",
-      backgroundColor: "#f093fb",
-      textColor: "#ffffff"
-    },
-    {
-      id: 3,
-      title: "Premium Quality",
-      subtitle: "100% Authentic Products",
-      description: "All products come with manufacturer warranty and authenticity guarantee",
-      backgroundColor: "#4facfe",
-      textColor: "#ffffff"
-    },
-    {
-      id: 4,
-      title: "Fast Delivery",
-      subtitle: "Express Shipping Available",
-      description: "Get your gadgets delivered quickly and safely to your doorstep",
-      backgroundColor: "#43e97b",
-      textColor: "#ffffff"
+      image: "",
+      banner_type: "hero",
+      link_type: "page",
+      button_text: "Learn More",
+      generated_link_url: "/contact",
+      is_currently_active: true,
+      display_order: 2
     }
   ];
 
+  // Fetch banners from API
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        setBannersLoading(true);
+        console.log('🔄 Fetching banners from:', API_CONFIG.ENDPOINTS.BANNERS_ACTIVE);
+        const data: BannersApiResponse = await apiRequest<BannersApiResponse>(
+          API_CONFIG.ENDPOINTS.BANNERS_ACTIVE
+        );
+        console.log('✅ Banners data received:', data);
+
+        // Use hero banners for the carousel, fallback to other types if no hero banners
+        const heroBanners = data.banners.hero || [];
+        const allBanners = [
+          ...heroBanners,
+          ...(data.banners.promotional || []),
+          ...(data.banners.seasonal || [])
+        ].filter(banner => banner.is_currently_active)
+         .sort((a, b) => a.display_order - b.display_order);
+
+        setBanners(allBanners.length > 0 ? allBanners : fallbackBanners);
+        setBannersError(null);
+      } catch (err) {
+        console.error('Failed to fetch banners:', err);
+        setBannersError('Failed to load banners. Using default content.');
+        setBanners(fallbackBanners);
+      } finally {
+        setBannersLoading(false);
+      }
+    };
+
+    fetchBanners();
+  }, []);
+
+  // Fetch new arrivals from API
+  useEffect(() => {
+    const fetchNewArrivals = async () => {
+      try {
+        setNewArrivalsLoading(true);
+        setNewArrivalsError(null);
+        console.log('🔄 Fetching new arrivals (first 5 for homepage)...');
+
+        const data: ProductsApiResponse = await apiRequest<ProductsApiResponse>(
+          API_CONFIG.ENDPOINTS.PRODUCTS_NEW_ARRIVALS
+        );
+
+        console.log('✅ New arrivals API response:', data);
+
+        if (data && data.results) {
+          // Limit to first 5 products for homepage
+          const limitedResults = data.results.slice(0, 5);
+          setNewArrivals(limitedResults);
+          console.log('✅ New arrivals data received:', limitedResults.length, 'products (limited to 5 for homepage)');
+          setNewArrivalsError(null);
+        } else {
+          console.warn('⚠️ No results in API response:', data);
+          setNewArrivals([]);
+          setNewArrivalsError('No new arrivals found.');
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch new arrivals:', err);
+        setNewArrivalsError(`Failed to load new arrivals: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setNewArrivals([]);
+      } finally {
+        setNewArrivalsLoading(false);
+      }
+    };
+
+    fetchNewArrivals();
+  }, []);
+
+  // Fetch best sellers from API
+  useEffect(() => {
+    const fetchBestSellers = async () => {
+      try {
+        setBestSellersLoading(true);
+        setBestSellersError(null);
+        console.log('🔄 Fetching best sellers (first 5 for homepage)...');
+
+        const data: ProductsApiResponse = await apiRequest<ProductsApiResponse>(
+          API_CONFIG.ENDPOINTS.PRODUCTS_BEST_SELLERS
+        );
+
+        console.log('✅ Best sellers API response:', data);
+
+        if (data && data.results) {
+          // Limit to first 5 products for homepage
+          const limitedResults = data.results.slice(0, 5);
+          setBestSellers(limitedResults);
+          console.log('✅ Best sellers data received:', limitedResults.length, 'products (limited to 5 for homepage)');
+          setBestSellersError(null);
+        } else {
+          console.warn('⚠️ No results in best sellers API response:', data);
+          setBestSellers([]);
+          setBestSellersError('No best sellers found.');
+        }
+      } catch (err) {
+        console.error('❌ Failed to fetch best sellers:', err);
+        setBestSellersError(`Failed to load best sellers: ${err instanceof Error ? err.message : 'Unknown error'}`);
+        setBestSellers([]);
+      } finally {
+        setBestSellersLoading(false);
+      }
+    };
+
+    fetchBestSellers();
+  }, []);
+
   // Carousel auto-slide effect
   useEffect(() => {
-    const slideInterval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length);
-    }, 5000); // Change slide every 5 seconds
+    if (banners.length > 1) {
+      const slideInterval = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % banners.length);
+      }, 5000); // Change slide every 5 seconds
 
-    return () => clearInterval(slideInterval);
-  }, [bannerSlides.length]);
+      return () => clearInterval(slideInterval);
+    }
+  }, [banners.length]);
 
   // Icon mapping for categories
   const getIconForCategory = (categoryName: string) => {
@@ -121,9 +291,11 @@ const NewHome: React.FC = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
+        console.log('🔄 Fetching categories from:', API_CONFIG.ENDPOINTS.CATEGORIES_TREND);
         const data: CategoryApiResponse = await apiRequest<CategoryApiResponse>(
           API_CONFIG.ENDPOINTS.CATEGORIES_TREND
         );
+        console.log('✅ Categories data received:', data);
 
         // Transform API data to include UI elements
         const enhancedCategories: CategoryWithUI[] = data.categories.map(category => ({
@@ -184,7 +356,7 @@ const NewHome: React.FC = () => {
     fetchCategories();
   }, []);
 
-  const products = [
+  const staticProducts = [
     {
       id: 1,
       name: 'iPhone 15 Pro',
@@ -252,65 +424,132 @@ const NewHome: React.FC = () => {
     }
   ];
 
+  // Get current products based on active tab
+  const getCurrentProducts = () => {
+    switch (activeTab) {
+      case 'featured':
+        return staticProducts;
+      case 'bestSellers':
+        return bestSellers.map(product => ({
+          id: product.id,
+          name: product.name,
+          brand: product.brand,
+          price: `₦${parseFloat(product.current_price).toLocaleString()}`,
+          originalPrice: `₦${parseFloat(product.original_price).toLocaleString()}`,
+          image: product.main_image,
+          rating: Math.min(5, Math.max(3, 3 + (product.views_count / 50))),
+          reviews: product.views_count,
+          discount: product.is_on_sale ? `${Math.round(product.discount_percentage)}% OFF` : 'Best Seller',
+          isNew: product.is_new_arrival,
+          outOfStock: !product.is_in_stock,
+          isBestSeller: product.is_best_seller,
+          isOnSale: product.is_on_sale,
+          discountPercentage: product.discount_percentage
+        }));
+      case 'newArrivals':
+        return newArrivals.map(product => ({
+          id: product.id,
+          name: product.name,
+          brand: product.brand,
+          price: `₦${parseFloat(product.current_price).toLocaleString()}`,
+          originalPrice: `₦${parseFloat(product.original_price).toLocaleString()}`,
+          image: product.main_image,
+          rating: Math.min(5, Math.max(3, 3 + (product.views_count / 50))),
+          reviews: product.views_count,
+          discount: product.is_on_sale ? `${Math.round(product.discount_percentage)}% OFF` : 'New Arrival',
+          isNew: product.is_new_arrival,
+          outOfStock: !product.is_in_stock,
+          isBestSeller: product.is_best_seller,
+          isOnSale: product.is_on_sale,
+          discountPercentage: product.discount_percentage
+        }));
+      default:
+        return staticProducts;
+    }
+  };
+
   return (
     <div className="home-page">
       {/* Banner Carousel Section */}
       <section className="banner-section">
         <div className="banner-container">
-          <div className="banner-carousel">
-            {bannerSlides.map((slide, index) => (
-              <div
-                key={slide.id}
-                className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
-                style={{
-                  background: `linear-gradient(135deg, ${slide.backgroundColor} 0%, ${slide.backgroundColor}dd 100%)`,
-                  color: slide.textColor
-                }}
-              >
-                <div className="slide-content">
-                  <h1 className="slide-title">{slide.title}</h1>
-                  <h2 className="slide-subtitle">{slide.subtitle}</h2>
-                  <p className="slide-description">{slide.description}</p>
-                  <div className="slide-actions">
-                    <Link to="/products" className="cta-button primary">
-                      Shop Now
-                    </Link>
-                    <Link to="/contact" className="cta-button secondary">
-                      Learn More
-                    </Link>
+          {bannersLoading ? (
+            <div className="banner-loading">
+              <p>Loading banners...</p>
+            </div>
+          ) : bannersError ? (
+            <div className="banner-error">
+              <p>{bannersError}</p>
+            </div>
+          ) : (
+            <div className="banner-carousel">
+              {banners.map((banner, index) => (
+                <div
+                  key={banner.id}
+                  className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
+                  style={{
+                    backgroundImage: banner.image ? `url(${banner.image})` : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                  }}
+                >
+                  {/* Overlay for better text readability */}
+                  <div className="slide-overlay"></div>
+
+                  <div className="slide-content">
+                    <h1 className="slide-title">{banner.title}</h1>
+                    <h2 className="slide-subtitle">{banner.subtitle}</h2>
+                    {banner.product_name && (
+                      <p className="slide-product">{banner.product_name}</p>
+                    )}
+                    <div className="slide-actions">
+                      <Link to={banner.generated_link_url} className="cta-button primary">
+                        {banner.button_text}
+                      </Link>
+                      <Link to="/products" className="cta-button secondary">
+                        Browse All
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-
-            {/* Carousel Indicators */}
-            <div className="carousel-indicators">
-              {bannerSlides.map((_, index) => (
-                <button
-                  key={index}
-                  className={`indicator ${index === currentSlide ? 'active' : ''}`}
-                  onClick={() => setCurrentSlide(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
               ))}
-            </div>
 
-            {/* Carousel Navigation */}
-            <button
-              className="carousel-nav prev"
-              onClick={() => setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)}
-              aria-label="Previous slide"
-            >
-              ‹
-            </button>
-            <button
-              className="carousel-nav next"
-              onClick={() => setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)}
-              aria-label="Next slide"
-            >
-              ›
-            </button>
-          </div>
+              {/* Carousel Indicators */}
+              {banners.length > 1 && (
+                <div className="carousel-indicators">
+                  {banners.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`indicator ${index === currentSlide ? 'active' : ''}`}
+                      onClick={() => setCurrentSlide(index)}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Carousel Navigation */}
+              {banners.length > 1 && (
+                <>
+                  <button
+                    className="carousel-nav prev"
+                    onClick={() => setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length)}
+                    aria-label="Previous slide"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    className="carousel-nav next"
+                    onClick={() => setCurrentSlide((prev) => (prev + 1) % banners.length)}
+                    aria-label="Next slide"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -384,15 +623,47 @@ const NewHome: React.FC = () => {
       <section className="our-products">
         <div className="container">
           <h2 className="section-title">Our Products</h2>
-          
+
           <div className="product-tabs">
-            <button className="tab-button active">Featured</button>
-            <button className="tab-button">Best Sellers</button>
-            <button className="tab-button">New Arrivals</button>
+            <button
+              className={`tab-button ${activeTab === 'featured' ? 'active' : ''}`}
+              onClick={() => setActiveTab('featured')}
+            >
+              Featured
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'bestSellers' ? 'active' : ''}`}
+              onClick={() => setActiveTab('bestSellers')}
+            >
+              Best Sellers
+            </button>
+            <button
+              className={`tab-button ${activeTab === 'newArrivals' ? 'active' : ''}`}
+              onClick={() => setActiveTab('newArrivals')}
+            >
+              New Arrivals
+            </button>
           </div>
 
-          <div className="products-grid">
-            {products.map((product) => (
+          {activeTab === 'newArrivals' && newArrivalsLoading ? (
+            <div className="products-loading">
+              <p>Loading new arrivals...</p>
+            </div>
+          ) : activeTab === 'newArrivals' && newArrivalsError ? (
+            <div className="products-error">
+              <p>{newArrivalsError}</p>
+            </div>
+          ) : activeTab === 'bestSellers' && bestSellersLoading ? (
+            <div className="products-loading">
+              <p>Loading best sellers...</p>
+            </div>
+          ) : activeTab === 'bestSellers' && bestSellersError ? (
+            <div className="products-error">
+              <p>{bestSellersError}</p>
+            </div>
+          ) : (
+            <div className="products-grid">
+              {getCurrentProducts().map((product) => (
               <div key={product.id} className="product-card">
                 <div className="product-image-container">
                   <img src={product.image} alt={product.name} className="product-image" />
@@ -408,17 +679,17 @@ const NewHome: React.FC = () => {
                     <Heart size={16} />
                   </button>
                 </div>
-                
+
                 <div className="product-info">
                   <p className="product-brand">{product.brand}</p>
                   <h3 className="product-name">{product.name}</h3>
-                  
+
                   <div className="product-rating">
                     <div className="stars">
                       {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={12} 
+                        <Star
+                          key={i}
+                          size={12}
                           fill={i < Math.floor(product.rating) ? "#FFD700" : "none"}
                           color="#FFD700"
                         />
@@ -426,12 +697,12 @@ const NewHome: React.FC = () => {
                     </div>
                     <span className="rating-text">({product.reviews})</span>
                   </div>
-                  
+
                   <div className="product-pricing">
                     <span className="current-price">{product.price}</span>
                     <span className="original-price">{product.originalPrice}</span>
                   </div>
-                  
+
                   <div className="product-actions">
                     {product.outOfStock ? (
                       <div className="out-of-stock-text">Out of stock</div>
@@ -449,8 +720,21 @@ const NewHome: React.FC = () => {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+
+              {getCurrentProducts().length === 0 && activeTab === 'newArrivals' && !newArrivalsLoading && (
+                <div className="no-products">
+                  <p>No new arrivals available at the moment.</p>
+                </div>
+              )}
+
+              {getCurrentProducts().length === 0 && activeTab === 'bestSellers' && !bestSellersLoading && (
+                <div className="no-products">
+                  <p>No best sellers available at the moment.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </section>
 

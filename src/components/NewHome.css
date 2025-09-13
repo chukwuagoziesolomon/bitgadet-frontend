@@ -36,6 +36,51 @@
   background: #ffffff;
 }
 
+/* Banner Loading and Error States */
+.banner-loading, .banner-error {
+  width: 100%;
+  max-width: 1450px;
+  height: 950px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.banner-loading {
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  color: #666;
+}
+
+.banner-error {
+  background: linear-gradient(135deg, #fee 0%, #fdd 100%);
+  color: #c53030;
+}
+
+/* Products Loading and Error States */
+.products-loading, .products-error, .no-products {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.products-error {
+  color: #e53e3e;
+  background: #fed7d7;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.no-products {
+  background: #f7fafc;
+  border-radius: 8px;
+  border: 2px dashed #cbd5e0;
+}
+
+
+
 .carousel-slide {
   position: absolute;
   top: 0;
@@ -49,6 +94,18 @@
   transform: translateX(100%);
   transition: all 0.6s ease-in-out;
   border-radius: 12px;
+  position: relative;
+}
+
+.slide-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  z-index: 1;
 }
 
 .carousel-slide.active {
@@ -61,6 +118,8 @@
   max-width: 800px;
   padding: 2rem;
   z-index: 2;
+  position: relative;
+  color: white;
 }
 
 .slide-title {
@@ -83,6 +142,14 @@
   margin-bottom: 2.5rem;
   opacity: 0.8;
   line-height: 1.6;
+}
+
+.slide-product {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  font-weight: 500;
+  color: #ffd700;
 }
 
 .slide-actions {
@@ -205,7 +272,7 @@
 }
 
 @media (max-width: 768px) {
-  .banner-carousel {
+  .banner-carousel, .banner-loading, .banner-error {
     height: 500px;
     margin: 0 10px;
   }
@@ -220,6 +287,10 @@
 
   .slide-description {
     font-size: 1.1rem;
+  }
+
+  .slide-product {
+    font-size: 1rem;
   }
 
   .slide-actions {
@@ -248,7 +319,7 @@
 }
 
 @media (max-width: 480px) {
-  .banner-carousel {
+  .banner-carousel, .banner-loading, .banner-error {
     height: 400px;
   }
 
@@ -266,6 +337,10 @@
 
   .slide-description {
     font-size: 1rem;
+  }
+
+  .slide-product {
+    font-size: 0.9rem;
   }
 }
 

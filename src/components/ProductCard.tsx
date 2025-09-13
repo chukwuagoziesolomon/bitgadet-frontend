@@ -60,7 +60,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {showBadges && badges.length > 0 && (
           <div className="product-badges">
             {badges.map((badge, index) => (
-              <span key={index} className={`badge ${badge.includes('OFF') ? 'discount' : badge.includes('New') ? 'new' : 'bestseller'}`}>
+              <span key={index} className={`badge ${
+                badge.includes('OFF') ? 'discount' :
+                badge.includes('New') || badge.includes('Arrival') ? 'new-arrival' :
+                badge.includes('Best') ? 'bestseller' :
+                'default'
+              }`}>
                 {badge}
               </span>
             ))}

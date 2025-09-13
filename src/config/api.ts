@@ -6,7 +6,13 @@ export const API_CONFIG = {
   ENDPOINTS: {
     CATEGORIES_TREND: '/api/categories/trend-indicators/',
     PRODUCTS: '/api/products/',
+    PRODUCTS_NEW_ARRIVALS: '/api/products/?is_new_arrival=true&limit=5',
+    PRODUCTS_NEW_ARRIVALS_ALL: '/api/products/?is_new_arrival=true',
+    PRODUCTS_FEATURED: '/api/products/?featured=true',
+    PRODUCTS_BEST_SELLERS: '/api/products/best-sellers/?limit=5',
+    PRODUCTS_BEST_SELLERS_ALL: '/api/products/best-sellers/',
     CATEGORIES: '/api/categories/',
+    BANNERS_ACTIVE: '/api/banners/active/',
   },
   TIMEOUT: 10000, // 10 seconds
 };
@@ -22,7 +28,9 @@ export const apiRequest = async <T>(
   options: RequestInit = {}
 ): Promise<T> => {
   const url = buildApiUrl(endpoint);
-  
+
+  console.log('🌐 Making API request to:', url);
+
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -33,15 +41,18 @@ export const apiRequest = async <T>(
 
   try {
     const response = await fetch(url, defaultOptions);
-    
+
+    console.log('📡 Response status:', response.status, response.statusText);
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
+    console.log('📦 Response data:', data);
     return data;
   } catch (error) {
-    console.error(`API request failed for ${url}:`, error);
+    console.error(`❌ API request failed for ${url}:`, error);
     throw error;
   }
 };
