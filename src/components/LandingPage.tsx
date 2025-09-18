@@ -169,13 +169,13 @@ const LandingPage: React.FC = () => {
             <div className="product-item phone-2">
               <img
                 src={
-                  !topSwitched && !sidesSwitched && !bottomSwitched ? "/phone1.png" :
-                  topSwitched && !sidesSwitched && !bottomSwitched ? "/Apple.png" :
-                  !topSwitched && sidesSwitched && !bottomSwitched ? "/laptop1.png" :
-                  !topSwitched && !sidesSwitched && bottomSwitched ? "/earpod.png.png" :
-                  topSwitched && sidesSwitched && !bottomSwitched ? "/earpod.png.png" :
-                  topSwitched && !sidesSwitched && bottomSwitched ? "/laptop1.png" :
-                  !topSwitched && sidesSwitched && bottomSwitched ? "/Apple.png" :
+                  topSwitched && sidesSwitched && bottomSwitched ? "/earpod.png.png" :
+                  topSwitched && sidesSwitched ? "/laptop1.png" :
+                  topSwitched && bottomSwitched ? "/Apple.png" :
+                  sidesSwitched && bottomSwitched ? "/phone1.png" :
+                  topSwitched ? "/Apple.png" :
+                  sidesSwitched ? "/laptop1.png" :
+                  bottomSwitched ? "/earpod.png.png" :
                   "/phone1.png"
                 }
                 alt="Product"
@@ -186,13 +186,13 @@ const LandingPage: React.FC = () => {
             <div className="product-item laptop">
               <img
                 src={
-                  !topSwitched && !sidesSwitched && !bottomSwitched ? "/laptop1.png" :
-                  topSwitched && !sidesSwitched && !bottomSwitched ? "/phone1.png" :
-                  !topSwitched && sidesSwitched && !bottomSwitched ? "/Apple.png" :
-                  !topSwitched && !sidesSwitched && bottomSwitched ? "/phone1.png" :
-                  topSwitched && sidesSwitched && !bottomSwitched ? "/Apple.png" :
-                  topSwitched && !sidesSwitched && bottomSwitched ? "/earpod.png.png" :
-                  !topSwitched && sidesSwitched && bottomSwitched ? "/earpod.png.png" :
+                  topSwitched && sidesSwitched && bottomSwitched ? "/phone1.png" :
+                  topSwitched && sidesSwitched ? "/Apple.png" :
+                  topSwitched && bottomSwitched ? "/laptop1.png" :
+                  sidesSwitched && bottomSwitched ? "/earpod.png.png" :
+                  topSwitched ? "/laptop1.png" :
+                  sidesSwitched ? "/Apple.png" :
+                  bottomSwitched ? "/phone1.png" :
                   "/laptop1.png"
                 }
                 alt="Product"
@@ -209,13 +209,13 @@ const LandingPage: React.FC = () => {
             <div className="product-item phone-3">
               <img
                 src={
-                  !topSwitched && !sidesSwitched && !bottomSwitched ? "/Apple.png" :
-                  topSwitched && !sidesSwitched && !bottomSwitched ? "/laptop1.png" :
-                  !topSwitched && sidesSwitched && !bottomSwitched ? "/phone1.png" :
-                  !topSwitched && !sidesSwitched && bottomSwitched ? "/laptop1.png" :
-                  topSwitched && sidesSwitched && !bottomSwitched ? "/phone1.png" :
-                  topSwitched && !sidesSwitched && bottomSwitched ? "/Apple.png" :
-                  !topSwitched && sidesSwitched && bottomSwitched ? "/laptop1.png" :
+                  topSwitched && sidesSwitched && bottomSwitched ? "/laptop1.png" :
+                  topSwitched && sidesSwitched ? "/phone1.png" :
+                  topSwitched && bottomSwitched ? "/earpod.png.png" :
+                  sidesSwitched && bottomSwitched ? "/Apple.png" :
+                  topSwitched ? "/phone1.png" :
+                  sidesSwitched ? "/earpod.png.png" :
+                  bottomSwitched ? "/laptop1.png" :
                   "/Apple.png"
                 }
                 alt="Product"
@@ -226,13 +226,13 @@ const LandingPage: React.FC = () => {
             <div className="product-item headphone">
               <img
                 src={
-                  !topSwitched && !sidesSwitched && !bottomSwitched ? "/earpod.png.png" :
-                  topSwitched && !sidesSwitched && !bottomSwitched ? "/earpod.png.png" :
-                  !topSwitched && sidesSwitched && !bottomSwitched ? "/earpod.png.png" :
-                  !topSwitched && !sidesSwitched && bottomSwitched ? "/Apple.png" :
-                  topSwitched && sidesSwitched && !bottomSwitched ? "/laptop1.png" :
-                  topSwitched && !sidesSwitched && bottomSwitched ? "/phone1.png" :
-                  !topSwitched && sidesSwitched && bottomSwitched ? "/phone1.png" :
+                  topSwitched && sidesSwitched && bottomSwitched ? "/Apple.png" :
+                  topSwitched && sidesSwitched ? "/earpod.png.png" :
+                  topSwitched && bottomSwitched ? "/phone1.png" :
+                  sidesSwitched && bottomSwitched ? "/laptop1.png" :
+                  topSwitched ? "/earpod.png.png" :
+                  sidesSwitched ? "/phone1.png" :
+                  bottomSwitched ? "/Apple.png" :
                   "/earpod.png.png"
                 }
                 alt="Product"
