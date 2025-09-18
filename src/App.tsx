@@ -2,17 +2,27 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
-import Home from './components/NewHome';
+import HomePage from './components/HomePage';
 import CategoryPage from './components/CategoryPage';
 import CategoriesPage from './components/CategoriesPage';
 import BrandsPage from './components/BrandsPage';
 import ProductsPage from './components/ProductsPage';
+import AllProductsPage from './components/AllProductsPage';
 import ServicePage from './components/ServicePage';
 import ContactPage from './components/ContactPage';
 import PhoneTrackingPage from './components/PhoneTrackingPage';
 import PhoneSwapPage from './components/PhoneSwapPage';
 import ShoppingCart from './components/ShoppingCart';
 import Checkout from './components/Checkout';
+import OrderConfirmation from './components/OrderConfirmation';
+import LoginPage from './components/LoginPage';
+import SignUpPage from './components/SignUpPage';
+import Dashboard from './components/Dashboard';
+import ProfileSettings from './components/ProfileSettings';
+import ProductDetails from './components/ProductDetails';
+import AboutUs from './components/AboutUs';
+import OrderHistory from './components/OrderHistory';
+import Wishlist from './components/Wishlist';
 import Footer from './components/Footer';
 import './App.css';
 
@@ -24,16 +34,18 @@ function App() {
           {/* Landing page without navbar */}
           <Route path="/" element={<LandingPage />} />
 
-          {/* All other pages with navbar and footer */}
+          {/* Home page with navbar and footer */}
           <Route path="/home" element={
             <>
               <Navbar />
               <main>
-                <Home />
+                <HomePage />
               </main>
               <Footer />
             </>
           } />
+
+          {/* All other pages with navbar and footer */}
           <Route path="/categories" element={
             <>
               <Navbar />
@@ -70,6 +82,15 @@ function App() {
               <Footer />
             </>
           } />
+          <Route path="/all-products" element={
+            <>
+              <Navbar />
+              <main>
+                <AllProductsPage />
+              </main>
+              <Footer />
+            </>
+          } />
           <Route path="/service" element={
             <>
               <Navbar />
@@ -79,7 +100,25 @@ function App() {
               <Footer />
             </>
           } />
+          <Route path="/about" element={
+            <>
+              <Navbar />
+              <main>
+                <AboutUs />
+              </main>
+              <Footer />
+            </>
+          } />
           <Route path="/contact" element={
+            <>
+              <Navbar />
+              <main>
+                <ContactPage />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/contact-support" element={
             <>
               <Navbar />
               <main>
@@ -120,6 +159,38 @@ function App() {
               <Navbar />
               <main>
                 <Checkout />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/order-confirmation" element={
+            <>
+              <Navbar />
+              <main>
+                <OrderConfirmation />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile-settings" element={<ProfileSettings />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/wishlist" element={
+            <>
+              <Navbar />
+              <main>
+                <Wishlist />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/product/:id" element={
+            <>
+              <Navbar />
+              <main>
+                <ProductDetails />
               </main>
               <Footer />
             </>

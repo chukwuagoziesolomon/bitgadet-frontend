@@ -1,4 +1,5 @@
 import React from 'react';
+import { Smartphone, RefreshCw, MapPin, Truck, CreditCard, RotateCcw, Headphones } from 'lucide-react';
 import './ServicePage.css';
 
 const ServicePage: React.FC = () => {
@@ -7,21 +8,21 @@ const ServicePage: React.FC = () => {
       id: 1,
       title: 'Gadget Sales',
       description: 'We offer the latest phones, smartwatches, and accessories at competitive prices. Our extensive collection includes top brands and models to suit every need and budget.',
-      icon: '📱',
+      icon: Smartphone,
       buttonText: 'Check out our gadgets →'
     },
     {
       id: 2,
       title: 'Phone Swap and Trade In',
       description: 'Trade in your old phone for a newer one at a discounted price. We make upgrading easy and affordable with our hassle-free trade-in program.',
-      icon: '🔄',
+      icon: RefreshCw,
       buttonText: 'Start a phone swap →'
     },
     {
       id: 3,
       title: 'Phone Tracking Support',
       description: 'Lost your phone? We provide tracking support for devices purchased from us. Our team helps you locate and recover your device quickly.',
-      icon: '📍',
+      icon: MapPin,
       buttonText: 'Get help with tracking →'
     }
   ];
@@ -30,26 +31,26 @@ const ServicePage: React.FC = () => {
     {
       id: 1,
       title: 'Express Delivery',
-      description: 'We have thousands of ATMs located across the U.S. wh',
-      icon: '🚚'
+      description: 'Fast and reliable delivery service to your doorstep. We ensure your gadgets reach you safely and on time.',
+      icon: Truck
     },
     {
       id: 2,
       title: 'Pay in Crypto',
-      description: 'We have thousands of ATMs located across the U.S. wh',
-      icon: '₿'
+      description: 'Accept cryptocurrency payments for your convenience. Secure, fast, and modern payment options available.',
+      icon: CreditCard
     },
     {
       id: 3,
-      title: 'Fuss free return',
-      description: 'We have thousands of ATMs located across the U.S. wh',
-      icon: '💱'
+      title: 'Hassle-free Returns',
+      description: 'Easy return policy with no questions asked. We make returns simple and stress-free for our customers.',
+      icon: RotateCcw
     },
     {
       id: 4,
       title: '24/7 Support',
-      description: 'We have thousands of ATMs located across the U.S. wh',
-      icon: '🎧'
+      description: 'Round-the-clock customer support to assist you with any queries or technical issues you may have.',
+      icon: Headphones
     }
   ];
 
@@ -77,7 +78,9 @@ const ServicePage: React.FC = () => {
           <div className="services-grid">
             {services.map((service, index) => (
               <div key={service.id} className="service-card">
-                <div className="service-icon">{service.icon}</div>
+                <div className="service-icon">
+                  <service.icon size={48} />
+                </div>
                 <h3 className="service-title">{service.title}</h3>
                 <p className="service-description">{service.description}</p>
                 <button className="service-btn">{service.buttonText}</button>
@@ -98,7 +101,9 @@ const ServicePage: React.FC = () => {
           <div className="features-grid">
             {features.map((feature) => (
               <div key={feature.id} className="feature-card">
-                <div className="feature-icon">{feature.icon}</div>
+                <div className="feature-icon">
+                  <feature.icon size={40} />
+                </div>
                 <h3 className="feature-title">{feature.title}</h3>
                 <p className="feature-description">{feature.description}</p>
               </div>

@@ -1,21 +1,24 @@
-import React from 'react';
-import { HeartPlus } from 'lucide-react';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import "./ProductCard.css";
 
 interface ProductCardProps {
   id: number;
   name: string;
   brand: string;
   image: string;
-  price: string;
-  originalPrice: string;
+  price: number;
+  originalPrice: number;
   usdtPrice: string;
   rating: number;
   reviews: number;
-  badges?: string[];
+  badges: string[];
   inStock: boolean;
   showBadges?: boolean;
   showWishlist?: boolean;
   showActions?: boolean;
+  onAddToCart?: (productId: number) => void;
+  onToggleWishlist?: (productId: number) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -28,81 +31,145 @@ const ProductCard: React.FC<ProductCardProps> = ({
   usdtPrice,
   rating,
   reviews,
-  badges = [],
+  badges,
   inStock,
   showBadges = true,
   showWishlist = true,
-  showActions = true
+  showActions = true,
+  onAddToCart,
+  onToggleWishlist,
 }) => {
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/product/${id}`);
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onAddToCart) {
+      onAddToCart(id);
+    }
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleWishlist) {
+      onToggleWishlist(id);
+    }
+  };
+
+  const handleWhatsAppEnquiry = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const message = `Hi! I'm interested in the ${name} by ${brand}. Can you provide more details?`;
+    const whatsappUrl = `https://wa.me/2348123456789?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
   const renderStars = (rating: number) => {
     const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      if (i <= rating) {
-        stars.push(<span key={i} className="star filled">★</span>);
-      } else if (i - rating < 1) {
-        stars.push(<span key={i} className="star partial">★</span>);
-      } else {
-        stars.push(<span key={i} className="star">★</span>);
-      }
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <span key={i} className="star filled">
+          ★
+        </span>
+      );
     }
+
+    if (hasHalfStar) {
+      stars.push(
+        <span key="half" className="star half">
+          ★
+        </span>
+      );
+    }
+
+    const emptyStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <span key={`empty-${i}`} className="star empty">
+          ★
+        </span>
+      );
+    }
+
     return stars;
   };
 
   return (
-    <div className="product-card">
-      <div className="product-image">
-        <img src={image} alt={name} />
-        {showWishlist && (
-          <button className="wishlist-btn">
-            <HeartPlus size={20} />
-          </button>
-        )}
-        {showBadges && badges.length > 0 && (
-          <div className="product-badges">
+    <div className="product-card-component">
+      <div className="brands-product-card" onClick={handleCardClick}>
+      {/* Badges + Wishlist */}
+      <div className="card-header">
+        {showBadges && (
+          <div className="badges">
             {badges.map((badge, index) => (
-              <span key={index} className={`badge ${
-                badge.includes('OFF') ? 'discount' :
-                badge.includes('New') || badge.includes('Arrival') ? 'new-arrival' :
-                badge.includes('Best') ? 'bestseller' :
-                'default'
-              }`}>
+              <span key={index} className={`badge ${badge.toLowerCase().replace(/\s+/g, "-")}`}>
                 {badge}
               </span>
             ))}
-            {!inStock && (
-              <span className="badge out-of-stock">Out of Stock</span>
-            )}
           </div>
+        )}
+        {showWishlist && (
+          <button className="wishlist-btn" onClick={handleWishlistToggle}>
+            ♡
+          </button>
         )}
       </div>
-      
-      <div className="product-info">
-        <h3 className="product-name">{brand} {name}</h3>
-        <div className="product-rating">
-          <div className="stars">
-            {renderStars(rating)}
-          </div>
-          <span className="rating-text">({rating}) - {reviews} reviews</span>
+
+      {/* Product Image */}
+      <div className="brands-product-image-container">
+        <img src={image} alt={name} className="brands-product-image" />
+      </div>
+
+      {/* Product Info */}
+      <div className="brands-product-info">
+        <p className="brands-product-brand">{brand}</p>
+        <h3 className="brands-product-name">{name}</h3>
+
+        {/* Rating */}
+        <div className="brands-product-rating">
+          <div className="brands-stars">{renderStars(rating)}</div>
+          <span className="brands-rating-text">
+            ({rating.toFixed(1)}) · {reviews} reviews
+          </span>
         </div>
-        <div className="product-price">
-          <span className="current-price">{price}</span>
-          <span className="original-price">{originalPrice}</span>
-          <span className="usdt-price">{usdtPrice}</span>
+
+        {/* Pricing */}
+        <div className="brands-product-pricing">
+          <span className="brands-current-price">
+            ₦{price.toLocaleString()}
+          </span>
+          <span className="brands-original-price">
+            ₦{originalPrice.toLocaleString()}
+          </span>
         </div>
-        
-        {showActions && (
-          inStock ? (
-            <div className="product-actions">
-              <button className="add-to-cart-btn">Add to Cart</button>
-              <button className="whatsapp-btn">WhatsApp Enquiry</button>
-            </div>
-          ) : (
-            <div className="out-of-stock-text">Out of stock</div>
-          )
-        )}
+        <p className="brands-usdt-price">{usdtPrice}</p>
+      </div>
+
+      {/* Actions */}
+      {showActions && (
+        <div className="brands-actions">
+          <button 
+            className="add-to-cart-btn" 
+            onClick={handleAddToCart}
+            disabled={!inStock}
+          >
+            {inStock ? "Add to Cart" : "Out of Stock"}
+          </button>
+          <button 
+            className="whatsapp-btn" 
+            onClick={handleWhatsAppEnquiry}
+          >
+            WhatsApp Enquiry
+          </button>
+        </div>
+      )}
       </div>
     </div>
   );
 };
 
-export default ProductCard; 
+export default ProductCard;

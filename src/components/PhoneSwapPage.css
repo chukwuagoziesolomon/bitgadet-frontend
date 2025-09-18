@@ -1,6 +1,29 @@
 /* Phone Swap Page Styles */
 .phone-swap-page {
   min-height: 100vh;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* Global font weight override */
+.phone-swap-page h1,
+.phone-swap-page h2,
+.phone-swap-page h3,
+.phone-swap-page h4,
+.phone-swap-page h5,
+.phone-swap-page h6 {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+}
+
+.phone-swap-page p,
+.phone-swap-page span,
+.phone-swap-page div,
+.phone-swap-page label,
+.phone-swap-page input,
+.phone-swap-page textarea,
+.phone-swap-page button {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
 }
 
 /* Page Header */
@@ -11,9 +34,24 @@
 
 .page-header h1 {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 1rem;
   color: #333;
+  font-family: 'Open Sans', sans-serif;
+  text-align: center;
+  position: relative;
+}
+
+.page-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: #00c896;
+  border-radius: 2px;
 }
 
 .page-header p {
@@ -21,6 +59,10 @@
   color: #666;
   max-width: 600px;
   line-height: 1.6;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  text-align: center;
+  margin: 0 auto;
 }
 
 /* Hero Section */

@@ -1,6 +1,7 @@
 .service-page {
   background: #f8f9fa;
   min-height: 100vh;
+  font-family: 'Open Sans', sans-serif;
 }
 
 /* Hero Banner */
@@ -19,9 +20,10 @@
 
 .hero-content h1 {
   font-size: 3.5rem;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 30px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: 'Open Sans', sans-serif;
 }
 
 .hero-content p {
@@ -32,6 +34,8 @@
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
 }
 
 .browse-btn {
@@ -41,10 +45,11 @@
   padding: 15px 30px;
   border-radius: 25px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  font-family: 'Open Sans', sans-serif;
 }
 
 .browse-btn:hover {
@@ -68,10 +73,11 @@
 
 .section-header h2 {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
   color: #333;
   margin-bottom: 15px;
   position: relative;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .section-header h2::after {
@@ -92,6 +98,8 @@
   line-height: 1.6;
   max-width: 600px;
   margin: 0 auto;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
 }
 
 /* What We Offer Section */
@@ -141,16 +149,19 @@
 }
 
 .service-icon {
-  font-size: 3rem;
   margin-bottom: 20px;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #00c896;
 }
 
 .service-title {
   font-size: 1.4rem;
-  font-weight: 700;
+  font-weight: 400;
   color: #333;
   margin-bottom: 15px;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .service-description {
@@ -158,6 +169,8 @@
   color: #666;
   line-height: 1.6;
   margin-bottom: 25px;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
 }
 
 .service-btn {
@@ -166,10 +179,11 @@
   border: none;
   padding: 12px 24px;
   border-radius: 25px;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 0.9rem;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .service-btn:hover {
@@ -204,22 +218,27 @@
 }
 
 .feature-icon {
-  font-size: 2.5rem;
   margin-bottom: 15px;
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #00c896;
 }
 
 .feature-title {
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: 400;
   color: #333;
   margin-bottom: 10px;
+  font-family: 'Open Sans', sans-serif;
 }
 
 .feature-description {
   font-size: 0.9rem;
   color: #666;
   line-height: 1.5;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
 }
 
 /* Immediate Assistance Section */
@@ -232,9 +251,10 @@
 
 .immediate-assistance h2 {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 20px;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: 'Open Sans', sans-serif;
 }
 
 .immediate-assistance p {
@@ -244,6 +264,8 @@
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
 }
 
 .whatsapp-btn {
@@ -253,10 +275,11 @@
   padding: 15px 30px;
   border-radius: 25px;
   font-size: 1.1rem;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
+  font-family: 'Open Sans', sans-serif;
 }
 
 .whatsapp-btn:hover {
@@ -328,10 +351,10 @@
   }
   
   .service-icon {
-    font-size: 2.5rem;
+    /* Icon size handled by React component */
   }
   
   .feature-icon {
-    font-size: 2rem;
+    /* Icon size handled by React component */
   }
 } 

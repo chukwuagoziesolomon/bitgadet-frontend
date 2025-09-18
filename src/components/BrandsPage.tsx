@@ -1,91 +1,125 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './BrandsPage.css';
 
 const BrandsPage: React.FC = () => {
-  const [priceRange, setPriceRange] = useState([5000, 800000]);
-
-  // Sample products data - exactly 9 products for 3x3 grid
-  const products = [
+  // Brand data matching the design from the image
+  const brands = [
     {
       id: 1,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'Apple',
+      logo: '/Apple.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     },
     {
       id: 2,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'Samsung',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     },
     {
       id: 3,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'Xiaomi Redmi',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     },
     {
       id: 4,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'Infinix',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     },
     {
       id: 5,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'Tecno',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     },
     {
       id: 6,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'Itel',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     },
     {
       id: 7,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'Oraimo',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     },
     {
       id: 8,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'HMD',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     },
     {
       id: 9,
-      name: 'Gadget Name',
-      image: '/phone.png',
-      price: 'N180,000',
-      originalPrice: 'N800000',
-      rating: 3.5,
-      reviews: 10
+      name: 'MOL',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
+    },
+    {
+      id: 10,
+      name: 'realme',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
+    },
+    {
+      id: 11,
+      name: 'IZ Energy',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
+    },
+    {
+      id: 12,
+      name: 'Oppo',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
+    },
+    {
+      id: 13,
+      name: 'ZTE',
+      logo: '/phone1.png',
+      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
+      rating: 4.8,
+      productCount: 5,
+      categories: ['Smartphones', 'Laptops']
     }
   ];
 
@@ -110,110 +144,50 @@ const BrandsPage: React.FC = () => {
     return stars;
   };
 
+  const handleViewProducts = (brandName: string) => {
+    console.log(`Viewing products for ${brandName}`);
+    // Add navigation logic here
+  };
+
   return (
     <div className="brands-page">
       <div className="brands-container">
-        {/* Main Content - 3x3 Grid */}
-        <div className="main-content">
-          <div className="brands-products-grid">
-            {products.map((product) => (
-              <div key={product.id} className="brands-product-card">
-                <div className="brands-product-image-container">
-                  <img src={product.image} alt={product.name} className="brands-product-image" />
-                </div>
-
-                <div className="brands-product-info">
-                  <h3 className="brands-product-name">{product.name}</h3>
-
-                  <div className="brands-product-rating">
-                    <div className="brands-stars">
-                      {renderStars(product.rating)}
-                    </div>
-                    <span className="brands-rating-text">({product.rating} stars) • {product.reviews} reviews</span>
-                  </div>
-
-                  <div className="brands-product-pricing">
-                    <span className="brands-current-price">{product.price}</span>
-                    <span className="brands-original-price">{product.originalPrice}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="brands-header">
+          <h1>Our Brands</h1>
+          <p>Discover products from top technology brands</p>
           </div>
+
+        <div className="brands-grid">
+          {brands.map((brand) => (
+            <div key={brand.id} className="brand-card">
+              <div className="brand-logo-container">
+                <img src={brand.logo} alt={brand.name} className="brand-logo" />
         </div>
 
-        {/* Right Sidebar */}
-        <div className="sidebar">
-          {/* Filter by Price */}
-          <div className="filter-section">
-            <h3>Filter by Price</h3>
-            <div className="price-slider-container">
-              <input
-                type="range"
-                min="5000"
-                max="800000"
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                className="price-slider"
-              />
-              <button className="filter-btn">Filter</button>
-              <div className="price-range">
-                Price: N{priceRange[0].toLocaleString()} - N{priceRange[1].toLocaleString()}
+              <div className="brand-content">
+                <h3 className="brand-name">{brand.name}</h3>
+                <p className="brand-description">{brand.description}</p>
+                
+                <div className="brand-rating">
+                  <div className="stars">
+                    {renderStars(brand.rating)}
               </div>
-            </div>
-          </div>
-
-          {/* Filter by Category */}
-          <div className="filter-section">
-            <h3>Filter by:</h3>
-            <div className="filter-options">
-              <select className="filter-select">
-                <option>RAM</option>
-                <option>4GB</option>
-                <option>8GB</option>
-                <option>16GB</option>
-              </select>
-              
-              <select className="filter-select">
-                <option>Storage</option>
-                <option>64GB</option>
-                <option>128GB</option>
-                <option>256GB</option>
-              </select>
-              
-              <select className="filter-select">
-                <option>Categories</option>
-                <option>Phones</option>
-                <option>Laptops</option>
-                <option>Tablets</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Cart Section */}
-          <div className="cart-section">
-            <h3>Cart:</h3>
-            <div className="cart-item">
-              <img src="/phone.png" alt="Redmi 14C" className="cart-item-image" />
-              <div className="cart-item-details">
-                <h4>Redmi 14C</h4>
-                <p><strong>Colors:</strong> Aquamarine Blue</p>
-                <p><strong>Storage:</strong> 256GB</p>
-                <p><strong>RAM:</strong> 8GB</p>
-                <p className="cart-item-price">1 x N170,500.00</p>
-              </div>
+                  <span className="rating-text">{brand.rating} {brand.productCount} products</span>
             </div>
             
-            <div className="cart-summary">
-              <div className="subtotal">
-                <span>Subtotal:</span>
-                <span>N170,000</span>
+                <div className="brand-categories">
+                  {brand.categories.join(' ')}
               </div>
               
-              <button className="view-cart-btn">View Cart</button>
-              <button className="checkout-btn">Checkout</button>
+                <button 
+                  className="view-products-btn"
+                  onClick={() => handleViewProducts(brand.name)}
+                >
+                  View Products
+                </button>
             </div>
           </div>
+          ))}
         </div>
       </div>
     </div>

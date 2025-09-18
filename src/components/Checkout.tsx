@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Truck, Headphones } from 'lucide-react';
 import './Checkout.css';
 
 const Checkout: React.FC = () => {
+  const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState<string>('card');
   const [cryptoMethod, setCryptoMethod] = useState<string>('btc');
   
@@ -20,6 +21,12 @@ const Checkout: React.FC = () => {
   const total = subtotal + shipping + tax;
   const usdtRate = 0.00077; // 1 NGN = 0.00077 USDT
   const totalInUsdt = (total * usdtRate).toLocaleString('en-US', { maximumFractionDigits: 2 });
+
+  const handleCompleteOrder = () => {
+    // In a real app, you would process the payment here
+    // For now, we'll just navigate to the order confirmation page
+    navigate('/order-confirmation');
+  };
 
   return (
     <div className="checkout-container">
@@ -254,7 +261,7 @@ const Checkout: React.FC = () => {
               Subscribe to our newsletter for exclusive deals and updates
             </label>
             
-            <button className="complete-order-btn">
+            <button className="complete-order-btn" onClick={handleCompleteOrder}>
               Complete Order
             </button>
           </div>

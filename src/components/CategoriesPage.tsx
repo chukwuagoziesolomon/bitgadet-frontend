@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Search, ChevronDown, Grid3X3, List } from 'lucide-react';
 import './CategoriesPage.css';
 
 interface CategoryCard {
@@ -85,7 +86,7 @@ const CategoriesPage: React.FC = () => {
         <div className="search-filter-bar">
           <div className="search-section">
             <div className="search-input-container">
-              <span className="search-icon">🔍</span>
+              <Search className="search-icon" size={20} />
               <input 
                 type="text" 
                 placeholder="Search categories..."
@@ -94,19 +95,21 @@ const CategoriesPage: React.FC = () => {
             </div>
           </div>
           <div className="view-controls">
-            <button className="filter-btn">▼</button>
+            <button className="filter-btn">
+              <ChevronDown size={16} />
+            </button>
             <div className="view-toggle">
               <button 
                 className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                 onClick={() => setViewMode('grid')}
               >
-                📊
+                <Grid3X3 size={18} />
               </button>
               <button 
                 className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
                 onClick={() => setViewMode('list')}
               >
-                📋
+                <List size={18} />
               </button>
             </div>
           </div>

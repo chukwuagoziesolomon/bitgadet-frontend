@@ -1,6 +1,29 @@
 /* Phone Tracking Page Styles */
 .phone-tracking-page {
   min-height: 100vh;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* Global font weight override */
+.phone-tracking-page h1,
+.phone-tracking-page h2,
+.phone-tracking-page h3,
+.phone-tracking-page h4,
+.phone-tracking-page h5,
+.phone-tracking-page h6 {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+}
+
+.phone-tracking-page p,
+.phone-tracking-page span,
+.phone-tracking-page div,
+.phone-tracking-page label,
+.phone-tracking-page input,
+.phone-tracking-page textarea,
+.phone-tracking-page button {
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
 }
 
 /* Page Header */
@@ -11,9 +34,24 @@
 
 .page-header h1 {
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 1rem;
   color: #333;
+  font-family: 'Open Sans', sans-serif;
+  text-align: center;
+  position: relative;
+}
+
+.page-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: #00c896;
+  border-radius: 2px;
 }
 
 .page-header p {
@@ -21,6 +59,10 @@
   color: #666;
   max-width: 600px;
   line-height: 1.6;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 400;
+  text-align: center;
+  margin: 0 auto;
 }
 
 /* Info Banner Section */
@@ -40,9 +82,23 @@
 .phone-swap-form h2 {
   text-align: center;
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 1rem;
   color: #333;
+  font-family: 'Open Sans', sans-serif;
+  position: relative;
+}
+
+.phone-swap-form h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: #00c896;
+  border-radius: 2px;
 }
 
 .phone-swap-form > .container > p {
@@ -494,9 +550,23 @@
 .how-tracking-works h2 {
   text-align: center;
   font-size: 2.5rem;
-  font-weight: 700;
+  font-weight: 400;
   margin-bottom: 3rem;
   color: #333;
+  font-family: 'Open Sans', sans-serif;
+  position: relative;
+}
+
+.how-tracking-works h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: #00c896;
+  border-radius: 2px;
 }
 
 .tracking-steps-list {
