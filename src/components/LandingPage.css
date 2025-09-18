@@ -453,7 +453,7 @@ body {
 /* Middle row - Laptop, Watches, Phone */
 .laptop {
   top: 40%;
-  left: 15%;
+  left: 8%;
   width: 140px;
   height: 90px;
   z-index: 3;
@@ -463,18 +463,18 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 160px;
+  width: 140px;
   height: 100px;
   z-index: 4;
   display: flex;
-  gap: 0.3rem;
+  gap: 0.1rem;
   align-items: center;
   justify-content: center;
 }
 
 .watch-1, .watch-2 {
-  width: 70px;
-  height: 70px;
+  width: 65px;
+  height: 65px;
   border-radius: 0;
   box-shadow: none;
   background: transparent !important;
@@ -483,7 +483,7 @@ body {
 
 .phone-3 {
   top: 35%;
-  right: 10%;
+  right: 8%;
   width: 100px;
   height: 120px;
   z-index: 3;

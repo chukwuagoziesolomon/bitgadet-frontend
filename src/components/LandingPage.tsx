@@ -169,33 +169,33 @@ const LandingPage: React.FC = () => {
             <div className="product-item phone-2">
               <img
                 src={
-                  topSwitched && sidesSwitched ? "/laptop1.png" :
-                  topSwitched ? "/Apple.png" :
+                  !topSwitched && !sidesSwitched && !bottomSwitched ? "/phone1.png" :
+                  topSwitched && !sidesSwitched && !bottomSwitched ? "/Apple.png" :
+                  !topSwitched && sidesSwitched && !bottomSwitched ? "/laptop1.png" :
+                  !topSwitched && !sidesSwitched && bottomSwitched ? "/earpod.png.png" :
+                  topSwitched && sidesSwitched && !bottomSwitched ? "/earpod.png.png" :
+                  topSwitched && !sidesSwitched && bottomSwitched ? "/laptop1.png" :
+                  !topSwitched && sidesSwitched && bottomSwitched ? "/Apple.png" :
                   "/phone1.png"
                 }
-                alt={
-                  topSwitched && sidesSwitched ? "Laptop" :
-                  topSwitched ? "Apple Product" :
-                  "Phone"
-                }
+                alt="Product"
               />
             </div>
 
-            {/* Left side - Laptop (rotates with Phone, Apple and Earbuds) */}
+            {/* Left side - Laptop (rotates with other products) */}
             <div className="product-item laptop">
               <img
                 src={
-                  topSwitched && sidesSwitched && bottomSwitched ? "/phone1.png" :
-                  sidesSwitched && bottomSwitched ? "/earpod.png.png" :
-                  sidesSwitched ? "/Apple.png" :
+                  !topSwitched && !sidesSwitched && !bottomSwitched ? "/laptop1.png" :
+                  topSwitched && !sidesSwitched && !bottomSwitched ? "/phone1.png" :
+                  !topSwitched && sidesSwitched && !bottomSwitched ? "/Apple.png" :
+                  !topSwitched && !sidesSwitched && bottomSwitched ? "/phone1.png" :
+                  topSwitched && sidesSwitched && !bottomSwitched ? "/Apple.png" :
+                  topSwitched && !sidesSwitched && bottomSwitched ? "/earpod.png.png" :
+                  !topSwitched && sidesSwitched && bottomSwitched ? "/earpod.png.png" :
                   "/laptop1.png"
                 }
-                alt={
-                  topSwitched && sidesSwitched && bottomSwitched ? "Phone" :
-                  sidesSwitched && bottomSwitched ? "Earbuds" :
-                  sidesSwitched ? "Apple Product" :
-                  "Laptop"
-                }
+                alt="Product"
               />
             </div>
 
@@ -205,39 +205,37 @@ const LandingPage: React.FC = () => {
               <img src="/phonewatch2.png" alt="Smartwatch" className="watch-2" />
             </div>
 
-            {/* Right side - Apple product (rotates with Phone, Laptop and Earbuds) */}
+            {/* Right side - Apple product (rotates with other products) */}
             <div className="product-item phone-3">
               <img
                 src={
-                  topSwitched && sidesSwitched && bottomSwitched ? "/Apple.png" :
-                  sidesSwitched && bottomSwitched ? "/laptop1.png" :
-                  sidesSwitched ? "/earpod.png.png" :
+                  !topSwitched && !sidesSwitched && !bottomSwitched ? "/Apple.png" :
+                  topSwitched && !sidesSwitched && !bottomSwitched ? "/laptop1.png" :
+                  !topSwitched && sidesSwitched && !bottomSwitched ? "/phone1.png" :
+                  !topSwitched && !sidesSwitched && bottomSwitched ? "/laptop1.png" :
+                  topSwitched && sidesSwitched && !bottomSwitched ? "/phone1.png" :
+                  topSwitched && !sidesSwitched && bottomSwitched ? "/Apple.png" :
+                  !topSwitched && sidesSwitched && bottomSwitched ? "/laptop1.png" :
                   "/Apple.png"
                 }
-                alt={
-                  topSwitched && sidesSwitched && bottomSwitched ? "Apple Product" :
-                  sidesSwitched && bottomSwitched ? "Laptop" :
-                  sidesSwitched ? "Earbuds" :
-                  "Apple Product"
-                }
+                alt="Product"
               />
             </div>
 
-            {/* Bottom - Headphones (rotates with Phone, Laptop and Apple) */}
+            {/* Bottom - Headphones (rotates with other products) */}
             <div className="product-item headphone">
               <img
                 src={
-                  topSwitched && sidesSwitched && bottomSwitched ? "/earpod.png.png" :
-                  sidesSwitched && bottomSwitched ? "/Apple.png" :
-                  sidesSwitched ? "/laptop1.png" :
+                  !topSwitched && !sidesSwitched && !bottomSwitched ? "/earpod.png.png" :
+                  topSwitched && !sidesSwitched && !bottomSwitched ? "/earpod.png.png" :
+                  !topSwitched && sidesSwitched && !bottomSwitched ? "/earpod.png.png" :
+                  !topSwitched && !sidesSwitched && bottomSwitched ? "/Apple.png" :
+                  topSwitched && sidesSwitched && !bottomSwitched ? "/laptop1.png" :
+                  topSwitched && !sidesSwitched && bottomSwitched ? "/phone1.png" :
+                  !topSwitched && sidesSwitched && bottomSwitched ? "/phone1.png" :
                   "/earpod.png.png"
                 }
-                alt={
-                  topSwitched && sidesSwitched && bottomSwitched ? "Earbuds" :
-                  sidesSwitched && bottomSwitched ? "Apple Product" :
-                  sidesSwitched ? "Laptop" :
-                  "Earbuds"
-                }
+                alt="Product"
               />
             </div>
           </div>
@@ -394,7 +392,7 @@ const LandingPage: React.FC = () => {
           <div className="deal-banner-left">
             <div className="discount-badge">-30% OFF</div>
             <img src="/salesoff.png" alt="Premium Wireless Headphones" className="deal-product-image" />
-          </div>
+            </div>
 
           {/* Right Section - Product Details */}
           <div className="deal-banner-right">
@@ -404,16 +402,16 @@ const LandingPage: React.FC = () => {
               <div className="deal-title-timer-pricing-row">
                 <div className="deal-left-section">
                   <h2 className="deal-product-title">
-                    Premium Wireless<br />
+                Premium Wireless<br />
                     <span className="deal-title-highlight">Headphones</span>
-                  </h2>
-                  
+              </h2>
+              
                   <p className="deal-product-description">
                     Experience crystal clear sound with noise<br />
                     cancellation technology and 40-hour battery life.
-                  </p>
-                </div>
-                
+              </p>
+            </div>
+
                 <div className="deal-right-section">
                   <div className="deal-offer-timer">
                     <span className="deal-timer-label">Offer ends in:</span>
@@ -438,8 +436,8 @@ const LandingPage: React.FC = () => {
                     <div className="deal-original-price">₦105,000</div>
                     <div className="deal-crypto-price">40.00 USDT</div>
                   </div>
-                </div>
               </div>
+            </div>
 
               <button className="deal-buy-now-btn">Buy Now</button>
             </div>
