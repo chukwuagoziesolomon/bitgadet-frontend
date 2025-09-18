@@ -80,7 +80,7 @@ const Navbar: React.FC = () => {
                   className="search-input"
                 />
                 <button className="search-button">
-                  <Search size={18} />
+                  <Search size={20} />
                 </button>
               </div>
             </div>

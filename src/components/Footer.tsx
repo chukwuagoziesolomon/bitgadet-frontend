@@ -37,7 +37,6 @@ const Footer: React.FC = () => {
         <div className="footer-section">
           <div className="footer-logo-container">
             <img src="/logo.png" alt="BitGadgetz Logo" className="footer-logo" />
-            <span className="footer-logo-text">BitGadgetz</span>
           </div>
           <p className="footer-description">
             BitGadgetz is a modern eCommerce platform that sells gadgets and accessories with crypto and Naira payment options.

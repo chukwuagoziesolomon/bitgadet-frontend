@@ -304,8 +304,8 @@
   
   .contact-page .contact-icon {
     align-self: center;
-  }
-  
+}
+
   .contact-page .cta-content h2 {
     font-size: 2rem;
   }
@@ -326,12 +326,12 @@
   }
   
   .contact-page .hero-content h1 {
-    font-size: 2rem;
+  font-size: 2rem;
   }
   
   .contact-page .contact-info h2,
   .contact-page .contact-form-section h2 {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
   }
   
   .contact-page .contact-item {

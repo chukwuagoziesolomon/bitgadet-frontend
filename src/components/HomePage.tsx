@@ -1,10 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Smartphone, Laptop, Gamepad2, Watch, Headphones } from 'lucide-react';
 import ProductCard from './ProductCard';
 import './HomePage.css';
 
 const HomePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('featured');
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Slideshow data with individual content
+  const slideshowData = [
+    {
+      image: "/phone1.png",
+      title: "Latest Smartphones",
+      description: "Discover the newest iPhone and Android devices with cutting-edge technology",
+      buttonText: "Shop Phones"
+    },
+    {
+      image: "/laptop1.png",
+      title: "Premium Laptops",
+      description: "High-performance laptops for work, gaming, and creativity",
+      buttonText: "Shop Laptops"
+    },
+    {
+      image: "/phonewatch2.png",
+      title: "Smart Watches",
+      description: "Track your fitness and stay connected with our smart wearable collection",
+      buttonText: "Shop Watches"
+    },
+    {
+      image: "/headphone.png",
+      title: "Audio Accessories",
+      description: "Premium headphones and earbuds for the ultimate listening experience",
+      buttonText: "Shop Audio"
+    },
+    {
+      image: "/tablet.png",
+      title: "Tablets & iPads",
+      description: "Perfect for work, entertainment, and creative projects on the go",
+      buttonText: "Shop Tablets"
+    }
+  ];
+
+  // Auto-advance slideshow every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prevSlide) => 
+        prevSlide === slideshowData.length - 1 ? 0 : prevSlide + 1
+      );
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [slideshowData.length]);
 
   // Sample product data
   const products = [
@@ -85,11 +131,38 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="home-page">
-      {/* Hero Section - Left blank for banner */}
+      {/* Hero Section - Slideshow Banner */}
       <section className="hero-section">
-        <div className="hero-container">
-          <div className="hero-content">
-            {/* Banner content will be added here */}
+        <div className="hero-slideshow">
+          <div className="slideshow-container">
+            <div className="slide-wrapper">
+              {slideshowData.map((slide, index) => (
+                <div
+                  key={index}
+                  className={`slide ${index === currentSlide ? 'active' : ''}`}
+                >
+                  <img src={slide.image} alt={slide.title} className="slide-image" />
+                  <div className="slide-overlay">
+                    <div className="slide-content">
+                      <h1>{slide.title}</h1>
+                      <p>{slide.description}</p>
+                      <button className="cta-button">{slide.buttonText}</button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Slide indicators */}
+            <div className="slide-indicators">
+              {slideshowData.map((_, index) => (
+                <button
+                  key={index}
+                  className={`indicator ${index === currentSlide ? 'active' : ''}`}
+                  onClick={() => setCurrentSlide(index)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -104,7 +177,7 @@ const HomePage: React.FC = () => {
               <div className="category-image">
                 <img src="/phone1.png" alt="Phones" />
                 <div className="category-overlay">
-                  <Smartphone className="category-icon" size={32} />
+                  <Smartphone className="category-icon" size={32} color="#00C896" />
         </div>
             </div>
             <h3>Phones</h3>
@@ -120,7 +193,7 @@ const HomePage: React.FC = () => {
               <div className="category-image">
                 <img src="/laptop1.png" alt="Laptops" />
                 <div className="category-overlay">
-                  <Laptop className="category-icon" size={32} />
+                  <Laptop className="category-icon" size={32} color="#00C896" />
                 </div>
             </div>
             <h3>Laptops</h3>
@@ -136,7 +209,7 @@ const HomePage: React.FC = () => {
               <div className="category-image">
               <img src="/tablet.png" alt="Tablets" />
                 <div className="category-overlay">
-                  <Smartphone className="category-icon" size={32} />
+                  <Smartphone className="category-icon" size={32} color="#00C896" />
                 </div>
             </div>
             <h3>Tablets</h3>
@@ -152,7 +225,7 @@ const HomePage: React.FC = () => {
               <div className="category-image">
                 <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80" alt="Games" />
                 <div className="category-overlay">
-                  <Gamepad2 className="category-icon" size={32} />
+                  <Gamepad2 className="category-icon" size={32} color="#00C896" />
                 </div>
             </div>
             <h3>Games</h3>
@@ -168,7 +241,7 @@ const HomePage: React.FC = () => {
               <div className="category-image">
                 <img src="/phonewatch2.png" alt="Smartwatches" />
                 <div className="category-overlay">
-                  <Watch className="category-icon" size={32} />
+                  <Watch className="category-icon" size={32} color="#00C896" />
                 </div>
             </div>
             <h3>Smartwatches</h3>
@@ -184,7 +257,7 @@ const HomePage: React.FC = () => {
               <div className="category-image">
               <img src="/headphone.png" alt="Accessories" />
                 <div className="category-overlay">
-                  <Headphones className="category-icon" size={32} />
+                  <Headphones className="category-icon" size={32} color="#00C896" />
                 </div>
             </div>
             <h3>Accessories</h3>

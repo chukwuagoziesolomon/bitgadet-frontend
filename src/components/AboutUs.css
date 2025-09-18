@@ -265,6 +265,12 @@
   flex-shrink: 0;
 }
 
+.about-us .feature-icon svg {
+  color: white;
+  width: 24px;
+  height: 24px;
+}
+
 .about-us .feature-content {
   flex: 1;
 }

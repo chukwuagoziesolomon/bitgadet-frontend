@@ -65,7 +65,7 @@
 .product-card-component .wishlist-btn {
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 28px;
   cursor: pointer;
   color: #666;
   padding: 5px;
@@ -187,21 +187,29 @@
 /* Actions */
 .product-card-component .brands-actions {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 9.78px;
   margin-top: 20px;
 }
 
 .product-card-component .add-to-cart-btn {
-  flex: 1;
-  padding: 12px 16px;
+  width: 117.32950592041016px;
+  height: 35.1988525390625px;
+  padding-left: 86.04px;
+  padding-right: 86.04px;
   background: #20c997;
   color: white;
-  border: none;
-  border-radius: 6px;
+  border: 0.98px solid transparent;
+  border-radius: 5.87px;
   font-weight: 400;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .product-card-component .add-to-cart-btn:hover {
@@ -218,16 +226,23 @@
 }
 
 .product-card-component .whatsapp-btn {
-  flex: 1;
-  padding: 12px 16px;
+  width: 117.32950592041016px;
+  height: 35.1988525390625px;
+  padding-left: 86.04px;
+  padding-right: 86.04px;
   background: white;
   color: #20c997;
-  border: 2px solid #20c997;
-  border-radius: 6px;
+  border: 0.98px solid #20c997;
+  border-radius: 5.87px;
   font-weight: 400;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+  opacity: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .product-card-component .whatsapp-btn:hover {
@@ -257,7 +272,14 @@
   
   .product-card-component .add-to-cart-btn,
   .product-card-component .whatsapp-btn {
-    width: 100%;
+    width: 117.32950592041016px;
+    height: 35.1988525390625px;
+    padding-left: 86.04px;
+    padding-right: 86.04px;
+    border-radius: 5.87px;
+    border-width: 0.98px;
+    opacity: 1;
+    font-size: 11px;
   }
 }
 
@@ -294,12 +316,18 @@
   }
   
   .product-card-component .brands-actions {
-    gap: 6px;
+    gap: 9.78px;
   }
   
   .product-card-component .add-to-cart-btn,
   .product-card-component .whatsapp-btn {
-    padding: 8px 12px;
-    font-size: 12px;
+    width: 117.32950592041016px;
+    height: 35.1988525390625px;
+    padding-left: 86.04px;
+    padding-right: 86.04px;
+    border-radius: 5.87px;
+    border-width: 0.98px;
+    opacity: 1;
+    font-size: 10px;
   }
 }

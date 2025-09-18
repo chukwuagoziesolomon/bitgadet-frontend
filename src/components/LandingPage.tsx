@@ -387,56 +387,61 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Premium Headphones Banner */}
-      <section className="headphones-banner">
-        <div className="banner-container">
+      {/* Deal of the Day Banner */}
+      <section className="deal-banner">
+        <div className="deal-banner-container">
           {/* Left Section - Product Image */}
-          <div className="banner-left">
-            <div className="discount-tag">-30% OFF</div>
-            <div className="product-image">
-              <img src="/headphone.png" alt="Premium Wireless Headphones" />
-              </div>
-            </div>
+          <div className="deal-banner-left">
+            <div className="discount-badge">-30% OFF</div>
+            <img src="/salesoff.png" alt="Premium Wireless Headphones" className="deal-product-image" />
+          </div>
 
           {/* Right Section - Product Details */}
-          <div className="banner-right">
+          <div className="deal-banner-right">
             <div className="deal-tag">Deal of the Day</div>
             
-            <div className="product-info">
-              <h2 className="product-title">
-                Premium Wireless<br />
-                <span className="title-highlight">Headphones</span>
-              </h2>
-              
-              <p className="product-description">
-                Experience crystal clear sound with noise cancellation technology and 40-hour battery life.
-              </p>
+            <div className="deal-product-info">
+              <div className="deal-title-timer-pricing-row">
+                <div className="deal-left-section">
+                  <h2 className="deal-product-title">
+                    Premium Wireless<br />
+                    <span className="deal-title-highlight">Headphones</span>
+                  </h2>
+                  
+                  <p className="deal-product-description">
+                    Experience crystal clear sound with noise<br />
+                    cancellation technology and 40-hour battery life.
+                  </p>
+                </div>
+                
+                <div className="deal-right-section">
+                  <div className="deal-offer-timer">
+                    <span className="deal-timer-label">Offer ends in:</span>
+                    <div className="deal-countdown">
+                      <div className="deal-time-box">
+                        <span className="deal-time-number">23</span>
+                        <span className="deal-time-label">Hours</span>
+                      </div>
+                      <div className="deal-time-box">
+                        <span className="deal-time-number">46</span>
+                        <span className="deal-time-label">Minutes</span>
+                      </div>
+                      <div className="deal-time-box">
+                        <span className="deal-time-number">51</span>
+                        <span className="deal-time-label">Seconds</span>
+                      </div>
+                    </div>
+                  </div>
 
-              <div className="pricing">
-                <div className="current-price">₦75,000</div>
-                <div className="original-price">₦105,000</div>
-                <div className="crypto-price">0.0012 BTC</div>
-            </div>
-
-              <div className="offer-timer">
-                <span className="timer-label">Offer ends in:</span>
-                <div className="countdown">
-                  <div className="time-box">
-                    <span className="time-number">23</span>
-                    <span className="time-label">Hours</span>
+                  <div className="deal-pricing">
+                    <div className="deal-current-price">₦75,000</div>
+                    <div className="deal-original-price">₦105,000</div>
+                    <div className="deal-crypto-price">40.00 USDT</div>
                   </div>
-                  <div className="time-box">
-                    <span className="time-number">59</span>
-                    <span className="time-label">Minutes</span>
-                  </div>
-                  <div className="time-box">
-                    <span className="time-number">19</span>
-                    <span className="time-label">Seconds</span>
-                  </div>
+                </div>
               </div>
-            </div>
 
-              <button className="buy-now-btn">Buy Now</button>
+              <button className="deal-buy-now-btn">Buy Now</button>
             </div>
           </div>
         </div>
