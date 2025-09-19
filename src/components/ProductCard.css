@@ -258,6 +258,16 @@
     margin: 0;
   }
   
+  /* Reduce image container space on tablets */
+  .product-card-component .brands-product-image-container {
+    min-height: 150px; /* Reduced from 200px */
+    padding: 15px; /* Reduced from 20px */
+  }
+  
+  .product-card-component .brands-product-image {
+    max-height: 130px; /* Reduced from 180px */
+  }
+  
   .product-card-component .brands-product-name {
     font-size: 16px;
   }
@@ -287,6 +297,19 @@
 @media (max-width: 576px) {
   .product-card-component .brands-product-card {
     padding: 12px;
+  }
+  
+  /* Reduce image container space on mobile */
+  .product-card-component .brands-product-image-container {
+    min-height: 120px; /* Reduced from 200px */
+    padding: 10px; /* Reduced from 20px */
+    margin: 10px 0; /* Reduced from 15px 0 */
+  }
+  
+  .product-card-component .brands-product-image {
+    max-height: 100px; /* Reduced from 180px */
+    width: 100%;
+    object-fit: cover; /* Changed from contain to cover for better space usage */
   }
   
   .product-card-component .brands-product-name {

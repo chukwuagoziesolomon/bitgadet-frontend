@@ -494,10 +494,15 @@
   .dashboard-container {
     padding: 1rem;
     gap: 1rem;
+    flex-direction: column; /* Stack vertically on mobile */
   }
 
   .dashboard-sidebar {
-    padding: 1rem;
+    display: none; /* Sidebar is hidden on mobile */
+  }
+  
+  .dashboard-main {
+    width: 100%; /* Take full width when sidebar is hidden */
   }
 
   .sidebar-nav {

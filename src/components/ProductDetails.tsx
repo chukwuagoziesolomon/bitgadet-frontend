@@ -273,9 +273,9 @@ const ProductDetails: React.FC = () => {
                   {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
                 </div>
               </div>
-              <div className="price-usdt">
+              <div className="price-usdt-bar">
                 <span className="crypto-icon">₿</span>
-                USDT: {product.usdtPrice}
+                <span className="usdt-text">USDT: {product.usdtPrice}</span>
               </div>
             </div>
 

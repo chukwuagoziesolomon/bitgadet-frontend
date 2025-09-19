@@ -144,14 +144,14 @@
 }
 
 .logo-image {
-  height: 40px;
+  height: 32px; /* Reduced from 40px */
   width: auto;
 }
 
 .search-container {
   flex: 1;
-  max-width: 600px;
-  margin: 0 30px;
+  max-width: 700px; /* Increased from 600px */
+  margin: 0 20px; /* Reduced from 30px */
   display: flex;
   align-items: center;
 }
@@ -239,9 +239,9 @@
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 15px; /* Reduced from 20px */
   flex-shrink: 0;
-  margin-left: 20px;
+  margin-left: 15px; /* Reduced from 20px */
 }
 
 .nav-icon {
@@ -253,9 +253,9 @@
   transition: all 0.2s ease;
   background: #f3f4f6;
   border-radius: 8px;
-  padding: 10px;
-  width: 40px;
-  height: 40px;
+  padding: 8px; /* Reduced from 10px */
+  width: 36px; /* Reduced from 40px */
+  height: 36px; /* Reduced from 40px */
 }
 
 .nav-icon:hover {
@@ -270,11 +270,19 @@
   border-bottom: 1px solid #E8E8E8;
 }
 
+/* Hide bottom navigation on mobile since we have hamburger menu */
+@media (max-width: 1024px) {
+  .navbar-bottom {
+    display: none;
+  }
+}
+
 .navbar-bottom .navbar-container {
   height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 2rem; /* Add gap for better spacing */
 }
 
 .categories-dropdown {
@@ -375,6 +383,7 @@
   display: flex;
   align-items: center;
   gap: 32px;
+  margin-left: auto; /* Move to the right */
 }
 
 .main-navigation a {
@@ -498,13 +507,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  gap: 8px;
+  gap: 4px; /* Reduced from 8px */
 }
 
 .mobile-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px; /* Reduced from 6px */
 }
 
 .menu-button {
@@ -573,9 +582,10 @@
 .mobile-center {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px; /* Reduced from 12px */
   flex: 1;
-  justify-content: center;
+  justify-content: flex-end; /* Changed from center to flex-end to move right */
+  margin-right: 8px; /* Add margin to push further right */
 }
 
 .mobile-nav-link {
