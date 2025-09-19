@@ -11,7 +11,7 @@
 .home-page .hero-section {
   position: relative;
   width: 100%;
-  height: 600px;
+  height: 700px; /* Increased height to eliminate white spaces */
   margin: 32px 0 48px;
   border-radius: 16px;
   overflow: hidden;
@@ -53,7 +53,7 @@
 .home-page .slide-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: contain; /* Back to contain to show full images */
   object-position: center;
   background: #f8f9fa;
 }
@@ -581,7 +581,7 @@
 /* Responsive styles for slideshow */
 @media (max-width: 768px) {
   .home-page .hero-section {
-    height: 400px;
+    height: 450px; /* Increased proportionally */
     margin: 16px 0 32px;
   }
   
@@ -614,7 +614,7 @@
 
 @media (max-width: 480px) {
   .home-page .hero-section {
-    height: 300px;
+    height: 350px; /* Increased proportionally */
     margin: 12px 0 24px;
   }
   

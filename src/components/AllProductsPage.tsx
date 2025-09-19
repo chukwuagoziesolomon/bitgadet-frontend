@@ -177,7 +177,7 @@ const AllProductsPage: React.FC = () => {
       <div className="search-section">
         <div className="search-container">
           <div className="search-input-container">
-            <Search className="search-icon" size={20} />
+            <Search className="search-icon" size={24} />
             <input 
               type="text" 
               placeholder="Search products..."
