@@ -1,69 +1,130 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Grid3X3, List } from 'lucide-react';
+import { API_CONFIG, apiRequest } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './CategoriesPage.css';
 
-interface CategoryCard {
+interface Category {
   id: number;
   name: string;
+  display_name: string;
   description: string;
   image: string;
-  startingPrice: string;
-  productCount: number;
+  is_active: boolean;
+  product_count: number;
+  created_at: string;
+  updated_at: string;
 }
 
 const CategoriesPage: React.FC = () => {
+  const { showError } = useToast();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const categories: CategoryCard[] = [
-    {
-      id: 1,
-      name: 'Laptops',
-      description: 'High-performance laptops and notebooks',
-      image: 'laptop.png',
-      startingPrice: '₦1,450,000',
-      productCount: 28
-    },
-    {
-      id: 2,
-      name: 'Phones',
-      description: 'Latest smart phones and mobile design',
-      image: 'phone.png',
-      startingPrice: '₦100,000',
-      productCount: 28
-    },
-    {
-      id: 3,
-      name: 'Tablets',
-      description: 'High-performance laptops and notebooks',
-      image: 'laptop.png',
-      startingPrice: '₦1,450,000',
-      productCount: 28
-    },
-    {
-      id: 4,
-      name: 'Smart watches',
-      description: 'Smart wearables and fitness trackers',
-      image: 'watch.png',
-      startingPrice: '₦1,450,000',
-      productCount: 28
-    },
-    {
-      id: 5,
-      name: 'Accessories',
-      description: 'Phone cases, charges and more',
-      image: 'headphone.png',
-      startingPrice: '₦100,000',
-      productCount: 28
-    },
-    {
-      id: 6,
-      name: 'Games',
-      description: 'High-performance laptops and notebooks',
-      image: 'games.png',
-      startingPrice: '₦1,450,000',
-      productCount: 28
-    }
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const data = await apiRequest<Category[] | { results: Category[] }>(API_CONFIG.ENDPOINTS.CATEGORIES);
+
+        // Handle both direct array response and paginated response
+        const categoriesArray = Array.isArray(data) ? data : (data as any).results || [];
+        setCategories(categoriesArray);
+        setError(null);
+      } catch (err: any) {
+        console.error('Failed to fetch categories:', err);
+        setError('Failed to load categories. Please try again later.');
+        showError('Error', 'Failed to load categories. Please try again later.');
+        // Ensure categories is always an array
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, [showError]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="categories-page">
+        {/* Hero Banner */}
+        <div className="hero-banner">
+          <div className="hero-content">
+            <h1>Product Categories</h1>
+            <p>Loading categories...</p>
+            <div className="hero-features">
+              <span>Categories</span>
+              <span>Loading...</span>
+              <span>Fast Delivery</span>
+            </div>
+          </div>
+        </div>
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="categories-page">
+        {/* Hero Banner */}
+        <div className="hero-banner">
+          <div className="hero-content">
+            <h1>Product Categories</h1>
+            <p>Explore our wide range of tech products and gadgets</p>
+            <div className="hero-features">
+              <span>Categories</span>
+              <span>Error Loading</span>
+              <span>Fast Delivery</span>
+            </div>
+          </div>
+        </div>
+        <div className="error-state">
+          <div className="error-icon">⚠️</div>
+          <h3>Unable to Load Categories</h3>
+          <p>{error}</p>
+          <button
+            className="retry-btn"
+            onClick={() => window.location.reload()}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (categories.length === 0) {
+    return (
+      <div className="categories-page">
+        {/* Hero Banner */}
+        <div className="hero-banner">
+          <div className="hero-content">
+            <h1>Product Categories</h1>
+            <p>Explore our wide range of tech products and gadgets</p>
+            <div className="hero-features">
+              <span>Categories</span>
+              <span>No Categories</span>
+              <span>Fast Delivery</span>
+            </div>
+          </div>
+        </div>
+        <div className="empty-state">
+          <div className="empty-icon">📦</div>
+          <h3>No Categories Available</h3>
+          <p>We're currently updating our category catalog. Please check back soon!</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="categories-page">
@@ -73,8 +134,8 @@ const CategoriesPage: React.FC = () => {
           <h1>Product Categories</h1>
           <p>Explore our wide range of tech products and gadgets</p>
           <div className="hero-features">
-            <span>Categories</span>
-            <span>216+ Products</span>
+            <span>{categories.length} Categories</span>
+            <span>{categories.reduce((total, cat) => total + cat.product_count, 0)}+ Products</span>
             <span>Fast Delivery</span>
           </div>
         </div>
@@ -87,8 +148,8 @@ const CategoriesPage: React.FC = () => {
           <div className="search-section">
             <div className="search-input-container">
               <Search className="search-icon" size={20} />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search categories..."
                 className="search-input"
               />
@@ -99,13 +160,13 @@ const CategoriesPage: React.FC = () => {
               <ChevronDown size={16} />
             </button>
             <div className="view-toggle">
-              <button 
+              <button
                 className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                 onClick={() => setViewMode('grid')}
               >
                 <Grid3X3 size={18} />
               </button>
-              <button 
+              <button
                 className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
                 onClick={() => setViewMode('list')}
               >
@@ -120,17 +181,21 @@ const CategoriesPage: React.FC = () => {
           {categories.map((category) => (
             <div key={category.id} className="category-card">
               <div className="category-image">
-                <img src={category.image} alt={category.name} />
+                <img
+                  src={category.image}
+                  alt={category.display_name}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+                  }}
+                />
                 <div className="product-count-badge">
-                  {category.productCount} Products
+                  {category.product_count} Products
                 </div>
               </div>
               <div className="category-info">
-                <h3 className="category-name">{category.name}</h3>
+                <h3 className="category-name">{category.display_name}</h3>
                 <p className="category-description">{category.description}</p>
-                <div className="category-price">
-                  Starting from {category.startingPrice}
-                </div>
               </div>
             </div>
           ))}

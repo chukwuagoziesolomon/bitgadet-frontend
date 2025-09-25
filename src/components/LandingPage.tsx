@@ -390,7 +390,6 @@ const LandingPage: React.FC = () => {
         <div className="deal-banner-container">
           {/* Left Section - Product Image */}
           <div className="deal-banner-left">
-            <div className="discount-badge">-30% OFF</div>
             <img src="/salesoff.png" alt="Premium Wireless Headphones" className="deal-product-image" />
             </div>
 

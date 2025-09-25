@@ -24,9 +24,13 @@ import AboutUs from './components/AboutUs';
 import OrderHistory from './components/OrderHistory';
 import Wishlist from './components/Wishlist';
 import Footer from './components/Footer';
+import ToastContainer from './components/ToastContainer';
+import { ToastProvider, useToast } from './hooks/useToast';
 import './App.css';
 
-function App() {
+const AppContent: React.FC = () => {
+  const { toasts, removeToast } = useToast();
+
   return (
     <Router>
       <div className="App">
@@ -196,8 +200,17 @@ function App() {
             </>
           } />
         </Routes>
+        <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
       </div>
     </Router>
+  );
+};
+
+function App() {
+  return (
+    <ToastProvider>
+      <AppContent />
+    </ToastProvider>
   );
 }
 

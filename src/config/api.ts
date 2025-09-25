@@ -1,8 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
-  // Use relative URLs in development (proxy handles the backend URL)
-  // In production, you might want to use the full backend URL
-  BASE_URL: process.env.NODE_ENV === 'production' ? 'http://127.0.0.1:8000' : '',
+  // Prefer environment variable; fallback to relative for local dev
+  BASE_URL: process.env.REACT_APP_API_URL || '',
   ENDPOINTS: {
     CATEGORIES_TREND: '/api/categories/trend-indicators/',
     PRODUCTS: '/api/products/',
@@ -13,6 +12,9 @@ export const API_CONFIG = {
     PRODUCTS_BEST_SELLERS_ALL: '/api/products/best-sellers/',
     CATEGORIES: '/api/categories/',
     BANNERS_ACTIVE: '/api/banners/active/',
+    BANNERS_CTA: '/api/banners/cta/',
+    PHONE_SWAP_SUBMIT: '/api/phone-swap/submit/',
+    BRANDS: '/api/brands/',
   },
   TIMEOUT: 10000, // 10 seconds
 };

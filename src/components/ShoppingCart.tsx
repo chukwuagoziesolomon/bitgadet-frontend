@@ -1,104 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { apiRequest } from '../config/api';
 import './ShoppingCart.css';
 
 interface CartItem {
-  id: string;
+  id: number;
   name: string;
-  brand: string;
+  slug: string;
   price: number;
-  discount: number;
-  usdPrice: number;
-  image: string;
   quantity: number;
+  item_total?: number;
+  brand?: string;
+  image?: string;
+  usdPrice?: number;
+  discount?: number;
+  // ...other product fields from ProductListSerializer
 }
 
 const ShoppingCart: React.FC = () => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: '1',
-      name: 'iPhone 15 Pro',
-      brand: 'Apple',
-      price: 1850000,
-      discount: 1,
-      usdPrice: 1200,
-      image: '📱',
-      quantity: 1
-    },
-    {
-      id: '2',
-      name: 'MacBook Pro 14" M3',
-      brand: 'Apple',
-      price: 2850000,
-      discount: 1,
-      usdPrice: 1550,
-      image: '💻',
-      quantity: 2
-    },
-    {
-      id: '3',
-      name: 'Airpod Pro (2nd Gen)',
-      brand: 'Apple',
-      price: 350000,
-      discount: 0,
-      usdPrice: 240,
-      image: '🎧',
-      quantity: 1
-    },
-    {
-      id: '4',
-      name: 'iPad Pro 12.9"',
-      brand: 'Apple',
-      price: 1200000,
-      discount: 5,
-      usdPrice: 800,
-      image: '📱',
-      quantity: 1
-    },
-    {
-      id: '5',
-      name: 'Apple Watch Series 9',
-      brand: 'Apple',
-      price: 450000,
-      discount: 0,
-      usdPrice: 300,
-      image: '⌚',
-      quantity: 1
-    },
-    {
-      id: '6',
-      name: 'Samsung Galaxy S24 Ultra',
-      brand: 'Samsung',
-      price: 1650000,
-      discount: 3,
-      usdPrice: 1100,
-      image: '📱',
-      quantity: 1
-    },
-    {
-      id: '7',
-      name: 'Sony WH-1000XM5',
-      brand: 'Sony',
-      price: 420000,
-      discount: 0,
-      usdPrice: 280,
-      image: '🎧',
-      quantity: 1
-    }
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [orderSummary, setOrderSummary] = useState<any>(null);
+  const [itemCount, setItemCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems(items =>
-      items.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const fetchCart = async () => {
+    try {
+      const data = await apiRequest<any>('/api/cart/');
+      const products = data.products || [];
+      setCartItems(products);
+      setOrderSummary(data.order_summary || {});
+      setItemCount(data.item_count || 0);
+    } catch (error) {
+      console.error('Failed to fetch cart:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeItem = (id: string) => {
-    setCartItems(items => items.filter(item => item.id !== id));
+  const updateQuantity = async (id: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+    try {
+      await apiRequest<any>('/api/cart/update/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: id, quantity: newQuantity }),
+      });
+      // Refetch cart to get updated data
+      fetchCart();
+    } catch (error) {
+      console.error('Failed to update quantity:', error);
+    }
+  };
+
+  const removeItem = async (id: number) => {
+    try {
+      await apiRequest<any>('/api/cart/remove/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: id }),
+      });
+      // Refetch cart to get updated data
+      fetchCart();
+    } catch (error) {
+      console.error('Failed to remove item:', error);
+    }
   };
 
   const formatNaira = (amount: number) => {
@@ -109,20 +77,40 @@ const ShoppingCart: React.FC = () => {
     return `${amount.toLocaleString()} USDT`;
   };
 
-  const calculateSubtotal = () => {
-    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  };
+  if (loading) {
+    return (
+      <div className="shopping-cart">
+        <div className="cart-header">
+          <div className="cart-title">
+            <h1>Loading Cart...</h1>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const calculateTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  const subtotal = calculateSubtotal();
-  const shipping = 5000;
-  const taxRate = 0.075;
-  const tax = 25000; // Fixed as shown in design
-  const total = 16170025; // Fixed as shown in design
-  const totalUSD = 12650;
+  if (cartItems.length === 0) {
+    return (
+      <div className="shopping-cart">
+        <div className="cart-header">
+          <div className="continue-shopping">
+            <Link to="/products">← Continue Shopping</Link>
+          </div>
+          <div className="cart-title">
+            <h1>Shopping Cart</h1>
+          </div>
+        </div>
+        <div className="empty-cart">
+          <div className="empty-cart-icon">
+            <ShoppingBag size={80} />
+          </div>
+          <h2>Your cart is empty</h2>
+          <p>Add some products to get started!</p>
+          <Link to="/products" className="shop-now-btn">Start Shopping</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="shopping-cart">
@@ -133,7 +121,7 @@ const ShoppingCart: React.FC = () => {
         </div>
         <div className="cart-title">
           <h1>Shopping Cart</h1>
-          <p>{calculateTotalItems()} items in your cart</p>
+          <p>{itemCount} items in your cart</p>
         </div>
       </div>
 
@@ -150,7 +138,7 @@ const ShoppingCart: React.FC = () => {
                       <div className="product-image">
                         <div className="image-placeholder">
                           <div className="product-icon">
-                            {item.image}
+                            {item.image || '📱'}
                           </div>
                         </div>
                       </div>
@@ -160,7 +148,7 @@ const ShoppingCart: React.FC = () => {
                         <div className="product-header">
                           <div className="product-info">
                             <h3 className="product-name">{item.name}</h3>
-                            <p className="product-brand">{item.brand}</p>
+                            <p className="product-brand">{item.brand || 'Unknown'}</p>
                           </div>
                           <button
                             onClick={() => removeItem(item.id)}
@@ -170,7 +158,7 @@ const ShoppingCart: React.FC = () => {
                           </button>
                         </div>
 
-                        {item.discount > 0 && (
+                        {item.discount && item.discount > 0 && (
                           <div className="discount-badge">
                             <span className="discount-text">
                               {item.discount}% OFF
@@ -184,7 +172,7 @@ const ShoppingCart: React.FC = () => {
                               {formatNaira(item.price)}
                             </div>
                             <div className="price-usd">
-                              {formatUSD(item.usdPrice)}
+                              {item.usdPrice ? formatUSD(item.usdPrice) : 'N/A USDT'}
                             </div>
                           </div>
 
@@ -212,7 +200,7 @@ const ShoppingCart: React.FC = () => {
                         <div className="item-subtotal">
                           <span className="subtotal-label">Subtotal: </span>
                           <span className="subtotal-amount">
-                            ₦5,700,000
+                            {formatNaira(item.item_total || (item.price * item.quantity))}
                           </span>
                         </div>
                       </div>
@@ -236,25 +224,28 @@ const ShoppingCart: React.FC = () => {
 
               <div className="summary-details">
                 <div className="summary-row">
-                  <span className="summary-label">Subtotal ( {calculateTotalItems()} items)</span>
-                  <span className="summary-value">₦16,140,025</span>
+                  <span className="summary-label">Subtotal ({itemCount} items)</span>
+                  <span className="summary-value">{formatNaira(orderSummary?.subtotal || 0)}</span>
                 </div>
                 <div className="summary-row">
                   <span className="summary-label">Shipping</span>
-                  <span className="summary-value">₦5,000</span>
+                  <span className="summary-value">{formatNaira(orderSummary?.shipping_cost || 0)}</span>
                 </div>
                 <div className="summary-row">
-                  <span className="summary-label">Tax (7.5%)</span>
-                  <span className="summary-value">₦25,000</span>
+                  <span className="summary-label">Tax</span>
+                  <span className="summary-value">{formatNaira(orderSummary?.tax || 0)}</span>
                 </div>
+                {orderSummary?.discount > 0 && (
+                  <div className="summary-row">
+                    <span className="summary-label">Discount</span>
+                    <span className="summary-value">-{formatNaira(orderSummary.discount)}</span>
+                  </div>
+                )}
                 <hr className="summary-divider" />
                 <div className="summary-total">
                   <span className="total-label">Total</span>
                   <div className="total-values">
-                    <div className="total-naira">₦16,170,025</div>
-                    <div className="total-usd">
-                      {totalUSD.toLocaleString()} USDT
-                    </div>
+                    <div className="total-naira">{formatNaira(orderSummary?.total || 0)}</div>
                   </div>
                 </div>
               </div>

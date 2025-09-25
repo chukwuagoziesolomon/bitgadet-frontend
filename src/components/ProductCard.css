@@ -77,6 +77,11 @@
   color: #dc3545;
 }
 
+.product-card-component .wishlist-btn.in-wishlist {
+  background-color: #20c997;
+  color: white;
+}
+
 /* Product Image */
 .product-card-component .brands-product-image-container {
   text-align: center;
@@ -223,6 +228,26 @@
 
 .product-card-component .add-to-cart-btn:disabled:hover {
   background: #6c757d;
+}
+
+.product-card-component .add-to-cart-btn.added-animation {
+  background: #10b981;
+  animation: addedPulse 2s ease-in-out;
+}
+
+@keyframes addedPulse {
+  0% {
+    transform: scale(1);
+    background: #10b981;
+  }
+  50% {
+    transform: scale(1.05);
+    background: #059669;
+  }
+  100% {
+    transform: scale(1);
+    background: #10b981;
+  }
 }
 
 .product-card-component .whatsapp-btn {

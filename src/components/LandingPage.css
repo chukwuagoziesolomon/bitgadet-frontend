@@ -1208,9 +1208,9 @@ body {
 
 .deal-banner-container {
   display: flex;
-  width: 1325px; /* 518 + 807 = 1325px total width */
+  width: 100%;
+  max-width: 1325px; /* Maximum width for desktop */
   height: 378px;
-  max-width: 1325px;
   margin: 0 auto;
   border-radius: 1rem;
   overflow: hidden;
@@ -1223,25 +1223,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 518px;
+  flex: 0 0 518px; /* Fixed width for desktop, but flexible */
   height: 378px;
   border-radius: 12px 0 0 12px;
 }
 
-.discount-badge {
-  position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background: #00C896;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-weight: 600; /* Made bolder for better visibility */
-  font-family: 'Open Sans', sans-serif;
-  font-size: 0.875rem;
-  z-index: 10; /* Ensure it's above other elements */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Added shadow for better visibility */
-}
+/* Discount badge removed - using the one in the image */
 
 .deal-product-image {
   display: flex;
@@ -1265,7 +1252,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  width: 807px;
+  flex: 1; /* Take remaining space */
   height: 378px;
   border-radius: 0 12px 12px 0;
 }
@@ -1435,6 +1422,96 @@ body {
   box-shadow: 0 5px 15px rgba(0, 200, 150, 0.3);
 }
 
+/* Tablet Styles for Deal of the Day Banner - Same as Mobile */
+@media (max-width: 1024px) {
+  .deal-banner {
+    margin: 1rem 0;
+    padding: 0 1rem;
+  }
+
+  .deal-banner-container {
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.75rem;
+  }
+
+  .deal-banner-left {
+    width: 100%;
+    height: 200px;
+    border-radius: 0.75rem 0.75rem 0 0;
+  }
+
+  .deal-product-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .deal-banner-right {
+    width: 100%;
+    height: auto;
+    min-height: 300px;
+    border-radius: 0 0 0.75rem 0.75rem;
+  }
+
+  .deal-tag {
+    top: 0.75rem;
+    left: 0.75rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.7rem;
+  }
+
+  .deal-offer-timer {
+    margin: 1rem 0;
+  }
+
+  .deal-timer-label {
+    font-size: 0.8rem;
+  }
+
+  .deal-time-box {
+    padding: 0.4rem 0.6rem;
+    margin: 0 0.2rem;
+  }
+
+  .deal-time-number {
+    font-size: 1.1rem;
+  }
+
+  .deal-time-label {
+    font-size: 0.6rem;
+  }
+
+  .deal-product-title {
+    font-size: 1.5rem;
+  }
+
+  .deal-product-description {
+    font-size: 0.8rem;
+  }
+
+  .deal-current-price {
+    font-size: 1.3rem;
+  }
+
+  .deal-original-price {
+    font-size: 0.9rem;
+  }
+
+  .deal-crypto-price {
+    font-size: 0.8rem;
+  }
+
+  .deal-buy-now-btn {
+    padding: 0.7rem 1.25rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* Large tablet styles removed - using same design as mobile */
+
 /* Mobile Styles for Deal of the Day Banner */
 @media (max-width: 768px) {
   .deal-banner {
@@ -1456,15 +1533,7 @@ body {
     border-radius: 0.75rem 0.75rem 0 0;
   }
 
-  .discount-badge {
-    top: 0.75rem;
-    left: 0.75rem;
-    padding: 0.5rem 1rem; /* Increased padding for better visibility */
-    font-size: 0.9rem; /* Increased font size */
-    font-weight: 600; /* Made bolder */
-    z-index: 10; /* Ensure it's above other elements */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Added shadow for better visibility */
-  }
+  /* Discount badge removed - using the one in the image */
 
   .deal-product-image {
     width: 100%;
@@ -1571,16 +1640,8 @@ body {
     min-height: 180px;
     position: relative; /* Ensure proper positioning context */
   }
-  
-  .discount-badge {
-    top: 0.5rem;
-    left: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    z-index: 10;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  }
+
+  /* Discount badge removed - using the one in the image */
 
   .deal-product-image img {
     max-width: 120px;

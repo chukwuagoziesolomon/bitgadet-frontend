@@ -205,7 +205,14 @@ const ProductDetails: React.FC = () => {
         {/* Product Images */}
         <div className="product-images">
           <div className="main-image">
-            <img src={product.images[currentImageIndex]} alt={product.name} />
+            <img
+              src={product.images[currentImageIndex]}
+              alt={product.name}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+              }}
+            />
             {product.badges.length > 0 && (
               <div className="product-badges">
                 {product.badges.map((badge, index) => (
@@ -240,7 +247,14 @@ const ProductDetails: React.FC = () => {
                 className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
                 onClick={() => goToImage(index)}
               >
-                <img src={image} alt={`${product.name} ${index + 1}`} />
+                <img
+                  src={image}
+                  alt={`${product.name} ${index + 1}`}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://via.placeholder.com/150x150/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+                  }}
+                />
               </button>
             ))}
           </div>
@@ -579,7 +593,14 @@ const ProductDetails: React.FC = () => {
             ].map((relatedProduct) => (
               <Link key={relatedProduct.id} to={`/product/${relatedProduct.id}`} className="related-product-card">
                 <div className="related-product-image">
-                  <img src={relatedProduct.image} alt={relatedProduct.name} />
+                  <img
+                    src={relatedProduct.image}
+                    alt={relatedProduct.name}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+                    }}
+                  />
                   <div className="related-product-badges">
                     {relatedProduct.badges.map((badge, index) => (
                       <span key={index} className={`badge ${

@@ -45,6 +45,11 @@
   line-height: 1.6;
 }
 
+.brands-page .brands-icon {
+  color: #00C896;
+  margin-bottom: 16px;
+}
+
 .brands-page .brands-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -119,6 +124,16 @@
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.brands-page .brand-stats {
+  margin-bottom: 20px;
+}
+
+.brands-page .product-count {
+  font-size: 0.9rem;
+  color: #00C896;
+  font-weight: 500;
 }
 
 .brands-page .brand-rating {
@@ -294,4 +309,75 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 30px;
   }
+}
+
+/* Loading Spinner */
+.brands-page .loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 0;
+}
+
+.brands-page .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #00C896;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.brands-page .error-state,
+.brands-page .empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.brands-page .error-icon,
+.brands-page .empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.brands-page .error-state h3,
+.brands-page .empty-state h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 12px;
+  font-weight: 400;
+}
+
+.brands-page .error-state p,
+.brands-page .empty-state p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 24px;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.brands-page .retry-btn {
+  background: #00C896;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.brands-page .retry-btn:hover {
+  background: #00b085;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 200, 150, 0.3);
 }

@@ -1,192 +1,161 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { ShoppingBag } from 'lucide-react';
+import { API_CONFIG, apiRequest } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './BrandsPage.css';
 
+interface Brand {
+  id: number;
+  name: string;
+  display_name: string;
+  description: string;
+  logo: string;
+  website: string;
+  is_active: boolean;
+  product_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 const BrandsPage: React.FC = () => {
-  // Brand data matching the design from the image
-  const brands = [
-    {
-      id: 1,
-      name: 'Apple',
-      logo: '/Apple.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 2,
-      name: 'Samsung',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 3,
-      name: 'Xiaomi Redmi',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 4,
-      name: 'Infinix',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 5,
-      name: 'Tecno',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 6,
-      name: 'Itel',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 7,
-      name: 'Oraimo',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 8,
-      name: 'HMD',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 9,
-      name: 'MOL',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 10,
-      name: 'realme',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 11,
-      name: 'IZ Energy',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 12,
-      name: 'Oppo',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    },
-    {
-      id: 13,
-      name: 'ZTE',
-      logo: '/phone1.png',
-      description: 'Innovation that changes everything. From iPhone to Mac, Apple creates products that empower people to do amazing things.',
-      rating: 4.8,
-      productCount: 5,
-      categories: ['Smartphones', 'Laptops']
-    }
-  ];
+  const { showError } = useToast();
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        setLoading(true);
+        const data = await apiRequest<Brand[] | { results: Brand[] }>(API_CONFIG.ENDPOINTS.BRANDS);
 
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(<span key={i} className="star filled">★</span>);
-    }
+        // Handle both direct array response and paginated response
+        const brandsArray = Array.isArray(data) ? data : (data as any).results || [];
+        setBrands(brandsArray);
+        setError(null);
+      } catch (err: any) {
+        console.error('Failed to fetch brands:', err);
+        setError('Failed to load brands. Please try again later.');
+        showError('Error', 'Failed to load brands. Please try again later.');
+        // Ensure brands is always an array
+        setBrands([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (hasHalfStar) {
-      stars.push(<span key="half" className="star half">★</span>);
-    }
-
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(<span key={`empty-${i}`} className="star empty">★</span>);
-    }
-
-    return stars;
-  };
+    fetchBrands();
+  }, [showError]);
 
   const handleViewProducts = (brandName: string) => {
     console.log(`Viewing products for ${brandName}`);
     // Add navigation logic here
   };
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="brands-page">
+        <div className="brands-container">
+          <div className="brands-header">
+            <ShoppingBag size={48} className="brands-icon" />
+            <h1>Our Brands</h1>
+            <p>Loading brands...</p>
+          </div>
+          <div className="loading-spinner">
+            <div className="spinner"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="brands-page">
+        <div className="brands-container">
+          <div className="brands-header">
+            <ShoppingBag size={48} className="brands-icon" />
+            <h1>Our Brands</h1>
+            <p>Discover products from top technology brands</p>
+          </div>
+          <div className="error-state">
+            <div className="error-icon">⚠️</div>
+            <h3>Unable to Load Brands</h3>
+            <p>{error}</p>
+            <button
+              className="retry-btn"
+              onClick={() => window.location.reload()}
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (brands.length === 0) {
+    return (
+      <div className="brands-page">
+        <div className="brands-container">
+          <div className="brands-header">
+            <ShoppingBag size={48} className="brands-icon" />
+            <h1>Our Brands</h1>
+            <p>Discover products from top technology brands</p>
+          </div>
+          <div className="empty-state">
+            <div className="empty-icon">🏪</div>
+            <h3>No Brands Available</h3>
+            <p>We're currently updating our brand catalog. Please check back soon!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="brands-page">
       <div className="brands-container">
         <div className="brands-header">
+          <ShoppingBag size={48} className="brands-icon" />
           <h1>Our Brands</h1>
           <p>Discover products from top technology brands</p>
-          </div>
+        </div>
 
         <div className="brands-grid">
           {brands.map((brand) => (
             <div key={brand.id} className="brand-card">
               <div className="brand-logo-container">
-                <img src={brand.logo} alt={brand.name} className="brand-logo" />
-        </div>
+                <img
+                  src={brand.logo}
+                  alt={brand.display_name}
+                  className="brand-logo"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://via.placeholder.com/200x150/f3f4f6/9ca3af?text=No+Logo'; // Cloudinary-style fallback
+                  }}
+                />
+              </div>
 
               <div className="brand-content">
-                <h3 className="brand-name">{brand.name}</h3>
+                <h3 className="brand-name">{brand.display_name}</h3>
                 <p className="brand-description">{brand.description}</p>
-                
-                <div className="brand-rating">
-                  <div className="stars">
-                    {renderStars(brand.rating)}
-              </div>
-                  <span className="rating-text">{brand.rating} {brand.productCount} products</span>
-            </div>
-            
-                <div className="brand-categories">
-                  {brand.categories.join(' ')}
-              </div>
-              
-                <button 
+
+                <div className="brand-stats">
+                  <span className="product-count">{brand.product_count} products available</span>
+                </div>
+
+                <button
                   className="view-products-btn"
                   onClick={() => handleViewProducts(brand.name)}
                 >
                   View Products
                 </button>
+              </div>
             </div>
-          </div>
           ))}
         </div>
       </div>

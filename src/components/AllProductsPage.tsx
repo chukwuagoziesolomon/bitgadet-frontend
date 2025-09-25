@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Grid3X3, List } from 'lucide-react';
 import ProductCard from './ProductCard';
 import './AllProductsPage.css';
+import { apiRequest } from '../config/api';
 
 const AllProductsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -9,6 +10,19 @@ const AllProductsPage: React.FC = () => {
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
+  const [wishlist, setWishlist] = useState<number[]>([]); // NEW
+  const [cart, setCart] = useState<Record<number, number>>({}); // NEW
+
+  useEffect(() => {
+    // Fetch wishlist on mount
+    apiRequest<any>('/api/wishlist/').then(res => {
+      setWishlist(res.wishlist || []);
+    });
+    // Fetch cart on mount
+    apiRequest<any>('/api/cart/').then(res => {
+      setCart(res.cart || {});
+    });
+  }, []);
 
   // Sample products data
   const products = [
@@ -151,11 +165,23 @@ const AllProductsPage: React.FC = () => {
   };
 
   const handleAddToCart = (productId: number) => {
-    console.log(`Adding product ${productId} to cart`);
+    apiRequest<any>('/api/cart/add/', {
+      method: 'POST',
+      body: JSON.stringify({ product_id: productId, quantity: 1 }),
+    }).then(res => {
+      setCart(res.cart || {});
+    });
   };
 
-  const handleToggleWishlist = (productId: number) => {
-    console.log(`Toggling wishlist for product ${productId}`);
+  // Toggle wishlist on single click
+  const handleToggleWishlist = (productId: number, willBeInWishlist?: boolean) => {
+    const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
+    apiRequest<any>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify({ product_id: productId }),
+    }).then(res => {
+      setWishlist(res.wishlist || []);
+    });
   };
 
   return (
@@ -316,6 +342,8 @@ const AllProductsPage: React.FC = () => {
                 badges={product.badges}
                 inStock={product.inStock}
                 onAddToCart={handleAddToCart}
+                isInCart={cart[product.id] > 0}
+                isInWishlist={wishlist.includes(product.id)}
                 onToggleWishlist={handleToggleWishlist}
               />
             ))}
