@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
-import { Smartphone, Shield, Search, CheckCircle, Clock } from 'lucide-react';
+import { CheckCircle, X } from 'lucide-react';
+import { API_CONFIG, apiRequest } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './PhoneSwapPage.css';
 
 const PhoneSwapPage: React.FC = () => {
-  const [currentDeviceInfo, setCurrentDeviceInfo] = useState({
-    brand: '',
-    model: '',
-    imei: '',
-    serialNumber: ''
-  });
+  const { showError } = useToast();
 
-  const [newDeviceInfo, setNewDeviceInfo] = useState({
+  const [currentDeviceInfo, setCurrentDeviceInfo] = useState({
     brand: '',
     model: '',
     storage: '',
     color: '',
-    imei: '',
-    serialNumber: ''
+    purchaseDate: ''
+  });
+
+  const [desiredDeviceInfo, setDesiredDeviceInfo] = useState({
+    brand: '',
+    model: '',
+    storage: '',
+    color: '',
+    priceRange: ''
   });
 
   const [contactInfo, setContactInfo] = useState({
@@ -27,24 +31,50 @@ const PhoneSwapPage: React.FC = () => {
   });
 
   const [deviceCondition, setDeviceCondition] = useState({
-    screenCondition: '',
-    batteryCondition: '',
-    physicalCondition: '',
-    functionalIssues: '',
-    includedAccessories: {
-      originalBox: false,
-      cable: false,
-      case: false,
-      charger: false,
-      earphones: false,
-      screenProtector: false
-    }
+    excellent: false,
+    good: false,
+    fair: false,
+    poor: false,
+    cracked: false,
+    waterDamage: false,
+    batteryIssues: false,
+    screenIssues: false,
+    buttonIssues: false,
+    cameraIssues: false,
+    speakerIssues: false,
+    chargingIssues: false,
+    softwareIssues: false,
+    overallCondition: ''
+  });
+
+  const [physicalCondition, setPhysicalCondition] = useState({
+    goodOtherwise: false,
+    hasScratches: false,
+    hasDents: false,
+    missingParts: false,
+    brokenScreen: false,
+    liquidDamage: false,
+    wontTurnOn: false,
+    functionalIssues: false
+  });
+
+  const [includedAccessories, setIncludedAccessories] = useState({
+    originalBox: false,
+    cable: false,
+    case: false,
+    charger: false,
+    earphones: false,
+    screenProtector: false
   });
 
   const [additionalInfo, setAdditionalInfo] = useState({
     additionalNotes: '',
     agreeToTerms: false
   });
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [swapRequestData, setSwapRequestData] = useState<any>(null);
 
   const handleCurrentDeviceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -54,9 +84,9 @@ const PhoneSwapPage: React.FC = () => {
     }));
   };
 
-  const handleNewDeviceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleDesiredDeviceChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setNewDeviceInfo(prev => ({
+    setDesiredDeviceInfo(prev => ({
       ...prev,
       [name]: value
     }));
@@ -70,25 +100,28 @@ const PhoneSwapPage: React.FC = () => {
     }));
   };
 
-  const handleConditionChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const handleDeviceConditionChange = (condition: string) => {
     setDeviceCondition(prev => ({
       ...prev,
-      [name]: value
+      [condition]: !prev[condition as keyof typeof prev]
+    }));
+  };
+
+  const handlePhysicalConditionChange = (condition: string) => {
+    setPhysicalCondition(prev => ({
+      ...prev,
+      [condition]: !prev[condition as keyof typeof prev]
     }));
   };
 
   const handleAccessoryChange = (accessory: string) => {
-    setDeviceCondition(prev => ({
+    setIncludedAccessories(prev => ({
       ...prev,
-      includedAccessories: {
-        ...prev.includedAccessories,
-        [accessory]: !prev.includedAccessories[accessory as keyof typeof prev.includedAccessories]
-      }
+      [accessory]: !prev[accessory as keyof typeof prev]
     }));
   };
 
-  const handleAdditionalInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleAdditionalInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
     
@@ -98,72 +131,145 @@ const PhoneSwapPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Phone swap request submitted:', {
-      currentDevice: currentDeviceInfo,
-      newDevice: newDeviceInfo,
-      contact: contactInfo,
-      condition: deviceCondition,
-      additionalInfo: additionalInfo
-    });
+    setIsSubmitting(true);
+
+    try {
+      // Prepare the payload to match the API structure
+      const payload = {
+        current_brand: currentDeviceInfo.brand,
+        current_model: currentDeviceInfo.model,
+        current_storage: currentDeviceInfo.storage,
+        current_color: currentDeviceInfo.color,
+        purchase_date: currentDeviceInfo.purchaseDate,
+        desired_brand: desiredDeviceInfo.brand,
+        desired_model: desiredDeviceInfo.model,
+        desired_storage: desiredDeviceInfo.storage,
+        desired_color: desiredDeviceInfo.color,
+        price_range: desiredDeviceInfo.priceRange,
+        full_name: contactInfo.fullName,
+        email_address: contactInfo.emailAddress,
+        phone_number: contactInfo.phoneNumber,
+        location: contactInfo.location,
+        // Device condition mapping
+        screen_condition: deviceCondition.excellent ? 'excellent' :
+                         deviceCondition.good ? 'good' :
+                         deviceCondition.fair ? 'fair' :
+                         deviceCondition.poor ? 'poor' : 'good',
+        battery_condition: 'good', // Default since we don't have specific battery condition
+        physical_condition: physicalCondition.goodOtherwise ? 'excellent' :
+                           physicalCondition.hasScratches ? 'good' :
+                           physicalCondition.hasDents ? 'fair' : 'good',
+        // Accessories
+        original_box: includedAccessories.originalBox,
+        charger: includedAccessories.charger,
+        earphones: includedAccessories.earphones,
+        screen_protector: includedAccessories.screenProtector,
+        case: includedAccessories.case,
+        cable: includedAccessories.cable,
+        // Additional info
+        additional_notes: additionalInfo.additionalNotes,
+        functional_issues: physicalCondition.functionalIssues ? 'Has functional issues' : '',
+        terms_accepted: additionalInfo.agreeToTerms
+      };
+
+      console.log('Submitting phone swap request:', payload);
+
+      const response = await apiRequest(API_CONFIG.ENDPOINTS.PHONE_SWAP_SUBMIT, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Phone swap request successful:', response);
+      setSwapRequestData((response as any).swap_request);
+      setShowSuccessModal(true);
+
+      // Reset form
+      setCurrentDeviceInfo({ brand: '', model: '', storage: '', color: '', purchaseDate: '' });
+      setDesiredDeviceInfo({ brand: '', model: '', storage: '', color: '', priceRange: '' });
+      setContactInfo({ fullName: '', emailAddress: '', phoneNumber: '', location: '' });
+      setDeviceCondition({
+        excellent: false, good: false, fair: false, poor: false,
+        cracked: false, waterDamage: false, batteryIssues: false,
+        screenIssues: false, buttonIssues: false, cameraIssues: false,
+        speakerIssues: false, chargingIssues: false, softwareIssues: false,
+        overallCondition: ''
+      });
+      setPhysicalCondition({
+        goodOtherwise: false, hasScratches: false, hasDents: false,
+        missingParts: false, brokenScreen: false, liquidDamage: false,
+        wontTurnOn: false, functionalIssues: false
+      });
+      setIncludedAccessories({
+        originalBox: false, cable: false, case: false,
+        charger: false, earphones: false, screenProtector: false
+      });
+      setAdditionalInfo({ additionalNotes: '', agreeToTerms: false });
+
+    } catch (error: any) {
+      console.error('Error submitting phone swap request:', error);
+
+      // Handle validation errors from API
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+
+        // Handle non_field_errors specifically
+        if (errors.non_field_errors && Array.isArray(errors.non_field_errors)) {
+          const nonFieldErrors = errors.non_field_errors.join(', ');
+          showError('Validation Error', nonFieldErrors);
+        } else {
+          // Handle field-specific errors
+          const errorMessages = Object.values(errors).flat().join(', ');
+          showError('Validation Error', errorMessages);
+        }
+      } else if (error.response?.data?.message) {
+        showError('Error', error.response.data.message);
+      } else {
+        showError('Error', 'There was an error submitting your request. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="phone-swap-page">
-      {/* Page Header */}
-      <section className="page-header">
-        <div className="container">
-          <h1>Phone Swap Service</h1>
-          <p>Upgrade your device with our comprehensive phone swap service. We make it seamless to transition from your old phone to your new one.</p>
-        </div>
-      </section>
-
       {/* How Phone Swap Works */}
       <section className="how-it-works">
         <div className="container">
           <h2>How Phone Swap Works</h2>
-          <p>Our step-by-step process makes upgrading your phone quick and hassle-free</p>
+          <p>Our simple 5-step process makes upgrading your phone quick, safe, and transparent</p>
           
           <div className="steps-grid">
             <div className="step-card">
-              <div className="step-icon">
-                <Search size={32} />
-              </div>
-              <h3>Select Your Old Device</h3>
-              <p>Choose your current device from our extensive database and get an instant valuation</p>
+              <div className="step-number">1</div>
+              <h3>Submit Request</h3>
+              <p>Fill in our contact form with your device details and get an instant quote</p>
             </div>
             
             <div className="step-card">
-              <div className="step-icon">
-                <Smartphone size={32} />
-              </div>
-              <h3>Pick the Latest Device</h3>
-              <p>Browse our collection of the latest smartphones and select your upgrade</p>
+              <div className="step-number">2</div>
+              <h3>Device Inspection</h3>
+              <p>Bring your device to our store for a thorough inspection by our experts</p>
             </div>
             
             <div className="step-card">
-              <div className="step-icon">
-                <Shield size={32} />
-              </div>
-              <h3>Secure Data Transfer</h3>
-              <p>We ensure all your data, contacts, and apps are safely transferred to your new device</p>
+              <div className="step-number">3</div>
+              <h3>Value Assessment</h3>
+              <p>We'll provide you with the exact value of your device based on its condition</p>
             </div>
             
             <div className="step-card">
-              <div className="step-icon">
-                <CheckCircle size={32} />
-              </div>
-              <h3>Quality Assurance</h3>
-              <p>Every device goes through rigorous testing to ensure optimal performance</p>
+              <div className="step-number">4</div>
+              <h3>Make the Swap</h3>
+              <p>Choose your new device and we'll handle the swap process for you</p>
             </div>
             
             <div className="step-card">
-              <div className="step-icon">
-                <Clock size={32} />
-              </div>
-              <h3>Same-day Pickup</h3>
-              <p>Schedule a convenient pickup time and get your new device delivered the same day</p>
+              <div className="step-number">5</div>
+              <h3>Complete Setup</h3>
+              <p>We'll help you set up your new device and transfer all your data</p>
             </div>
           </div>
         </div>
@@ -173,7 +279,7 @@ const PhoneSwapPage: React.FC = () => {
       <section className="phone-swap-form">
         <div className="container">
           <h2>Start Your Phone Swap</h2>
-          <p>Fill out the form below to get a quote and begin your phone swap journey</p>
+          <p>Fill out the form below to get started with your phone swap. We'll contact you within 24 hours.</p>
           
           <form onSubmit={handleSubmit} className="swap-form">
             {/* Current Device Information */}
@@ -197,6 +303,11 @@ const PhoneSwapPage: React.FC = () => {
                     <option value="OnePlus">OnePlus</option>
                     <option value="Xiaomi">Xiaomi</option>
                     <option value="Huawei">Huawei</option>
+                    <option value="Oppo">Oppo</option>
+                    <option value="Vivo">Vivo</option>
+                    <option value="Realme">Realme</option>
+                    <option value="Tecno">Tecno</option>
+                    <option value="Infinix">Infinix</option>
                   </select>
                 </div>
                 
@@ -216,27 +327,51 @@ const PhoneSwapPage: React.FC = () => {
               
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="currentImei">IMEI</label>
+                  <label htmlFor="currentStorage">Storage</label>
+                  <select
+                    id="currentStorage"
+                    name="storage"
+                    value={currentDeviceInfo.storage}
+                    onChange={handleCurrentDeviceChange}
+                  >
+                    <option value="">Select Storage</option>
+                    <option value="32GB">32GB</option>
+                    <option value="64GB">64GB</option>
+                    <option value="128GB">128GB</option>
+                    <option value="256GB">256GB</option>
+                    <option value="512GB">512GB</option>
+                    <option value="1TB">1TB</option>
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="currentColor">Color *</label>
                   <input
                     type="text"
-                    id="currentImei"
-                    name="imei"
-                    value={currentDeviceInfo.imei}
+                    id="currentColor"
+                    name="color"
+                    value={currentDeviceInfo.color}
                     onChange={handleCurrentDeviceChange}
-                    placeholder="15-digit IMEI number"
+                    placeholder="e.g., Space Gray, White, Black"
+                    required
                   />
                 </div>
-                
+              </div>
+
+              <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="currentSerial">Serial Number</label>
+                  <label htmlFor="purchaseDate">Purchase Date</label>
                   <input
-                    type="text"
-                    id="currentSerial"
-                    name="serialNumber"
-                    value={currentDeviceInfo.serialNumber}
+                    type="date"
+                    id="purchaseDate"
+                    name="purchaseDate"
+                    value={currentDeviceInfo.purchaseDate}
                     onChange={handleCurrentDeviceChange}
-                    placeholder="Device serial number"
                   />
+                </div>
+
+                <div className="form-group">
+                  {/* Empty div for spacing */}
                 </div>
               </div>
             </div>
@@ -247,12 +382,12 @@ const PhoneSwapPage: React.FC = () => {
               
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="newBrand">Brand *</label>
+                  <label htmlFor="desiredBrand">Brand *</label>
                   <select
-                    id="newBrand"
+                    id="desiredBrand"
                     name="brand"
-                    value={newDeviceInfo.brand}
-                    onChange={handleNewDeviceChange}
+                    value={desiredDeviceInfo.brand}
+                    onChange={handleDesiredDeviceChange}
                     required
                   >
                     <option value="">Select Brand</option>
@@ -262,17 +397,22 @@ const PhoneSwapPage: React.FC = () => {
                     <option value="OnePlus">OnePlus</option>
                     <option value="Xiaomi">Xiaomi</option>
                     <option value="Huawei">Huawei</option>
+                    <option value="Oppo">Oppo</option>
+                    <option value="Vivo">Vivo</option>
+                    <option value="Realme">Realme</option>
+                    <option value="Tecno">Tecno</option>
+                    <option value="Infinix">Infinix</option>
                   </select>
                 </div>
                 
                 <div className="form-group">
-                  <label htmlFor="newModel">Model *</label>
+                  <label htmlFor="desiredModel">Model *</label>
                   <input
                     type="text"
-                    id="newModel"
+                    id="desiredModel"
                     name="model"
-                    value={newDeviceInfo.model}
-                    onChange={handleNewDeviceChange}
+                    value={desiredDeviceInfo.model}
+                    onChange={handleDesiredDeviceChange}
                     placeholder="e.g., iPhone 15 Pro Max"
                     required
                   />
@@ -281,14 +421,14 @@ const PhoneSwapPage: React.FC = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="storage">Storage</label>
+                  <label htmlFor="desiredStorage">Storage</label>
                   <select
-                    id="storage"
+                    id="desiredStorage"
                     name="storage"
-                    value={newDeviceInfo.storage}
-                    onChange={handleNewDeviceChange}
+                    value={desiredDeviceInfo.storage}
+                    onChange={handleDesiredDeviceChange}
                   >
-                    <option value="">Select storage</option>
+                    <option value="">Select Storage</option>
                     <option value="64GB">64GB</option>
                     <option value="128GB">128GB</option>
                     <option value="256GB">256GB</option>
@@ -296,43 +436,41 @@ const PhoneSwapPage: React.FC = () => {
                     <option value="1TB">1TB</option>
                   </select>
                 </div>
-                
+
                 <div className="form-group">
-                  <label htmlFor="color">Color</label>
+                  <label htmlFor="desiredColor">Color *</label>
                   <input
                     type="text"
-                    id="color"
+                    id="desiredColor"
                     name="color"
-                    value={newDeviceInfo.color}
-                    onChange={handleNewDeviceChange}
+                    value={desiredDeviceInfo.color}
+                    onChange={handleDesiredDeviceChange}
                     placeholder="e.g., Space Gray, White, Black"
+                    required
                   />
                 </div>
               </div>
-              
+
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="newImei">IMEI</label>
-                  <input
-                    type="text"
-                    id="newImei"
-                    name="imei"
-                    value={newDeviceInfo.imei}
-                    onChange={handleNewDeviceChange}
-                    placeholder="15-digit IMEI number"
-                  />
+                  <label htmlFor="priceRange">Price Range</label>
+                  <select
+                    id="priceRange"
+                    name="priceRange"
+                    value={desiredDeviceInfo.priceRange}
+                    onChange={handleDesiredDeviceChange}
+                  >
+                    <option value="">Select Price Range</option>
+                    <option value="Under ₦100,000">Under ₦100,000</option>
+                    <option value="₦100,000 - ₦300,000">₦100,000 - ₦300,000</option>
+                    <option value="₦300,000 - ₦500,000">₦300,000 - ₦500,000</option>
+                    <option value="₦500,000 - ₦800,000">₦500,000 - ₦800,000</option>
+                    <option value="Above ₦800,000">Above ₦800,000</option>
+                  </select>
                 </div>
-                
+
                 <div className="form-group">
-                  <label htmlFor="newSerial">Serial Number</label>
-                  <input
-                    type="text"
-                    id="newSerial"
-                    name="serialNumber"
-                    value={newDeviceInfo.serialNumber}
-                    onChange={handleNewDeviceChange}
-                    placeholder="Device serial number"
-                  />
+                  {/* Empty div for spacing */}
                 </div>
               </div>
             </div>
@@ -398,12 +536,278 @@ const PhoneSwapPage: React.FC = () => {
               </div>
             </div>
 
-            <button type="submit" className="submit-button">
-              Submit Swap Request
+            {/* Device Condition Assessment */}
+            <div className="form-section">
+              <h3>Device Condition Assessment</h3>
+              
+              <div className="condition-group">
+                <h4>Screen Condition *</h4>
+                <div className="checkbox-grid">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={deviceCondition.excellent}
+                      onChange={() => handleDeviceConditionChange('excellent')}
+                    />
+                    Excellent - No scratches or marks
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={deviceCondition.good}
+                      onChange={() => handleDeviceConditionChange('good')}
+                    />
+                    Good - Minor scratches
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={deviceCondition.fair}
+                      onChange={() => handleDeviceConditionChange('fair')}
+                    />
+                    Fair - Visible scratches or marks
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={deviceCondition.poor}
+                      onChange={() => handleDeviceConditionChange('poor')}
+                    />
+                    Poor - Deep scratches
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={deviceCondition.cracked}
+                      onChange={() => handleDeviceConditionChange('cracked')}
+                    />
+                    Cracked - Lines or cracks
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={deviceCondition.waterDamage}
+                      onChange={() => handleDeviceConditionChange('waterDamage')}
+                    />
+                    Water damage - Liquid damage
+                  </label>
+                </div>
+              </div>
+
+              <div className="condition-group">
+                <h4>Physical Condition *</h4>
+                <div className="checkbox-grid">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={physicalCondition.goodOtherwise}
+                      onChange={() => handlePhysicalConditionChange('goodOtherwise')}
+                    />
+                    Good otherwise
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={physicalCondition.hasScratches}
+                      onChange={() => handlePhysicalConditionChange('hasScratches')}
+                    />
+                    Has scratches
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={physicalCondition.hasDents}
+                      onChange={() => handlePhysicalConditionChange('hasDents')}
+                    />
+                    Has dents or dings
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={physicalCondition.missingParts}
+                      onChange={() => handlePhysicalConditionChange('missingParts')}
+                    />
+                    Missing parts or buttons
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={physicalCondition.brokenScreen}
+                      onChange={() => handlePhysicalConditionChange('brokenScreen')}
+                    />
+                    Broken screen or display
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={physicalCondition.liquidDamage}
+                      onChange={() => handlePhysicalConditionChange('liquidDamage')}
+                    />
+                    Liquid damage
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={physicalCondition.wontTurnOn}
+                      onChange={() => handlePhysicalConditionChange('wontTurnOn')}
+                    />
+                    Won't turn on or charge
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={physicalCondition.functionalIssues}
+                      onChange={() => handlePhysicalConditionChange('functionalIssues')}
+                    />
+                    Functional issues
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Included Accessories */}
+            <div className="form-section">
+              <h3>Included Accessories</h3>
+              <div className="checkbox-grid">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includedAccessories.originalBox}
+                    onChange={() => handleAccessoryChange('originalBox')}
+                  />
+                  Original Box
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includedAccessories.cable}
+                    onChange={() => handleAccessoryChange('cable')}
+                  />
+                  Cable
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includedAccessories.case}
+                    onChange={() => handleAccessoryChange('case')}
+                  />
+                  Case
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includedAccessories.charger}
+                    onChange={() => handleAccessoryChange('charger')}
+                  />
+                  Charger
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includedAccessories.earphones}
+                    onChange={() => handleAccessoryChange('earphones')}
+                  />
+                  Earphones
+                </label>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={includedAccessories.screenProtector}
+                    onChange={() => handleAccessoryChange('screenProtector')}
+                  />
+                  Screen Protector
+                </label>
+              </div>
+            </div>
+
+            {/* Additional Information */}
+            <div className="form-section">
+              <h3>Additional Information</h3>
+              <div className="form-group">
+                <label htmlFor="additionalNotes">Additional Notes</label>
+                <textarea
+                  id="additionalNotes"
+                  name="additionalNotes"
+                  value={additionalInfo.additionalNotes}
+                  onChange={handleAdditionalInfoChange}
+                  placeholder="Any additional information about your device or special requirements..."
+                  rows={4}
+                />
+              </div>
+            </div>
+
+            {/* Terms and Conditions */}
+            <div className="terms-section">
+              <label className="terms-checkbox">
+                <input
+                  type="checkbox"
+                  name="agreeToTerms"
+                  checked={additionalInfo.agreeToTerms}
+                  onChange={handleAdditionalInfoChange}
+                  required
+                />
+                I agree to all terms and conditions and understand that the final swap will be determined based on physical inspection of my device.
+              </label>
+            </div>
+
+            <button type="submit" className="submit-button" disabled={isSubmitting}>
+              {isSubmitting ? 'Submitting...' : 'Continue Phone Swap'}
             </button>
           </form>
         </div>
       </section>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="success-modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              <X size={24} />
+            </button>
+
+            <div className="modal-content">
+              <div className="success-icon">
+                <CheckCircle size={64} />
+              </div>
+
+              <h2 className="modal-title">Phone Swap Request Submitted!</h2>
+
+              <p className="modal-message">
+                Thank you, <strong>{contactInfo.fullName}</strong>! Your phone swap request has been submitted successfully.
+                {swapRequestData && (
+                  <>
+                    <br /><br />
+                    <strong>Swap ID:</strong> {swapRequestData.swap_id}<br />
+                    <strong>Current Device:</strong> {swapRequestData.current_device_display}<br />
+                    <strong>Desired Device:</strong> {swapRequestData.desired_device_display}<br />
+                    <strong>Status:</strong> {swapRequestData.status_display}
+                  </>
+                )}
+                <br /><br />
+                Our team will review your request and contact you within 24 hours to schedule a device inspection.
+              </p>
+
+              <div className="modal-actions">
+                <button
+                  className="modal-primary-btn"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  Continue Browsing
+                </button>
+                <button
+                  className="modal-secondary-btn"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

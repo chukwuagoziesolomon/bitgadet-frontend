@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Phone, Mail, MessageCircle, Clock, Send } from 'lucide-react';
+import { Phone, Mail, MessageCircle, Clock, Send, CheckCircle, X } from 'lucide-react';
+import { apiRequest } from '../config/api';
 import './ContactPage.css';
 
 const ContactPage: React.FC = () => {
@@ -10,6 +11,8 @@ const ContactPage: React.FC = () => {
     subject: '',
     message: ''
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -19,10 +22,41 @@ const ContactPage: React.FC = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Handle form submission here
+    setIsSubmitting(true);
+
+    try {
+      const payload = {
+        full_name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        message: formData.message
+      };
+
+      const response = await apiRequest<any>('/api/contact/submit/', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      if (response) {
+        setShowSuccessModal(true);
+        // Reset form
+        setFormData({
+          fullName: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        });
+      }
+    } catch (error) {
+      console.error('Failed to submit contact form:', error);
+      // You could add error handling here
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,8 +86,8 @@ const ContactPage: React.FC = () => {
                 </div>
                 <div className="contact-details">
                   <div className="contact-numbers">
-                    <span>+234 812 345 6789</span>
-                    <span>+234 901 234 5678</span>
+                    <span>+2349138666111</span>
+                    <span>+2349061728949</span>
                   </div>
                   <a href="tel:+2348123456789" className="contact-link">Contact Now →</a>
                 </div>
@@ -170,9 +204,9 @@ const ContactPage: React.FC = () => {
                   ></textarea>
                 </div>
 
-                <button type="submit" className="submit-btn">
+                <button type="submit" className="submit-btn" disabled={isSubmitting}>
                   <Send size={18} />
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>
@@ -190,6 +224,48 @@ const ContactPage: React.FC = () => {
           </button>
         </div>
       </section>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="success-modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              <X size={24} />
+            </button>
+
+            <div className="modal-content">
+              <div className="success-icon">
+                <CheckCircle size={64} />
+              </div>
+
+              <h2 className="modal-title">Message Sent Successfully!</h2>
+
+              <p className="modal-message">
+                Thank you for reaching out to us. Our team will review your message and get back to you
+                at <strong>{formData.email}</strong> within 24 hours.
+              </p>
+
+              <div className="modal-actions">
+                <button
+                  className="modal-primary-btn"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  Continue Browsing
+                </button>
+                <button
+                  className="modal-secondary-btn"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  Send Another Message
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

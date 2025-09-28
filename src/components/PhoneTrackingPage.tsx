@@ -1,290 +1,409 @@
 import React, { useState } from 'react';
-import { Shield } from 'lucide-react';
+import { AlertTriangle, Check, X, CheckCircle } from 'lucide-react';
+import { apiRequest } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './PhoneTrackingPage.css';
 
 const PhoneTrackingPage: React.FC = () => {
-  const [trackingInfo, setTrackingInfo] = useState({
-    imei: '',
-    serialNumber: '',
+  const { showError } = useToast();
+
+  const [formData, setFormData] = useState({
+    fullName: '',
     phoneNumber: '',
-    lastKnownLocation: ''
+    imeiNumber: '',
+    deviceModel: '',
+    lastKnownLocation: '',
+    additionalInfo: '',
+    servicePlan: 'premium',
+    communicationPreference: 'email',
+    customerEmail: ''
   });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [trackingResult, setTrackingResult] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setTrackingInfo(prev => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
 
-    // Simulate tracking API call
-    setTimeout(() => {
-      setTrackingResult({
-        status: 'Found',
-        lastSeen: '2 hours ago',
-        location: 'Lagos, Nigeria',
-        batteryLevel: '45%',
-        networkStatus: 'Connected'
+    try {
+      const payload = {
+        full_name: formData.fullName,
+        phone_number: formData.phoneNumber,
+        imei_number: formData.imeiNumber,
+        device_model: formData.deviceModel,
+        last_known_location: formData.lastKnownLocation,
+        additional_information: formData.additionalInfo,
+        service_plan: formData.servicePlan,
+        communication_preference: formData.communicationPreference,
+        customer_email: formData.customerEmail
+      };
+
+      const response = await apiRequest<any>('/api/phone-tracking/submit/', {
+        method: 'POST',
+        body: JSON.stringify(payload),
       });
-      setIsLoading(false);
-    }, 2000);
+
+      if (response) {
+        setShowSuccessModal(true);
+        // Reset form
+        setFormData({
+          fullName: '',
+          phoneNumber: '',
+          imeiNumber: '',
+          deviceModel: '',
+          lastKnownLocation: '',
+          additionalInfo: '',
+          servicePlan: 'premium',
+          communicationPreference: 'email',
+          customerEmail: ''
+        });
+      }
+    } catch (error: any) {
+      console.error('Failed to submit tracking request:', error);
+
+      // Handle validation errors from API
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+
+        // Handle non_field_errors specifically
+        if (errors.non_field_errors && Array.isArray(errors.non_field_errors)) {
+          const nonFieldErrors = errors.non_field_errors.join(', ');
+          showError('Validation Error', nonFieldErrors);
+        } else {
+          // Handle field-specific errors
+          const errorMessages = Object.values(errors).flat().join(', ');
+          showError('Validation Error', errorMessages);
+        }
+      } else if (error.response?.data?.message) {
+        showError('Error', error.response.data.message);
+      } else {
+        showError('Error', 'There was an error submitting your tracking request. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="phone-tracking-page">
-
-      {/* Page Header */}
-      <section className="page-header">
-        <div className="container">
-          <h1>Phone Tracking Service</h1>
-          <p>Lost your phone? Our professional tracking service can help you locate and recover your device quickly and securely.</p>
-        </div>
-      </section>
-
-      {/* Information Banner */}
-      <section className="info-banner-section">
-        <div className="container">
-          <div className="info-banner">
-            <div className="banner-content">
-              <Shield className="banner-icon" size={24} />
-              <div className="banner-text">
-                <strong>Important:</strong> Phone tracking service is only available for devices purchased from us within the last 24 months. Please ensure you have your purchase receipt and device information ready.
-              </div>
-            </div>
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="hero-content">
+          <h1>Phone Tracking</h1>
+          <p>Lost your phone? Our professional tracking service can help you locate and recover your device.</p>
+          <div className="hero-badges">
+            <span className="badge">95% success rate</span>
+            <span className="badge">24/7 Support</span>
           </div>
         </div>
       </section>
 
-      {/* Main Content Section */}
+      {/* Warning Notice */}
+      <section className="warning-section">
+        <div className="container">
+          <div className="warning-notice">
+            <AlertTriangle className="warning-icon" size={20} />
+            <p>Phone tracking services are provided for legitimate recovery purposes only. You must be the legal owner of the device or have proper authorization. We comply with all local laws and regulations.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
       <section className="main-content">
         <div className="container">
           <div className="content-grid">
-            {/* Left Column - Tracking Form */}
-            <div className="tracking-form-column">
-              <div className="info-banner">
-                <Shield size={20} />
-                <p>Phone tracking service is only available for devices purchased from us. To access the tracking feature of our devices, the purchase date should be within 24 months of the current date.</p>
-              </div>
+            {/* Left Column - Form */}
+            <div className="form-section">
+              <h2>Submit Tracking Request</h2>
+              <form onSubmit={handleSubmit} className="tracking-form">
+                <div className="form-group">
+                  <label htmlFor="fullName">Full Name *</label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
 
-              <div className="form-card">
-                <h2>Submit Tracking Request</h2>
-
-                <form onSubmit={handleSubmit} className="tracking-form">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label htmlFor="phoneNumber">Phone Number *</label>
-                      <input
-                        type="tel"
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={trackingInfo.phoneNumber}
-                        onChange={handleInputChange}
-                        placeholder="+234 XXX XXX XXXX"
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="imei">IMEI Number *</label>
-                      <input
-                        type="text"
-                        id="imei"
-                        name="imei"
-                        value={trackingInfo.imei}
-                        onChange={handleInputChange}
-                        placeholder="15-digit IMEI number"
-                        required
-                      />
-                    </div>
-                  </div>
-
+                <div className="form-row">
                   <div className="form-group">
-                    <label htmlFor="serialNumber">Device Model *</label>
+                    <label htmlFor="phoneNumber">Phone Number *</label>
                     <input
-                      type="text"
-                      id="serialNumber"
-                      name="serialNumber"
-                      value={trackingInfo.serialNumber}
+                      type="tel"
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
                       onChange={handleInputChange}
-                      placeholder="e.g., iPhone 15 Pro Max"
                       required
                     />
                   </div>
-
                   <div className="form-group">
-                    <label htmlFor="lastKnownLocation">Last Known Location</label>
+                    <label htmlFor="customerEmail">Email Address *</label>
+                    <input
+                      type="email"
+                      id="customerEmail"
+                      name="customerEmail"
+                      value={formData.customerEmail}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="imeiNumber">IMEI Number</label>
                     <input
                       type="text"
-                      id="lastKnownLocation"
-                      name="lastKnownLocation"
-                      value={trackingInfo.lastKnownLocation}
+                      id="imeiNumber"
+                      name="imeiNumber"
+                      value={formData.imeiNumber}
                       onChange={handleInputChange}
-                      placeholder="e.g., Lagos Island, Victoria Island"
+                      placeholder="Dial *#06# to find your IMEI"
                     />
                   </div>
-
                   <div className="form-group">
-                    <label htmlFor="additionalInfo">Additional Information</label>
-                    <textarea
-                      id="additionalInfo"
-                      name="additionalInfo"
-                      placeholder="Provide any additional details about your device or tracking request..."
-                      rows={4}
+                    <label htmlFor="deviceModel">Device Model *</label>
+                    <input
+                      type="text"
+                      id="deviceModel"
+                      name="deviceModel"
+                      value={formData.deviceModel}
+                      onChange={handleInputChange}
+                      required
                     />
                   </div>
+                </div>
 
-                  <button type="submit" className="submit-tracking-btn" disabled={isLoading}>
-                    {isLoading ? 'Processing...' : 'Submit Tracking Request'}
-                  </button>
-                </form>
-              </div>
+                <div className="form-group">
+                  <label htmlFor="lastKnownLocation">Last Known Location</label>
+                  <input
+                    type="text"
+                    id="lastKnownLocation"
+                    name="lastKnownLocation"
+                    value={formData.lastKnownLocation}
+                    onChange={handleInputChange}
+                  />
+                </div>
+
+
+                <div className="form-group">
+                  <label htmlFor="additionalInfo">Additional Information</label>
+                  <textarea
+                    id="additionalInfo"
+                    name="additionalInfo"
+                    value={formData.additionalInfo}
+                    onChange={handleInputChange}
+                    rows={4}
+                    placeholder="Any additional details that might help with the tracking..."
+                  />
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group">
+                    <label htmlFor="servicePlan">Service Plan *</label>
+                    <select
+                      id="servicePlan"
+                      name="servicePlan"
+                      value={formData.servicePlan}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="basic">Basic Recovery - ₦15,000</option>
+                      <option value="premium">Premium Tracking - ₦35,000</option>
+                      <option value="enterprise">Enterprise Recovery - ₦65,000</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="communicationPreference">Communication Preference *</label>
+                    <select
+                      id="communicationPreference"
+                      name="communicationPreference"
+                      value={formData.communicationPreference}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="email">Email</option>
+                      <option value="phone">Phone</option>
+                      <option value="whatsapp">WhatsApp</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                  {isSubmitting ? 'Submitting...' : 'Submit Tracking Request'}
+                </button>
+              </form>
             </div>
 
             {/* Right Column - Service Plans */}
-            <div className="service-plans-column">
+            <div className="plans-section">
               <h2>Service Plans</h2>
-
-              <div className="plan-card featured">
-                <div className="plan-header">
-                  <h3>Standard Recovery</h3>
-                  <div className="price">₦5,000</div>
-                  <div className="duration">24 hours</div>
+              
+              <div className="plan-card">
+                <h3>Premium Recovery</h3>
+                <div className="price">
+                  <span className="amount">₦15,000</span>
+                  <span className="currency">10 USDT</span>
                 </div>
-                <ul className="plan-features">
-                  <li>✓ Basic device tracking</li>
-                  <li>✓ Basic recovery report</li>
-                  <li>✓ 24 hour investigation</li>
-                  <li>✓ Email support</li>
-                  <li>✓ Phone support</li>
+                <ul className="features">
+                  <li><Check size={16} /> IMEI-based tracking</li>
+                  <li><Check size={16} /> Basic location report</li>
+                  <li><Check size={16} /> 48-hour investigation</li>
+                  <li><Check size={16} /> Email report delivery</li>
                 </ul>
-                <div className="plan-badge">
-                  <span className="badge advanced">Advanced Tracking</span>
-                  <span className="badge popular">Popular</span>
-                </div>
               </div>
 
-              <div className="plan-card">
-                <div className="plan-header">
-                  <h3>Premium Recovery</h3>
-                  <div className="price">₦25,000</div>
-                  <div className="duration">12 hours</div>
+              <div className="plan-card popular">
+                <div className="popular-badge">Popular</div>
+                <h3>Advanced Tracking</h3>
+                <div className="price">
+                  <span className="amount">₦35,000</span>
+                  <span className="currency">25 USDT</span>
                 </div>
-                <ul className="plan-features">
-                  <li>✓ GPS device tracking</li>
-                  <li>✓ Live device tracking</li>
-                  <li>✓ Advanced recovery</li>
-                  <li>✓ 12 hour investigation</li>
-                  <li>✓ Priority support</li>
-                  <li>✓ Recovery assistance</li>
+                <ul className="features">
+                  <li><Check size={16} /> GPS + IMEI tracking</li>
+                  <li><Check size={16} /> Real-time location updates</li>
+                  <li><Check size={16} /> 24-hour investigation</li>
+                  <li><Check size={16} /> Phone + email support</li>
+                  <li><Check size={16} /> Recovery assistance</li>
                 </ul>
               </div>
 
               <div className="plan-card">
-                <div className="plan-header">
-                  <h3>Standard Recovery</h3>
-                  <div className="price">₦65,000</div>
-                  <div className="duration">6 hours</div>
+                <h3>Premium Recovery</h3>
+                <div className="price">
+                  <span className="amount">₦65,000</span>
+                  <span className="currency">40 USDT</span>
                 </div>
-                <ul className="plan-features">
-                  <li>✓ GPS tracking hunt</li>
-                  <li>✓ Live device tracking</li>
-                  <li>✓ Advanced recovery</li>
-                  <li>✓ 6 hour investigation</li>
-                  <li>✓ Priority support</li>
-                  <li>✓ Recovery assistance</li>
+                <ul className="features">
+                  <li><Check size={16} /> Full tracking suite</li>
+                  <li><Check size={16} /> Law enforcement liaison</li>
+                  <li><Check size={16} /> 12-hour investigation</li>
+                  <li><Check size={16} /> Physical recovery attempt</li>
+                  <li><Check size={16} /> Insurance documentation</li>
                 </ul>
+              </div>
+
+              <div className="help-section">
+                <h3>Need Help?</h3>
+                <p>Our tracking specialists are available 24/7 to assist you with urgent cases.</p>
+                <button className="whatsapp-btn">WhatsApp Support</button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How Our Tracking Service Works */}
-      <section className="how-tracking-works">
+      {/* How It Works Section */}
+      <section className="how-it-works">
         <div className="container">
           <h2>How Our Tracking Service Works</h2>
-
-          <div className="tracking-steps-list">
-            <div className="step-item">
+          <div className="steps-grid">
+            <div className="step">
               <div className="step-number">1</div>
-              <div className="step-content">
-                <h3>Submit Request</h3>
-                <p>Fill out the tracking form with your device details and contact information.</p>
-              </div>
+              <h3>Submit Request</h3>
+              <p>Fill out the tracking form with your device details and contact information.</p>
             </div>
-
-            <div className="step-item">
+            <div className="step">
               <div className="step-number">2</div>
-              <div className="step-content">
-                <h3>Payment & Verification</h3>
-                <p>Choose your tracking plan and complete payment. We'll verify your ownership.</p>
-              </div>
+              <h3>Payment & Verification</h3>
+              <p>Choose your tracking plan and complete payment. We'll verify your ownership.</p>
             </div>
-
-            <div className="step-item">
+            <div className="step">
               <div className="step-number">3</div>
-              <div className="step-content">
-                <h3>Investigation Begins</h3>
-                <p>Our team starts the tracking process using advanced tools and techniques.</p>
-              </div>
+              <h3>Investigation Begins</h3>
+              <p>Our team starts the tracking process using advanced tools and techniques.</p>
             </div>
-
-            <div className="step-item">
+            <div className="step">
               <div className="step-number">4</div>
-              <div className="step-content">
-                <h3>Receive Results</h3>
-                <p>Get detailed reports and assistance with device recovery or location.</p>
-              </div>
+              <h3>Receive Results</h3>
+              <p>Get detailed reports and assistance with device recovery if located.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Need Help Section */}
-      <section className="need-help">
-        <div className="container">
-          <h3>Need Help?</h3>
-          <p>Our tracking experts are available 24/7 to assist you with any questions or concerns.</p>
-          <button className="help-support-button">
-            Get Support
-          </button>
-        </div>
-      </section>
-
-      {/* Legal & Privacy Notice */}
+      {/* Legal Notice */}
       <section className="legal-notice">
         <div className="container">
+          <h2>Legal & Privacy Notice</h2>
           <div className="legal-grid">
             <div className="legal-column">
-              <h3>Terms and Conditions</h3>
+              <h3>Service Limitations:</h3>
               <ul>
-                <li>Service is only available for devices purchased from BitGadgetz</li>
-                <li>Device must be purchased within 24 months</li>
-                <li>Tracking success is not guaranteed</li>
-                <li>Refunds are not available once investigation begins</li>
+                <li>Device must have been active on a network</li>
+                <li>Success depends on device settings and condition</li>
+                <li>Some locations may be inaccessible</li>
+                <li>Results not guaranteed for all cases</li>
               </ul>
             </div>
-
             <div className="legal-column">
-              <h3>Privacy Policy</h3>
+              <h3>Legal Requirements:</h3>
               <ul>
-                <li>All personal information will be kept confidential</li>
-                <li>Data will only be used for tracking purposes</li>
-                <li>Information will not be shared with third parties</li>
-                <li>Data will be deleted after case completion</li>
+                <li>Proof of ownership required</li>
+                <li>Valid ID must be provided</li>
+                <li>Police report may be requested</li>
+                <li>Service complies with local laws</li>
               </ul>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="success-modal-overlay" onClick={() => setShowSuccessModal(false)}>
+          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="modal-close-btn"
+              onClick={() => setShowSuccessModal(false)}
+            >
+              <X size={24} />
+            </button>
+
+            <div className="modal-content">
+              <div className="success-icon">
+                <CheckCircle size={64} />
+              </div>
+
+              <h2 className="modal-title">Tracking Request Submitted!</h2>
+
+              <p className="modal-message">
+                Thank you, <strong>{formData.fullName}</strong>! Your phone tracking request has been submitted successfully.
+                Our team will begin the investigation process and contact you via {formData.communicationPreference === 'email' ? 'email' : formData.communicationPreference === 'phone' ? 'phone' : 'WhatsApp'}
+                at <strong>{formData.communicationPreference === 'email' ? formData.customerEmail : formData.phoneNumber}</strong> within 24 hours.
+              </p>
+
+              <div className="modal-actions">
+                <button
+                  className="modal-primary-btn"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  Continue Browsing
+                </button>
+                <button
+                  className="modal-secondary-btn"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  Submit Another Request
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

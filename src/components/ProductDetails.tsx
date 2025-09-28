@@ -1,113 +1,181 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
-  Star, 
-  Heart, 
-  Share2, 
-  ShoppingCart, 
-  MessageCircle, 
-  Truck, 
-  Shield, 
+import {
+  Star,
+  Heart,
+  Share2,
+  ShoppingCart,
+  MessageCircle,
+  Truck,
+  Shield,
   ArrowLeft,
   Plus,
   Minus,
   CheckCircle,
   X
 } from 'lucide-react';
+import { apiRequest } from '../config/api';
 import './ProductDetails.css';
+
+interface Category {
+  id: number;
+  name: string;
+  display_name: string;
+  description: string;
+}
+
+interface ProductImage {
+  id: number;
+  image: string;
+  alt_text: string;
+  is_primary: boolean;
+  order: number;
+}
 
 interface ProductDetails {
   id: number;
   name: string;
-  brand: string;
-  image: string;
-  price: number;
-  originalPrice: number;
-  usdtPrice: number;
-  rating: number;
-  reviews: number;
+  slug: string;
+  category: Category;
   description: string;
-  specifications: {
-    [key: string]: string;
-  };
+  short_description: string;
+  price: string;
+  price_usdt: string;
+  discount_percentage: number;
+  stock_quantity: number;
+  sku: string;
+  brand: string;
+  model: string;
+  colors: string[];
+  storage_options: string[];
+  ram_options: string[];
+  display_specs: string;
+  chip_specs: string;
+  camera_specs: string;
+  storage_specs: string;
+  battery_specs: string;
+  operating_system: string;
+  weight: string;
+  specifications: string;
   features: string[];
-  inStock: boolean;
-  stockCount: number;
-  images: string[];
-  category: string;
-  badges: string[];
+  main_image: string;
+  images: ProductImage[];
+  is_active: boolean;
+  is_featured: boolean;
+  is_on_sale: boolean;
+  is_in_stock: boolean;
+  has_colors: boolean;
+  has_storage_options: boolean;
+  has_ram_options: boolean;
+  color_count: number;
+  storage_count: number;
+  ram_count: number;
+  average_rating: number;
+  review_count: number;
+  created_at: string;
+  updated_at: string;
+  is_available: boolean;
+  is_new: boolean;
+  is_bestseller: boolean;
+}
+
+interface Review {
+  id: number;
+  user: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+}
+
+interface Recommendation {
+  id: number;
+  name: string;
+  slug: string;
+  main_image: string;
+  price: string;
+  price_usdt: string;
+  discount_percentage: number;
+  is_on_sale: boolean;
+  is_new: boolean;
+  is_bestseller: boolean;
 }
 
 const ProductDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [product, setProduct] = useState<ProductDetails | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSpec, setSelectedSpec] = useState<string>('');
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [showSpecModal, setShowSpecModal] = useState(false);
   const [activeTab, setActiveTab] = useState('description');
-  const [selectedColor, setSelectedColor] = useState('green');
-  const [selectedStorage, setSelectedStorage] = useState('256GB');
-  const [selectedRAM, setSelectedRAM] = useState('12GB');
+  const [selectedColor, setSelectedColor] = useState('');
+  const [selectedStorage, setSelectedStorage] = useState('');
+  const [selectedRAM, setSelectedRAM] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  // Sample product data - in a real app, this would come from an API
-  const sampleProduct: ProductDetails = {
-    id: parseInt(id || '1'),
-    name: 'Samsung Galaxy A56',
-    brand: 'Samsung',
-    image: '/phone1.png',
-    price: 902500,
-    originalPrice: 950000,
-    usdtPrice: 560,
-    rating: 4.9,
-    reviews: 128,
-    description: 'The Samsung Galaxy A56 is a sleek mid-range smartphone offering reliable performance and a modern design. It\'s perfect for users who want a smooth user experience, long-term software support, and 5G connectivity without breaking the bank.',
-    specifications: {
-      'Display': '6.7-inch Super Retina XDR display',
-      'Chip': 'A17 Pro chip with 6-core GPU',
-      'Camera': '48MP Main, 12MP Ultra Wide, 12MP Telephoto',
-      'Storage': '256GB, 512GB, 1TB',
-      'Battery': 'Up to 29 hours video playback',
-      'Connectivity': '5G, Wi-Fi 6E, Bluetooth 5.3',
-      'Operating System': 'iOS 17',
-      'Weight': '221 grams',
-      'Colors': 'Natural Titanium, Blue Titanium, White Titanium, Black Titanium'
-    },
-    features: [
-      'Titanium design for durability',
-      'A17 Pro chip for enhanced performance',
-      'Advanced camera system with 5x Telephoto zoom',
-      'Action Button for quick access',
-      'USB-C connectivity',
-      'Emergency SOS via satellite',
-      'Crash Detection',
-      'Face ID for secure authentication'
-    ],
-    inStock: true,
-    stockCount: 34,
-    images: [
-      '/phone1.png',
-      'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-    ],
-    category: 'Smartphones',
-    badges: ['Best Seller', 'New Arrival']
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // In a real app, fetch product data based on ID
-    setProduct(sampleProduct);
-  }, [id]);
+    const fetchProductData = async () => {
+      if (!slug) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch product details
+        const productData = await apiRequest<ProductDetails>(`/api/products/${slug}/`);
+        setProduct(productData);
+
+        // Set default selections
+        if (productData.colors.length > 0) {
+          setSelectedColor(productData.colors[0]);
+        }
+        if (productData.storage_options.length > 0) {
+          setSelectedStorage(productData.storage_options[0]);
+        }
+        if (productData.ram_options.length > 0) {
+          setSelectedRAM(productData.ram_options[0]);
+        }
+
+        // Fetch reviews
+        try {
+          const reviewsData = await apiRequest<Review[]>(`/api/products/${slug}/reviews/`);
+          setReviews(reviewsData);
+        } catch (reviewError) {
+          console.warn('Failed to fetch reviews:', reviewError);
+          setReviews([]);
+        }
+
+        // Fetch recommendations
+        try {
+          const recommendationsData = await apiRequest<Recommendation[]>(`/api/products/recommendations/?category=${productData.category.name}&limit=6`);
+          setRecommendations(recommendationsData);
+        } catch (recError) {
+          console.warn('Failed to fetch recommendations:', recError);
+          setRecommendations([]);
+        }
+
+      } catch (error) {
+        console.error('Failed to fetch product:', error);
+        setError('Failed to load product details. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductData();
+  }, [slug]);
 
   // Auto-rotate images every 5 seconds
   useEffect(() => {
-    if (!product) return;
-    
+    if (!product || product.images.length === 0) return;
+
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => 
+      setCurrentImageIndex((prevIndex) =>
         prevIndex === product.images.length - 1 ? 0 : prevIndex + 1
       );
     }, 5000);
@@ -179,10 +247,23 @@ const ProductDetails: React.FC = () => {
     setCurrentImageIndex(index);
   };
 
-  if (!product) {
+  if (loading) {
     return (
       <div className="product-details-loading">
-        <div className="loading-spinner">Loading...</div>
+        <div className="loading-spinner">Loading product details...</div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="product-details-error">
+        <div className="error-message">
+          {error || 'Product not found'}
+        </div>
+        <Link to="/products" className="back-to-products">
+          Back to Products
+        </Link>
       </div>
     );
   }
@@ -205,17 +286,19 @@ const ProductDetails: React.FC = () => {
         {/* Product Images */}
         <div className="product-images">
           <div className="main-image">
-            <img src={product.images[currentImageIndex]} alt={product.name} />
-            {product.badges.length > 0 && (
+            <img
+              src={product.images[currentImageIndex]?.image || product.main_image}
+              alt={product.images[currentImageIndex]?.alt_text || product.name}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+              }}
+            />
+            {(product.is_bestseller || product.is_new || product.is_featured) && (
               <div className="product-badges">
-                {product.badges.map((badge, index) => (
-                  <span key={index} className={`badge ${
-                    badge.includes('Best') ? 'bestseller' :
-                    badge.includes('New') ? 'new-arrival' : 'default'
-                  }`}>
-                    {badge}
-                  </span>
-                ))}
+                {product.is_bestseller && <span className="badge bestseller">Best Seller</span>}
+                {product.is_new && <span className="badge new-arrival">New</span>}
+                {product.is_featured && <span className="badge featured">Featured</span>}
               </div>
             )}
             
@@ -236,11 +319,18 @@ const ProductDetails: React.FC = () => {
           <div className="image-thumbnails">
             {product.images.map((image, index) => (
               <button
-                key={index}
+                key={image.id}
                 className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
                 onClick={() => goToImage(index)}
               >
-                <img src={image} alt={`${product.name} ${index + 1}`} />
+                <img
+                  src={image.image}
+                  alt={image.alt_text}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'https://via.placeholder.com/150x150/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+                  }}
+                />
               </button>
             ))}
           </div>
@@ -258,30 +348,36 @@ const ProductDetails: React.FC = () => {
 
             <div className="product-rating">
               <div className="stars">
-                {renderStars(product.rating)}
+                {renderStars(product.average_rating)}
               </div>
               <span className="rating-text">
-                {product.rating} ({product.reviews} reviews)
+                {product.average_rating} ({product.review_count} reviews)
               </span>
             </div>
 
             <div className="product-pricing">
               <div className="price-main">
-                <span className="current-price">{formatNaira(product.price)}</span>
-                <span className="original-price">{formatNaira(product.originalPrice)}</span>
-                <div className="discount-badge">
-                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                </div>
+                <span className="current-price">{formatNaira(parseFloat(product.price))}</span>
+                {product.discount_percentage > 0 && (
+                  <>
+                    <span className="original-price">
+                      {formatNaira(parseFloat(product.price) / (1 - product.discount_percentage / 100))}
+                    </span>
+                    <div className="discount-badge">
+                      {product.discount_percentage}% OFF
+                    </div>
+                  </>
+                )}
               </div>
               <div className="price-usdt-bar">
                 <span className="crypto-icon">₿</span>
-                <span className="usdt-text">USDT: {product.usdtPrice}</span>
+                <span className="usdt-text">USDT: {product.price_usdt}</span>
               </div>
             </div>
 
             <div className="product-availability">
               <div className="stock-info">
-                {product.inStock ? (
+                {product.is_in_stock ? (
                   <div className="in-stock">
                     <div className="stock-dot"></div>
                     <span>In Stock</span>
@@ -293,63 +389,66 @@ const ProductDetails: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="stock-warning">
-                Hurry up! only {product.stockCount} product left in stock!
-              </div>
+              {product.is_in_stock && product.stock_quantity <= 10 && (
+                <div className="stock-warning">
+                  Hurry up! only {product.stock_quantity} product{product.stock_quantity !== 1 ? 's' : ''} left in stock!
+                </div>
+              )}
             </div>
 
             {/* Product Options */}
             <div className="product-options">
-              <div className="option-group">
-                <label className="option-label">Color:</label>
-                <div className="color-options">
-                  <button 
-                    className={`color-option ${selectedColor === 'blue' ? 'selected' : ''}`}
-                    onClick={() => setSelectedColor('blue')}
-                    style={{ backgroundColor: '#3b82f6' }}
-                  ></button>
-                  <button 
-                    className={`color-option ${selectedColor === 'green' ? 'selected' : ''}`}
-                    onClick={() => setSelectedColor('green')}
-                    style={{ backgroundColor: '#10b981' }}
-                  ></button>
-                  <button 
-                    className={`color-option ${selectedColor === 'black' ? 'selected' : ''}`}
-                    onClick={() => setSelectedColor('black')}
-                    style={{ backgroundColor: '#1f2937' }}
-                  ></button>
+              {product.has_colors && product.colors.length > 0 && (
+                <div className="option-group">
+                  <label className="option-label">Color:</label>
+                  <div className="color-options">
+                    {product.colors.map((color) => (
+                      <button
+                        key={color}
+                        className={`color-option ${selectedColor === color ? 'selected' : ''}`}
+                        onClick={() => setSelectedColor(color)}
+                        title={color}
+                      >
+                        {color}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="option-group">
-                <label className="option-label">Storage:</label>
-                <div className="storage-options">
-                  {['64GB', '128GB', '256GB'].map((storage) => (
-                    <button 
-                      key={storage}
-                      className={`storage-option ${selectedStorage === storage ? 'selected' : ''}`}
-                      onClick={() => setSelectedStorage(storage)}
-                    >
-                      {storage}
-                    </button>
-                  ))}
+              {product.has_storage_options && product.storage_options.length > 0 && (
+                <div className="option-group">
+                  <label className="option-label">Storage:</label>
+                  <div className="storage-options">
+                    {product.storage_options.map((storage) => (
+                      <button
+                        key={storage}
+                        className={`storage-option ${selectedStorage === storage ? 'selected' : ''}`}
+                        onClick={() => setSelectedStorage(storage)}
+                      >
+                        {storage}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="option-group">
-                <label className="option-label">RAM:</label>
-                <div className="ram-options">
-                  {['6GB', '8GB', '12GB'].map((ram) => (
-                    <button 
-                      key={ram}
-                      className={`ram-option ${selectedRAM === ram ? 'selected' : ''}`}
-                      onClick={() => setSelectedRAM(ram)}
-                    >
-                      {ram}
-                    </button>
-                  ))}
+              {product.has_ram_options && product.ram_options.length > 0 && (
+                <div className="option-group">
+                  <label className="option-label">RAM:</label>
+                  <div className="ram-options">
+                    {product.ram_options.map((ram) => (
+                      <button
+                        key={ram}
+                        className={`ram-option ${selectedRAM === ram ? 'selected' : ''}`}
+                        onClick={() => setSelectedRAM(ram)}
+                      >
+                        {ram}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <div className="quantity-section">
@@ -363,10 +462,10 @@ const ProductDetails: React.FC = () => {
                   <Minus size={16} />
                 </button>
                 <span className="quantity">{quantity}</span>
-                <button 
+                <button
                   className="quantity-btn"
                   onClick={() => setQuantity(quantity + 1)}
-                  disabled={quantity >= product.stockCount}
+                  disabled={quantity >= product.stock_quantity}
                 >
                   <Plus size={16} />
                 </button>
@@ -436,37 +535,55 @@ const ProductDetails: React.FC = () => {
           <div className="tab-content">
             {activeTab === 'description' && (
               <div className="description-content">
-                <h3>Samsung Galaxy A56 Overview</h3>
-                <p>
-                  The Samsung Galaxy A56 is a sleek mid-range smartphone offering reliable performance and a modern design. 
-                  It's perfect for users who want a smooth user experience, long-term software support, and 5G connectivity 
-                  without breaking the bank.
-                </p>
-                
-                <h4>Durable Display</h4>
-                <p>
-                  Features a 6.7-inch display with a 110.2 cm³ screen area, 1080 x 2340 resolution, 19.5:9 aspect ratio, 
-                  385 ppi density, and an ~86.9% screen-to-body ratio for an edge-to-edge design.
-                </p>
-                
-                <h4>Revolutionary Camera System</h4>
-                <p>
-                  Equipped with a powerful triple-camera setup including a 50 MP main camera (f/1.8) with Phase Detection 
-                  Autofocus (PDAF) and Optical Image Stabilization (OIS), a 12 MP ultra-wide lens with a 123° field of view, 
-                  and a 5 MP macro lens (f/2.4) for close-up photography.
-                </p>
+                <div dangerouslySetInnerHTML={{ __html: product.description }} />
               </div>
             )}
 
             {activeTab === 'specification' && (
               <div className="specification-content">
                 <div className="spec-grid">
-                  {Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key} className="spec-item">
-                      <span className="spec-label">{key}:</span>
-                      <span className="spec-value">{value}</span>
+                  {product.display_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Display:</span>
+                      <span className="spec-value">{product.display_specs}</span>
                     </div>
-                  ))}
+                  )}
+                  {product.chip_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Chip:</span>
+                      <span className="spec-value">{product.chip_specs}</span>
+                    </div>
+                  )}
+                  {product.camera_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Camera:</span>
+                      <span className="spec-value">{product.camera_specs}</span>
+                    </div>
+                  )}
+                  {product.storage_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Storage:</span>
+                      <span className="spec-value">{product.storage_specs}</span>
+                    </div>
+                  )}
+                  {product.battery_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Battery:</span>
+                      <span className="spec-value">{product.battery_specs}</span>
+                    </div>
+                  )}
+                  {product.operating_system && (
+                    <div className="spec-item">
+                      <span className="spec-label">Operating System:</span>
+                      <span className="spec-value">{product.operating_system}</span>
+                    </div>
+                  )}
+                  {product.weight && (
+                    <div className="spec-item">
+                      <span className="spec-label">Weight:</span>
+                      <span className="spec-value">{product.weight}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -476,53 +593,43 @@ const ProductDetails: React.FC = () => {
                 <div className="review-summary">
                   <div className="rating-overview">
                     <div className="overall-rating">
-                      <span className="rating-number">{product.rating}</span>
+                      <span className="rating-number">{product.average_rating}</span>
                       <div className="rating-stars">
-                        {renderStars(product.rating)}
+                        {renderStars(product.average_rating)}
                       </div>
-                      <span className="rating-count">Based on {product.reviews} reviews</span>
+                      <span className="rating-count">Based on {product.review_count} reviews</span>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="reviews-list">
-                  <div className="review-item">
-                    <div className="review-header">
-                      <div className="reviewer-info">
-                        <div className="reviewer-avatar">JD</div>
-                        <div className="reviewer-details">
-                          <span className="reviewer-name">John Doe</span>
-                          <div className="review-rating">
-                            {renderStars(5)}
+                  {reviews.length > 0 ? (
+                    reviews.map((review) => (
+                      <div key={review.id} className="review-item">
+                        <div className="review-header">
+                          <div className="reviewer-info">
+                            <div className="reviewer-avatar">
+                              {review.user.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="reviewer-details">
+                              <span className="reviewer-name">{review.user}</span>
+                              <div className="review-rating">
+                                {renderStars(review.rating)}
+                              </div>
+                            </div>
                           </div>
+                          <span className="review-date">
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </span>
                         </div>
+                        <p className="review-text">{review.comment}</p>
                       </div>
-                      <span className="review-date">2 days ago</span>
+                    ))
+                  ) : (
+                    <div className="no-reviews">
+                      <p>No reviews yet. Be the first to review this product!</p>
                     </div>
-                    <p className="review-text">
-                      Excellent phone! The camera quality is amazing and the battery life is outstanding. 
-                      Highly recommended for anyone looking for a premium smartphone experience.
-                    </p>
-                  </div>
-                  
-                  <div className="review-item">
-                    <div className="review-header">
-                      <div className="reviewer-info">
-                        <div className="reviewer-avatar">SM</div>
-                        <div className="reviewer-details">
-                          <span className="reviewer-name">Sarah Miller</span>
-                          <div className="review-rating">
-                            {renderStars(4)}
-                          </div>
-                        </div>
-                      </div>
-                      <span className="review-date">1 week ago</span>
-                    </div>
-                    <p className="review-text">
-                      Great phone overall. The design is sleek and the performance is smooth. 
-                      Only minor issue is the charging speed could be faster.
-                    </p>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -531,81 +638,48 @@ const ProductDetails: React.FC = () => {
       </div>
 
       {/* You May Also Like Section */}
-      <div className="related-products-section">
-        <div className="related-products-container">
-          <h2>You may also like</h2>
-          <div className="related-products-grid">
-            {[
-              {
-                id: 2,
-                name: 'iPhone 15 Pro',
-                image: '/phone1.png',
-                price: 1850000,
-                originalPrice: 2100000,
-                badges: ['12% OFF', 'New', 'Bestseller']
-              },
-              {
-                id: 3,
-                name: 'PlayStation 5 Console',
-                image: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80',
-                price: 1850000,
-                originalPrice: 2100000,
-                badges: ['14% OFF', 'Out of stock']
-              },
-              {
-                id: 4,
-                name: 'Dell XPS 13 9360',
-                image: '/laptop1.png',
-                price: 1850000,
-                originalPrice: 2100000,
-                badges: ['12% OFF', 'New']
-              },
-              {
-                id: 5,
-                name: 'Sony Smartwatch 15',
-                image: '/watch.png',
-                price: 1850000,
-                originalPrice: 2100000,
-                badges: ['New', 'Bestseller']
-              },
-              {
-                id: 6,
-                name: 'Galaxy S25 Ultra',
-                image: '/phone1.png',
-                price: 1850000,
-                originalPrice: 2100000,
-                badges: ['12% OFF']
-              }
-            ].map((relatedProduct) => (
-              <Link key={relatedProduct.id} to={`/product/${relatedProduct.id}`} className="related-product-card">
-                <div className="related-product-image">
-                  <img src={relatedProduct.image} alt={relatedProduct.name} />
-                  <div className="related-product-badges">
-                    {relatedProduct.badges.map((badge, index) => (
-                      <span key={index} className={`badge ${
-                        badge.includes('OFF') ? 'discount' :
-                        badge.includes('New') ? 'new-arrival' :
-                        badge.includes('Bestseller') ? 'bestseller' :
-                        badge.includes('Out of stock') ? 'out-of-stock' : 'default'
-                      }`}>
-                        {badge}
-                      </span>
-                    ))}
+      {recommendations.length > 0 && (
+        <div className="related-products-section">
+          <div className="related-products-container">
+            <h2>You may also like</h2>
+            <div className="related-products-grid">
+              {recommendations.map((relatedProduct) => (
+                <Link key={relatedProduct.id} to={`/product/${relatedProduct.slug}`} className="related-product-card">
+                  <div className="related-product-image">
+                    <img
+                      src={relatedProduct.main_image}
+                      alt={relatedProduct.name}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+                      }}
+                    />
+                    <div className="related-product-badges">
+                      {relatedProduct.is_on_sale && (
+                        <span className="badge discount">{relatedProduct.discount_percentage}% OFF</span>
+                      )}
+                      {relatedProduct.is_new && <span className="badge new-arrival">New</span>}
+                      {relatedProduct.is_bestseller && <span className="badge bestseller">Bestseller</span>}
+                    </div>
                   </div>
-                </div>
-                <div className="related-product-info">
-                  <h3>{relatedProduct.name}</h3>
-                  <div className="related-product-pricing">
-                    <span className="current-price">{formatNaira(relatedProduct.price)}</span>
-                    <span className="original-price">{formatNaira(relatedProduct.originalPrice)}</span>
-                    <span className="usdt-price">650 USDT</span>
+                  <div className="related-product-info">
+                    <h3>{relatedProduct.name}</h3>
+                    <div className="related-product-pricing">
+                      <span className="current-price">{formatNaira(parseFloat(relatedProduct.price))}</span>
+                      {relatedProduct.is_on_sale && relatedProduct.discount_percentage > 0 && (
+                        <span className="original-price">
+                          {formatNaira(parseFloat(relatedProduct.price) / (1 - relatedProduct.discount_percentage / 100))}
+                        </span>
+                      )}
+                      <span className="usdt-price">{relatedProduct.price_usdt} USDT</span>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Specifications Modal */}
       {showSpecModal && (
@@ -624,12 +698,48 @@ const ProductDetails: React.FC = () => {
               <div className="specifications">
                 <h3>Specifications</h3>
                 <div className="spec-grid">
-                  {Object.entries(product.specifications).map(([key, value]) => (
-                    <div key={key} className="spec-item">
-                      <span className="spec-label">{key}:</span>
-                      <span className="spec-value">{value}</span>
+                  {product.display_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Display:</span>
+                      <span className="spec-value">{product.display_specs}</span>
                     </div>
-                  ))}
+                  )}
+                  {product.chip_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Chip:</span>
+                      <span className="spec-value">{product.chip_specs}</span>
+                    </div>
+                  )}
+                  {product.camera_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Camera:</span>
+                      <span className="spec-value">{product.camera_specs}</span>
+                    </div>
+                  )}
+                  {product.storage_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Storage:</span>
+                      <span className="spec-value">{product.storage_specs}</span>
+                    </div>
+                  )}
+                  {product.battery_specs && (
+                    <div className="spec-item">
+                      <span className="spec-label">Battery:</span>
+                      <span className="spec-value">{product.battery_specs}</span>
+                    </div>
+                  )}
+                  {product.operating_system && (
+                    <div className="spec-item">
+                      <span className="spec-label">Operating System:</span>
+                      <span className="spec-value">{product.operating_system}</span>
+                    </div>
+                  )}
+                  {product.weight && (
+                    <div className="spec-item">
+                      <span className="spec-label">Weight:</span>
+                      <span className="spec-value">{product.weight}</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="features">

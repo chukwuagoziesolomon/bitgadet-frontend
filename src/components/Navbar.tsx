@@ -1,19 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, User, ChevronDown, Search, Menu, Heart, Phone, FileText, HelpCircle, LogOut } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ShoppingCart, User, ChevronDown, Search, Menu, Heart, Phone, FileText, HelpCircle, LogOut, X } from 'lucide-react';
 import TrendingUp from './icons/TrendingUp';
+import { apiRequest } from '../config/api';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isAllCategoriesOpen, setIsAllCategoriesOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileMoreOpen, setIsMobileMoreOpen] = useState(false);
+
+  // Search functionality
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any>(null);
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+
   const categoriesRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileMoreRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -36,6 +47,47 @@ const Navbar: React.FC = () => {
     { id: 'logout', label: 'Sign Out', icon: LogOut, path: '/login' }
   ];
 
+  // Search functions
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults(null);
+      setIsSearchDropdownOpen(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await apiRequest<any>(`/api/search/?q=${encodeURIComponent(query)}`);
+      setSearchResults(response);
+      setIsSearchDropdownOpen(true);
+    } catch (error) {
+      console.error('Search failed:', error);
+      setSearchResults(null);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    handleSearch(query);
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+      setIsSearchDropdownOpen(false);
+    }
+  };
+
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(null);
+    setIsSearchDropdownOpen(false);
+  };
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -50,6 +102,12 @@ const Navbar: React.FC = () => {
       }
       if (mobileMoreRef.current && !mobileMoreRef.current.contains(event.target as Node)) {
         setIsMobileMoreOpen(false);
+      }
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchDropdownOpen(false);
+      }
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(event.target as Node)) {
+        setIsSearchDropdownOpen(false);
       }
     };
 
@@ -72,17 +130,105 @@ const Navbar: React.FC = () => {
             </Link>
 
             {/* Search bar */}
-            <div className="search-container">
-              <div className="search-wrapper">
+            <div className="search-container" ref={searchRef}>
+              <form onSubmit={handleSearchSubmit} className="search-wrapper">
                 <input
                   type="text"
                   placeholder="Find your dream device here"
                   className="search-input"
+                  value={searchQuery}
+                  onChange={handleSearchInputChange}
                 />
-                <button className="search-button">
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="clear-search-button"
+                    onClick={clearSearch}
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+                <button type="submit" className="search-button">
                   <Search size={20} />
                 </button>
-              </div>
+              </form>
+
+              {/* Search Results Dropdown */}
+              {isSearchDropdownOpen && searchResults && (
+                <div className="search-dropdown">
+                  {isSearching ? (
+                    <div className="search-loading">Searching...</div>
+                  ) : searchResults.has_results ? (
+                    <>
+                      {/* Products Section */}
+                      {searchResults.products?.count > 0 && (
+                        <div className="search-section">
+                          <div className="search-section-header">
+                            <h4>Products ({searchResults.products.count})</h4>
+                          </div>
+                          <div className="search-items">
+                            {searchResults.products.results.map((product: any) => (
+                              <Link
+                                key={product.id}
+                                to={product.url}
+                                className="search-item"
+                                onClick={() => setIsSearchDropdownOpen(false)}
+                              >
+                                <img src={product.main_image} alt={product.name} className="search-item-image" />
+                                <div className="search-item-info">
+                                  <div className="search-item-name">{product.name}</div>
+                                  <div className="search-item-price">₦{parseFloat(product.current_price).toLocaleString()}</div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Brands Section */}
+                      {searchResults.brands?.count > 0 && (
+                        <div className="search-section">
+                          <div className="search-section-header">
+                            <h4>Brands ({searchResults.brands.count})</h4>
+                          </div>
+                          <div className="search-items">
+                            {searchResults.brands.results.map((brand: any) => (
+                              <Link
+                                key={brand.id}
+                                to={brand.url}
+                                className="search-item brand-item"
+                                onClick={() => setIsSearchDropdownOpen(false)}
+                              >
+                                <img src={brand.logo} alt={brand.display_name} className="search-item-image brand-logo" />
+                                <div className="search-item-info">
+                                  <div className="search-item-name">{brand.display_name}</div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* View All Results */}
+                      <div className="search-footer">
+                        <button
+                          className="view-all-results"
+                          onClick={() => {
+                            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+                            setIsSearchDropdownOpen(false);
+                          }}
+                        >
+                          View all {searchResults.total_results} results
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="search-no-results">
+                      No results found for "{searchQuery}"
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Phone contact */}
@@ -90,7 +236,7 @@ const Navbar: React.FC = () => {
               <Phone size={20} />
               <div className="phone-text">
                 <span className="phone-label">Call us 24/7</span>
-                <span className="phone-number">07043567844</span>
+                <span className="phone-number">+2349138666111</span>
               </div>
             </div>
 
@@ -164,17 +310,105 @@ const Navbar: React.FC = () => {
             </Link>
 
             {/* Search bar */}
-            <div className="mobile-search-container">
-              <div className="mobile-search-wrapper">
+            <div className="mobile-search-container" ref={mobileSearchRef}>
+              <form onSubmit={handleSearchSubmit} className="mobile-search-wrapper">
                 <input
                   type="text"
                   placeholder="Find your dream device here"
                   className="mobile-search-input"
+                  value={searchQuery}
+                  onChange={handleSearchInputChange}
                 />
-                <button className="mobile-search-button">
+                {searchQuery && (
+                  <button
+                    type="button"
+                    className="mobile-clear-search-button"
+                    onClick={clearSearch}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+                <button type="submit" className="mobile-search-button">
                   <Search size={18} />
                 </button>
-              </div>
+              </form>
+
+              {/* Mobile Search Results Dropdown */}
+              {isSearchDropdownOpen && searchResults && (
+                <div className="mobile-search-dropdown">
+                  {isSearching ? (
+                    <div className="search-loading">Searching...</div>
+                  ) : searchResults.has_results ? (
+                    <>
+                      {/* Products Section */}
+                      {searchResults.products?.count > 0 && (
+                        <div className="search-section">
+                          <div className="search-section-header">
+                            <h4>Products ({searchResults.products.count})</h4>
+                          </div>
+                          <div className="search-items">
+                            {searchResults.products.results.map((product: any) => (
+                              <Link
+                                key={product.id}
+                                to={product.url}
+                                className="search-item"
+                                onClick={() => setIsSearchDropdownOpen(false)}
+                              >
+                                <img src={product.main_image} alt={product.name} className="search-item-image" />
+                                <div className="search-item-info">
+                                  <div className="search-item-name">{product.name}</div>
+                                  <div className="search-item-price">₦{parseFloat(product.current_price).toLocaleString()}</div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Brands Section */}
+                      {searchResults.brands?.count > 0 && (
+                        <div className="search-section">
+                          <div className="search-section-header">
+                            <h4>Brands ({searchResults.brands.count})</h4>
+                          </div>
+                          <div className="search-items">
+                            {searchResults.brands.results.map((brand: any) => (
+                              <Link
+                                key={brand.id}
+                                to={brand.url}
+                                className="search-item brand-item"
+                                onClick={() => setIsSearchDropdownOpen(false)}
+                              >
+                                <img src={brand.logo} alt={brand.display_name} className="search-item-image brand-logo" />
+                                <div className="search-item-info">
+                                  <div className="search-item-name">{brand.display_name}</div>
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* View All Results */}
+                      <div className="search-footer">
+                        <button
+                          className="view-all-results"
+                          onClick={() => {
+                            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+                            setIsSearchDropdownOpen(false);
+                          }}
+                        >
+                          View all {searchResults.total_results} results
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="search-no-results">
+                      No results found for "{searchQuery}"
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Right side icons */}

@@ -90,7 +90,14 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <button className="add-to-cart-btn" disabled={!inStock}>
             {inStock ? 'Add to Cart' : 'Out of Stock'}
           </button>
-          <button className="whatsapp-btn">WhatsApp Enquiry</button>
+          <a
+            className="whatsapp-btn"
+            href={`https://api.whatsapp.com/send?phone=2349138666111&text=${encodeURIComponent(`Hello, I'd like to enquire about ${name}.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp Enquiry
+          </a>
         </div>
       </div>
     </div>

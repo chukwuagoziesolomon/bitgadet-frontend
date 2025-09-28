@@ -1,8 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
-  // Use relative URLs in development (proxy handles the backend URL)
-  // In production, you might want to use the full backend URL
-  BASE_URL: process.env.NODE_ENV === 'production' ? 'http://127.0.0.1:8000' : '',
+  // Prefer environment variable; fallback to relative for local dev
+  BASE_URL: process.env.REACT_APP_API_URL || '',
   ENDPOINTS: {
     CATEGORIES_TREND: '/api/categories/trend-indicators/',
     PRODUCTS: '/api/products/',
@@ -11,8 +10,17 @@ export const API_CONFIG = {
     PRODUCTS_FEATURED: '/api/products/?featured=true',
     PRODUCTS_BEST_SELLERS: '/api/products/best-sellers/?limit=5',
     PRODUCTS_BEST_SELLERS_ALL: '/api/products/best-sellers/',
+    PRODUCTS_DETAIL: '/api/products/{slug}/',
+    PRODUCTS_REVIEWS: '/api/products/{slug}/reviews/',
+    PRODUCTS_RECOMMENDATIONS: '/api/products/recommendations/',
+    PRODUCTS_FEATURED_COLLECTION: '/api/products/featured/',
+    PRODUCTS_BEST_SELLERS_COLLECTION: '/api/products/best-sellers/',
+    PRODUCTS_NEW_ARRIVALS_COLLECTION: '/api/products/new-arrivals/',
     CATEGORIES: '/api/categories/',
     BANNERS_ACTIVE: '/api/banners/active/',
+    BANNERS_CTA: '/api/banners/cta/',
+    PHONE_SWAP_SUBMIT: '/api/phone-swap/submit/',
+    BRANDS: '/api/brands/',
   },
   TIMEOUT: 10000, // 10 seconds
 };

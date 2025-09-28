@@ -20,9 +20,33 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-.success-icon {
-  color: #00C896;
+.status-icon {
   margin-bottom: 1.5rem;
+}
+
+.status-icon.confirmed {
+  color: #00C896;
+}
+
+.status-icon.pending {
+  color: #f59e0b;
+}
+
+.pending-icon {
+  font-size: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .confirmation-header h1 {
@@ -42,6 +66,186 @@
   font-size: 0.875rem;
   color: #718096;
   font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.order-status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.order-status-badge.pending {
+  background-color: #fef3c7;
+  color: #f59e0b;
+  border: 1px solid #f59e0b;
+}
+
+/* Login Credentials Section */
+.login-credentials-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.credentials-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.credentials-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.credentials-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.credential-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+.credential-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.credential-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+}
+
+.copy-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 0.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copy-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.credentials-note {
+  text-align: center;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin: 1rem 0;
+}
+
+.credentials-actions {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.login-btn {
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.login-btn:hover {
+  background: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Next Steps Section */
+.next-steps-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 2rem;
+}
+
+.next-steps-section h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.next-steps-list {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.next-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  border-left: 4px solid #00C896;
+}
+
+.next-step-item svg {
+  color: #00C896;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+
+.next-step-item span {
+  font-size: 0.95rem;
+  color: #2d3748;
+  line-height: 1.5;
+}
+
+/* Loading and Error States */
+.loading-items,
+.loading-summary,
+.error-items,
+.error-summary {
+  text-align: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.error-items,
+.error-summary {
+  color: #ef4444;
 }
 
 /* Main Content */
@@ -117,57 +321,41 @@
   color: #00C896;
 }
 
-/* Tracking Steps */
-.tracking-steps {
+/* Order Tracking */
+.tracking-info {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.tracking-message p {
+  font-size: 0.95rem;
+  color: #4a5568;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.tracking-actions {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.tracking-step {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-}
-
-.tracking-step.completed {
-  background-color: #f0fff4;
-  border: 1px solid #c6f6d5;
-}
-
-.tracking-step.pending {
-  background-color: #f7fafc;
-  border: 1px solid #e2e8f0;
-}
-
-.tracking-step svg {
-  color: #00C896;
-  margin-top: 0.125rem;
-}
-
-.step-icon.pending {
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  margin-top: 0.125rem;
-  font-size: 12px;
 }
 
-.step-content h4 {
-  font-size: 0.875rem;
+.track-order-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
   font-weight: 600;
-  color: #2d3748;
-  margin: 0 0 0.25rem 0;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.step-content p {
-  font-size: 0.75rem;
-  color: #718096;
-  margin: 0;
+.track-order-btn:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
 }
 
 /* Delivery Information */
@@ -178,6 +366,7 @@
 }
 
 .shipping-address h4,
+.customer-contact h4,
 .estimated-delivery h4 {
   font-size: 0.875rem;
   font-weight: 600;
@@ -185,10 +374,15 @@
   margin: 0 0 0.5rem 0;
 }
 
-.address-details p {
+.address-details p,
+.contact-details p {
   font-size: 0.875rem;
   color: #4a5568;
   margin: 0.125rem 0;
+}
+
+.contact-details p strong {
+  color: #2d3748;
 }
 
 .estimated-delivery p {
@@ -338,6 +532,32 @@
 @media (max-width: 768px) {
   .order-confirmation-container {
     padding: 0 1rem;
+  }
+
+  .login-credentials-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .credentials-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .credential-item {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .next-steps-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .next-steps-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .next-step-item {
+    padding: 0.75rem;
   }
 
   .confirmation-content {

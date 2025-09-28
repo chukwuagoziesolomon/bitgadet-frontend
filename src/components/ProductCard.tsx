@@ -1,9 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Heart } from "lucide-react";
 import "./ProductCard.css";
 
 interface ProductCardProps {
   id: number;
+  slug?: string;
   name: string;
   brand: string;
   image: string;
@@ -18,11 +20,14 @@ interface ProductCardProps {
   showWishlist?: boolean;
   showActions?: boolean;
   onAddToCart?: (productId: number) => void;
-  onToggleWishlist?: (productId: number) => void;
+  isInCart?: boolean;
+  isInWishlist?: boolean;
+  onToggleWishlist?: (productId: number, willBeInWishlist?: boolean) => void;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
   id,
+  slug,
   name,
   brand,
   image,
@@ -37,32 +42,44 @@ const ProductCard: React.FC<ProductCardProps> = ({
   showWishlist = true,
   showActions = true,
   onAddToCart,
+  isInCart = false,
+  isInWishlist = false,
   onToggleWishlist,
 }) => {
   const navigate = useNavigate();
+  const [addedToCart, setAddedToCart] = React.useState(false);
 
   const handleCardClick = () => {
-    navigate(`/product/${id}`);
+    navigate(`/product/${slug || id}`);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onAddToCart) {
       onAddToCart(id);
+      setAddedToCart(true);
+      setTimeout(() => setAddedToCart(false), 2000); // Reset after 2 seconds
     }
   };
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
+  const handleWishlistClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onToggleWishlist) {
-      onToggleWishlist(id);
+      onToggleWishlist(id, true); // Add to wishlist
+    }
+  };
+
+  const handleWishlistDoubleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onToggleWishlist) {
+      onToggleWishlist(id, false); // Remove from wishlist
     }
   };
 
   const handleWhatsAppEnquiry = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const message = `Hi! I'm interested in the ${name} by ${brand}. Can you provide more details?`;
-    const whatsappUrl = `https://wa.me/2348123456789?text=${encodeURIComponent(message)}`;
+    const message = `Hello, I'd like to enquire about ${name} (ID: ${id}) by ${brand}.`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=2349138666111&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
   const renderStars = (rating: number) => {
@@ -113,15 +130,27 @@ const ProductCard: React.FC<ProductCardProps> = ({
           </div>
         )}
         {showWishlist && (
-          <button className="wishlist-btn" onClick={handleWishlistToggle}>
-            ♡
+          <button
+            className={`wishlist-btn ${isInWishlist ? 'in-wishlist' : ''}`}
+            onClick={handleWishlistClick}
+            onDoubleClick={handleWishlistDoubleClick}
+          >
+            <Heart size={20} fill={isInWishlist ? 'currentColor' : 'none'} />
           </button>
         )}
       </div>
 
       {/* Product Image */}
       <div className="brands-product-image-container">
-        <img src={image} alt={name} className="brands-product-image" />
+        <img
+          src={image}
+          alt={name}
+          className="brands-product-image"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = 'https://via.placeholder.com/300x300/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+          }}
+        />
       </div>
 
       {/* Product Info */}
@@ -152,12 +181,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Actions */}
       {showActions && (
         <div className="brands-actions">
-          <button 
-            className="add-to-cart-btn" 
+          <button
+            className={`add-to-cart-btn ${addedToCart ? 'added-animation' : ''}`}
             onClick={handleAddToCart}
-            disabled={!inStock}
+            disabled={!inStock || addedToCart}
           >
-            {inStock ? "Add to Cart" : "Out of Stock"}
+            {addedToCart ? "✓ Added!" : (inStock ? (isInCart ? "Added to Cart" : "Add to Cart") : "Out of Stock")}
           </button>
           <button 
             className="whatsapp-btn" 
