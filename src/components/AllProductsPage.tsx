@@ -5,6 +5,7 @@ import './AllProductsPage.css';
 
 const AllProductsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [inStockOnly, setInStockOnly] = useState(false);
@@ -189,7 +190,7 @@ const AllProductsPage: React.FC = () => {
 
       {/* Main Content */}
       <div className="main-content">
-        {/* Sidebar Filters */}
+        {/* Sidebar Filters (Desktop) */}
         <div className="filters-sidebar">
           <div className="filter-section">
             <h3>Categories</h3>
@@ -278,6 +279,22 @@ const AllProductsPage: React.FC = () => {
               {products.length} products found
             </div>
             <div className="products-controls">
+            {/* Mobile/Tablet: Categories toggle button */}
+            <button 
+              className="mobile-categories-btn"
+              onClick={() => setShowMobileFilters(prev => !prev)}
+              aria-expanded={showMobileFilters}
+              aria-controls="mobile-filters-panel"
+            >
+              Categories <ChevronDown size={16} />
+            </button>
+
+            {/* Desktop: text dropdown placeholder (hidden on mobile) */}
+            <div className="categories-dropdown">
+              <button className="categories-btn">
+                Categories <ChevronDown size={16} />
+              </button>
+            </div>
               <div className="sort-dropdown">
                 <button className="sort-btn">
                   Sort by <ChevronDown size={16} />
@@ -299,6 +316,91 @@ const AllProductsPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Mobile Filters Panel */}
+          {/* Render mobile filters only on small screens via CSS; safe on desktop because panel is display:none */}
+          {showMobileFilters && (
+            <div id="mobile-filters-panel" className="mobile-filters-panel">
+              <div className="filter-section">
+                <h3>Categories</h3>
+                <div className="filter-options">
+                  {categories.map((category) => (
+                    <label key={category} className="filter-option">
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(category)}
+                        onChange={() => handleCategoryChange(category)}
+                      />
+                      <span>{category}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="filter-section">
+                <h3>Price Range</h3>
+                <div className="price-range">
+                  <div className="price-slider">
+                    <input
+                      type="range"
+                      min="0"
+                      max="5000000"
+                      step="100000"
+                      className="slider"
+                    />
+                  </div>
+                  <div className="price-inputs">
+                    <input
+                      type="text"
+                      placeholder="Min"
+                      value={priceRange.min}
+                      onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Max"
+                      value={priceRange.max}
+                      onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="filter-section">
+                <h3>Availability</h3>
+                <div className="filter-options">
+                  <label className="filter-option">
+                    <input
+                      type="checkbox"
+                      checked={inStockOnly}
+                      onChange={(e) => setInStockOnly(e.target.checked)}
+                    />
+                    <span>In Stock Only</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="filter-section">
+                <h3>Rating</h3>
+                <div className="filter-options">
+                  {['4+ Stars', '3+ Stars', '2+ Stars', '1+ Stars'].map((rating) => (
+                    <label key={rating} className="filter-option">
+                      <input
+                        type="checkbox"
+                        checked={selectedRatings.includes(rating)}
+                        onChange={() => handleRatingChange(rating)}
+                      />
+                      <span>{rating}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <button className="reset-filters-btn" onClick={resetFilters}>
+                Reset Filters
+              </button>
+            </div>
+          )}
 
           <div className={`products-grid ${viewMode}`}>
             {products.map((product) => (

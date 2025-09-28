@@ -239,6 +239,7 @@
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 400px;
+  grid-template-areas: 'form plans';
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
@@ -278,6 +279,10 @@
   padding: 24px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
+
+/* Assign grid areas to allow reordering on mobile */
+.tracking-form-column { grid-area: form; }
+.service-plans-column { grid-area: plans; }
 
 .form-card h2 {
   font-size: 1.5rem;
@@ -704,6 +709,9 @@
   .content-grid {
     grid-template-columns: 1fr;
     gap: 24px;
+    grid-template-areas:
+      'plans'
+      'form';
   }
 
   .legal-grid {

@@ -251,6 +251,21 @@
   color: #17a589;
 }
 
+/* Desktop: larger action buttons */
+@media (min-width: 1025px) {
+  .product-card-component .brands-actions {
+    flex-direction: row;
+    gap: 12px;
+    justify-content: center;
+  }
+  .product-card-component .add-to-cart-btn,
+  .product-card-component .whatsapp-btn {
+    width: 220px; /* wider on desktop */
+    height: 40px;
+    padding: 0 16px;
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .product-card-component .brands-product-card {
@@ -342,19 +357,22 @@
   }
   
   .product-card-component .brands-actions {
-    gap: 6px; /* Reduced gap */
+    gap: 8px;
     margin-top: 8px;
+    flex-direction: row; /* horizontal layout on mobile */
+    flex-wrap: wrap;
+    justify-content: space-between;
   }
   
   .product-card-component .add-to-cart-btn,
   .product-card-component .whatsapp-btn {
-    width: 100%; /* Full width of container */
-    height: 32px; /* Slightly smaller height */
-    padding: 0 8px; /* Much smaller padding */
-    border-radius: 4px;
+    width: 168px; /* Fill 168px */
+    height: 36px; /* Fixed */
+    padding: 0 8px;
+    border-radius: 4.26px; /* Requested radius */
     border-width: 1px;
     opacity: 1;
-    font-size: 9px; /* Smaller font */
+    font-size: 11px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

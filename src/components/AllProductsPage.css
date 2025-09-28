@@ -38,15 +38,18 @@
 }
 
 /* Search Section */
+/* Reworked search section for full-width desktop and responsive mobile */
 .all-products-page .search-section {
   background: white;
-  padding: 2rem;
+  padding: 1.5rem 1rem;
   border-bottom: 1px solid #e9ecef;
 }
 
 .all-products-page .search-container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
+  padding: 0 1rem;
 }
 
 .all-products-page .search-input-container {
@@ -56,7 +59,9 @@
   border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 0.75rem 1rem;
-  max-width: 500px;
+  width: 100%;
+  max-width: 1100px; /* long on desktop */
+  margin: 0 auto;
 }
 
 .all-products-page .search-icon {
@@ -169,12 +174,14 @@
 }
 
 .all-products-page .price-inputs input {
-  flex: 1;
+  flex: 1 1 0;
   padding: 0.5rem;
   border: 1px solid #e9ecef;
   border-radius: 4px;
   font-size: 0.9rem;
   font-family: 'Open Sans', sans-serif;
+  min-width: 0; /* prevent overflow */
+  max-width: 140px; /* constrain width on desktop */
 }
 
 .all-products-page .price-inputs input::placeholder {
@@ -232,6 +239,37 @@
   gap: 1rem;
 }
 
+/* Categories image control (hidden by default, shown on mobile/tablet) */
+.all-products-page .categories-image {
+  display: none;
+  align-items: center;
+}
+
+.all-products-page .categories-image img {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+/* Desktop categories dropdown (shown by default, hidden on smaller screens) */
+.all-products-page .categories-dropdown {
+  display: flex;
+}
+
+.all-products-page .categories-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #495057;
+  font-family: 'Open Sans', sans-serif;
+}
+
 .all-products-page .sort-btn {
   display: flex;
   align-items: center;
@@ -287,6 +325,27 @@
   justify-content: center; /* Center the grid */
 }
 
+/* Mobile filters button and panel */
+.all-products-page .mobile-categories-btn {
+  display: none;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.all-products-page .mobile-filters-panel {
+  display: none; /* hidden by default; enabled via media query */
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
 .all-products-page .products-grid.grid {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   max-width: 100%;
@@ -304,13 +363,10 @@
   }
 
   .all-products-page .filters-sidebar {
-    width: 100%;
-    order: 2;
+    display: none; /* hide desktop sidebar on tablet/mobile */
   }
 
-  .all-products-page .products-section {
-    order: 1;
-  }
+  .all-products-page .products-section { order: 1; }
 
   .all-products-page .hero-content h1 {
     font-size: 2.5rem;
@@ -320,6 +376,12 @@
     flex-direction: column;
     gap: 0.5rem;
   }
+
+  /* Show categories image on tablet */
+  .all-products-page .categories-image { display: none; }
+  .all-products-page .categories-dropdown { display: none; }
+  .all-products-page .mobile-categories-btn { display: inline-flex; }
+  .all-products-page .mobile-filters-panel { display: block; }
 }
 
 @media (max-width: 768px) {
@@ -336,7 +398,7 @@
   }
 
   .all-products-page .search-section {
-    padding: 1rem;
+    padding: 1rem 0.5rem;
   }
 
   .all-products-page .products-header {
@@ -356,7 +418,18 @@
     max-width: 100%;
     justify-content: center;
   }
+
+  /* Show mobile dropdown button and panel */
+  .all-products-page .mobile-categories-btn { display: inline-flex; }
+  .all-products-page .mobile-filters-panel { display: block; }
+
+  /* search input full-width on small screens */
+  .all-products-page .search-container { padding: 0 0.5rem; }
+  .all-products-page .search-input-container { max-width: none; }
 }
+
+/* Prevent input overflow in mobile panel */
+.all-products-page .mobile-filters-panel .price-inputs input { min-width: 0; }
 
 @media (max-width: 576px) {
   .all-products-page .products-grid.grid {
