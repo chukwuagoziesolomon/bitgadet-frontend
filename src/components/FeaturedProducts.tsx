@@ -19,9 +19,9 @@ const FeaturedProducts: React.FC = () => {
       <div className="products-grid">
         {products.map((product: Product) => (
           <div key={product.id} className="product-card">
-            <img 
-              src={product.image} 
-              alt={product.name} 
+            <img
+              src={product.main_image}
+              alt={product.name}
               className="product-image"
               onError={(e) => {
                 // Fallback image in case of error
@@ -31,12 +31,12 @@ const FeaturedProducts: React.FC = () => {
             <div className="product-info">
               <h3>{product.name}</h3>
               <div className="product-meta">
-                <span className="price">${product.price.toFixed(2)}</span>
-                <span className="category">{product.category}</span>
+                <span className="price">₦{parseFloat(product.current_price).toLocaleString()}</span>
+                <span className="category">{product.category_name}</span>
               </div>
               <div className="rating">
                 {[...Array(5)].map((_, i) => (
-                  <span key={i} className={i < Math.round(product.rating) ? 'star filled' : 'star'}>
+                  <span key={i} className={i < Math.round(4.5) ? 'star filled' : 'star'}>
                     ★
                   </span>
                 ))}

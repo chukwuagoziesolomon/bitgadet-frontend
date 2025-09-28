@@ -1,17 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { Search, ChevronDown, Grid3X3, List } from 'lucide-react';
+import { Search, ChevronDown, Grid3X3, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import './AllProductsPage.css';
 import { apiRequest } from '../config/api';
+import { useAllProducts } from '../hooks/useAllProducts';
 
 const AllProductsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState({ min: '', max: '' });
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
-  const [wishlist, setWishlist] = useState<number[]>([]); // NEW
-  const [cart, setCart] = useState<Record<number, number>>({}); // NEW
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState('');
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [cart, setCart] = useState<Record<number, number>>({});
+
+  // Use the new hook with all filtering options
+  const {
+    products,
+    loading,
+    error,
+    totalCount,
+    hasNextPage,
+    hasPreviousPage
+  } = useAllProducts({
+    page: currentPage,
+    limit: 20,
+    search: searchQuery || undefined,
+    category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+    min_price: priceRange.min ? parseFloat(priceRange.min) : undefined,
+    max_price: priceRange.max ? parseFloat(priceRange.max) : undefined,
+    ordering: sortBy || undefined
+  });
 
   useEffect(() => {
     // Fetch wishlist on mount
@@ -24,113 +46,6 @@ const AllProductsPage: React.FC = () => {
     });
   }, []);
 
-  // Sample products data
-  const products = [
-    {
-      id: 1,
-      name: 'iPhone 15 Pro',
-      brand: 'Apple',
-      image: '/phone1.png',
-      price: 1850000,
-      originalPrice: 2100000,
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 64,
-      badges: ['-12% OFF', 'New', 'Bestseller'],
-      inStock: true
-    },
-    {
-      id: 2,
-      name: 'Play Station (PS) 5 Console',
-      brand: 'SONY',
-      image: 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80',
-      price: 1850000,
-      originalPrice: 2100000,
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 64,
-      badges: ['-14%', 'out of stock'],
-      inStock: false
-    },
-    {
-      id: 3,
-      name: 'Laptop Dell XPS 13 9360',
-      brand: 'DELL',
-      image: '/laptop1.png',
-      price: 1850000,
-      originalPrice: 2100000,
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 64,
-      badges: ['-12% OFF', 'New'],
-      inStock: true
-    },
-    {
-      id: 4,
-      name: 'Sony Smartwatch 15',
-      brand: 'SONY',
-      image: '/phonewatch2.png',
-      price: 1850000,
-      originalPrice: 2100000,
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 64,
-      badges: ['New', 'Bestseller'],
-      inStock: true
-    },
-    {
-      id: 5,
-      name: 'Galaxy S25 Ultra',
-      brand: 'Samsung',
-      image: '/phone1.png',
-      price: 1850000,
-      originalPrice: 2100000,
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 64,
-      badges: ['-12% OFF'],
-      inStock: true
-    },
-    {
-      id: 6,
-      name: 'MacBook Pro 16"',
-      brand: 'Apple',
-      image: '/laptop1.png',
-      price: 1850000,
-      originalPrice: 2100000,
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 64,
-      badges: ['-12% OFF', 'New', 'Bestseller'],
-      inStock: true
-    },
-    {
-      id: 7,
-      name: 'iPad Pro 12.9"',
-      brand: 'Apple',
-      image: '/phone1.png',
-      price: 1850000,
-      originalPrice: 2100000,
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 64,
-      badges: ['-12% OFF', 'New'],
-      inStock: true
-    },
-    {
-      id: 8,
-      name: 'AirPods Pro 2',
-      brand: 'Apple',
-      image: '/headphone.png',
-      price: 1850000,
-      originalPrice: 2100000,
-      usdtPrice: '650 USDT',
-      rating: 4.5,
-      reviews: 64,
-      badges: ['New', 'Bestseller'],
-      inStock: true
-    }
-  ];
 
   const categories = [
     'Smartphones',
@@ -157,11 +72,22 @@ const AllProductsPage: React.FC = () => {
     );
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
   const resetFilters = () => {
     setSelectedCategories([]);
     setPriceRange({ min: '', max: '' });
     setInStockOnly(false);
     setSelectedRatings([]);
+    setSearchQuery('');
+    setCurrentPage(1);
   };
 
   const handleAddToCart = (productId: number) => {
@@ -204,10 +130,12 @@ const AllProductsPage: React.FC = () => {
         <div className="search-container">
           <div className="search-input-container">
             <Search className="search-icon" size={24} />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Search products..."
               className="search-input"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
             />
           </div>
         </div>
@@ -292,6 +220,25 @@ const AllProductsPage: React.FC = () => {
             </div>
           </div>
 
+          <div className="filter-section">
+            <h3>Sort By</h3>
+            <div className="sort-options">
+              <select
+                className="sort-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="">Default</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="-name">Name (Z-A)</option>
+                <option value="current_price">Price (Low to High)</option>
+                <option value="-current_price">Price (High to Low)</option>
+                <option value="-created_at">Newest First</option>
+                <option value="created_at">Oldest First</option>
+              </select>
+            </div>
+          </div>
+
           <button className="reset-filters-btn" onClick={resetFilters}>
             Reset Filters
           </button>
@@ -301,22 +248,17 @@ const AllProductsPage: React.FC = () => {
         <div className="products-section">
           <div className="products-header">
             <div className="products-count">
-              {products.length} products found
+              {loading ? 'Loading...' : `${totalCount} products found`}
             </div>
             <div className="products-controls">
-              <div className="sort-dropdown">
-                <button className="sort-btn">
-                  Sort by <ChevronDown size={16} />
-                </button>
-              </div>
               <div className="view-toggle">
-                <button 
+                <button
                   className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                   onClick={() => setViewMode('grid')}
                 >
                   <Grid3X3 size={18} />
                 </button>
-                <button 
+                <button
                   className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
                   onClick={() => setViewMode('list')}
                 >
@@ -327,27 +269,96 @@ const AllProductsPage: React.FC = () => {
           </div>
 
           <div className={`products-grid ${viewMode}`}>
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                brand={product.brand}
-                image={product.image}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                usdtPrice={product.usdtPrice}
-                rating={product.rating}
-                reviews={product.reviews}
-                badges={product.badges}
-                inStock={product.inStock}
-                onAddToCart={handleAddToCart}
-                isInCart={cart[product.id] > 0}
-                isInWishlist={wishlist.includes(product.id)}
-                onToggleWishlist={handleToggleWishlist}
-              />
-            ))}
+            {loading ? (
+              <div className="loading-products">
+                <div className="loading-spinner">Loading products...</div>
+              </div>
+            ) : error ? (
+              <div className="error-products">
+                <div className="error-message">{error}</div>
+              </div>
+            ) : products.length === 0 ? (
+              <div className="empty-products">
+                <div className="empty-state">
+                  <div className="empty-icon-container">
+                    <Search size={64} className="empty-icon" />
+                  </div>
+                  <h3 className="empty-title">No products found</h3>
+                  <p className="empty-description">
+                    We couldn't find any products matching your criteria.
+                    Try adjusting your search terms or filters.
+                  </p>
+                  <button
+                    className="empty-action-btn"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCategories([]);
+                      setPriceRange({ min: '', max: '' });
+                      setInStockOnly(false);
+                      setSelectedRatings([]);
+                      setSortBy('');
+                      setCurrentPage(1);
+                    }}
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              </div>
+            ) : (
+              products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  slug={product.slug}
+                  name={product.name}
+                  brand={product.brand}
+                  image={product.main_image}
+                  price={parseFloat(product.current_price)}
+                  originalPrice={parseFloat(product.original_price)}
+                  usdtPrice={product.current_price_usdt}
+                  rating={4.5} // Default rating since not in API response
+                  reviews={0} // Default reviews since not in API response
+                  badges={
+                    product.is_featured ? ['featured'] :
+                    product.is_best_seller ? ['best-seller'] :
+                    product.is_new_arrival ? ['new-arrival'] : []
+                  }
+                  inStock={product.is_in_stock}
+                  onAddToCart={handleAddToCart}
+                  isInCart={cart[product.id] > 0}
+                  isInWishlist={wishlist.includes(product.id)}
+                  onToggleWishlist={handleToggleWishlist}
+                />
+              ))
+            )}
           </div>
+
+          {/* Pagination */}
+          {!loading && !error && totalCount > 20 && (
+            <div className="pagination">
+              <button
+                className="pagination-btn"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={!hasPreviousPage}
+              >
+                <ChevronLeft size={16} />
+                Previous
+              </button>
+
+              <span className="pagination-info">
+                Page {currentPage} of {Math.ceil(totalCount / 20)}
+              </span>
+
+              <button
+                className="pagination-btn"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={!hasNextPage}
+              >
+                Next
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

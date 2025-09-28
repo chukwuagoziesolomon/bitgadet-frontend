@@ -190,7 +190,7 @@ const AppContent: React.FC = () => {
               <Footer />
             </>
           } />
-          <Route path="/product/:id" element={
+          <Route path="/product/:slug" element={
             <>
               <Navbar />
               <main>

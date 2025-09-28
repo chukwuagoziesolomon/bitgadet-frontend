@@ -9,7 +9,8 @@ export const productService = {
       if (!response.ok) {
         throw new Error('Failed to fetch featured products');
       }
-      return await response.json();
+      const data = await response.json();
+      return data.products || [];
     } catch (error) {
       console.error('Error fetching featured products:', error);
       throw error;

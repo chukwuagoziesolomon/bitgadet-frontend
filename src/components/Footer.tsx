@@ -65,10 +65,10 @@ const Footer: React.FC = () => {
             <a href="https://facebook.com" aria-label="Facebook">
               <Facebook size={20} color="#ffffff" />
             </a>
-            <a href="https://instagram.com" aria-label="Instagram">
+            <a href="https://www.instagram.com/bitgadgetz_tech" aria-label="Instagram">
               <Instagram size={20} color="#ffffff" />
             </a>
-            <a href="https://twitter.com" aria-label="Twitter">
+            <a href="https://x.com/bitgadgetz" aria-label="Twitter">
               <Twitter size={20} color="#ffffff" />
             </a>
             <a href="https://linkedin.com" aria-label="LinkedIn">

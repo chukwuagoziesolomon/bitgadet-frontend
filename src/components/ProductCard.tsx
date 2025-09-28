@@ -5,6 +5,7 @@ import "./ProductCard.css";
 
 interface ProductCardProps {
   id: number;
+  slug?: string;
   name: string;
   brand: string;
   image: string;
@@ -26,6 +27,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({
   id,
+  slug,
   name,
   brand,
   image,
@@ -48,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const [addedToCart, setAddedToCart] = React.useState(false);
 
   const handleCardClick = () => {
-    navigate(`/product/${id}`);
+    navigate(`/product/${slug || id}`);
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {

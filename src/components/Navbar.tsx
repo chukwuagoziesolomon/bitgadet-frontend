@@ -236,7 +236,7 @@ const Navbar: React.FC = () => {
               <Phone size={20} />
               <div className="phone-text">
                 <span className="phone-label">Call us 24/7</span>
-                <span className="phone-number">07043567844</span>
+                <span className="phone-number">+2349138666111</span>
               </div>
             </div>
 

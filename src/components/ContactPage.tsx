@@ -86,8 +86,8 @@ const ContactPage: React.FC = () => {
                 </div>
                 <div className="contact-details">
                   <div className="contact-numbers">
-                    <span>+234 812 345 6789</span>
-                    <span>+234 901 234 5678</span>
+                    <span>+2349138666111</span>
+                    <span>+2349061728949</span>
                   </div>
                   <a href="tel:+2348123456789" className="contact-link">Contact Now →</a>
                 </div>

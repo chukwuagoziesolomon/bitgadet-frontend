@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Smartphone, Laptop, Gamepad2, Watch, Headphones, TrendingUp, TrendingDown } from 'lucide-react';
+import { Smartphone, Laptop, Gamepad2, Watch, Headphones, TrendingUp, TrendingDown, Star, Award, Sparkles, Package } from 'lucide-react';
 import ProductCard from './ProductCard';
 import './HomePage.css';
 import { apiRequest, API_CONFIG } from '../config/api';
+import { useFeaturedProducts } from '../hooks/useFeaturedProducts';
+import { useBestSellers } from '../hooks/useBestSellers';
+import { useNewArrivals } from '../hooks/useNewArrivals';
 
 const HomePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('featured');
@@ -15,6 +18,11 @@ const HomePage: React.FC = () => {
   const [wishlist, setWishlist] = useState<number[]>([]); // NEW
   const [cart, setCart] = useState<Record<number, number>>({}); // NEW
   const navigate = useNavigate();
+
+  // Use the new hooks for product data
+  const { products: featuredProducts, loading: featuredLoading, error: featuredError } = useFeaturedProducts();
+  const { products: bestSellers, loading: bestSellersLoading, error: bestSellersError } = useBestSellers();
+  const { products: newArrivals, loading: newArrivalsLoading, error: newArrivalsError } = useNewArrivals();
 
   // Fetch banners for hero slideshow
   useEffect(() => {
@@ -77,74 +85,45 @@ const HomePage: React.FC = () => {
     });
   }, []);
 
-  // Sample product data
-  const products = [
-    {
-      id: 1,
-      name: "iPhone 15 Pro Max",
-      brand: "Apple",
-      price: 850000,
-      originalPrice: 950000,
-      usdtPrice: 425,
-      rating: 4.8,
-      reviews: 124,
-      image: "/phone1.png",
-      badges: ["new-arrival"],
-      inStock: true
-    },
-    {
-      id: 2,
-      name: "Samsung Galaxy S24 Ultra",
-      brand: "Samsung",
-      price: 750000,
-      originalPrice: 850000,
-      usdtPrice: 375,
-      rating: 4.7,
-      reviews: 98,
-      image: "/phone2.png",
-      badges: ["best-seller"],
-      inStock: true
-    },
-    {
-      id: 3,
-      name: "MacBook Pro M3",
-      brand: "Apple",
-      price: 1200000,
-      originalPrice: 1350000,
-      usdtPrice: 600,
-      rating: 4.9,
-      reviews: 67,
-      image: "/laptop1.png",
-      badges: ["featured"],
-      inStock: true
-    },
-    {
-      id: 4,
-      name: "Dell XPS 15",
-      brand: "Dell",
-      price: 950000,
-      originalPrice: 1100000,
-      usdtPrice: 475,
-      rating: 4.6,
-      reviews: 89,
-      image: "/laptop2.png",
-      badges: ["featured"],
-      inStock: true
-    },
-    {
-      id: 5,
-      name: "AirPods Pro 2",
-      brand: "Apple",
-      price: 180000,
-      originalPrice: 200000,
-      usdtPrice: 90,
-      rating: 4.8,
-      reviews: 156,
-      image: "/airpods.png",
-      badges: ["best-seller"],
-      inStock: true
+  // Get current products based on active tab
+  const getCurrentProducts = () => {
+    switch (activeTab) {
+      case 'featured':
+        return featuredProducts;
+      case 'bestsellers':
+        return bestSellers;
+      case 'new':
+        return newArrivals;
+      default:
+        return featuredProducts;
     }
-  ];
+  };
+
+  const getCurrentLoading = () => {
+    switch (activeTab) {
+      case 'featured':
+        return featuredLoading;
+      case 'bestsellers':
+        return bestSellersLoading;
+      case 'new':
+        return newArrivalsLoading;
+      default:
+        return featuredLoading;
+    }
+  };
+
+  const getCurrentError = () => {
+    switch (activeTab) {
+      case 'featured':
+        return featuredError;
+      case 'bestsellers':
+        return bestSellersError;
+      case 'new':
+        return newArrivalsError;
+      default:
+        return featuredError;
+    }
+  };
 
   const handleAddToCart = (productId: number) => {
     apiRequest<any>('/api/cart/add/', {
@@ -392,48 +371,92 @@ const HomePage: React.FC = () => {
             <h2>Our Products</h2>
           </div>
           <div className="product-tabs">
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'featured' ? 'active' : ''}`}
               onClick={() => setActiveTab('featured')}
             >
+              <Star size={18} />
               Featured
             </button>
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'bestsellers' ? 'active' : ''}`}
               onClick={() => setActiveTab('bestsellers')}
             >
+              <Award size={18} />
               Best Sellers
             </button>
-            <button 
+            <button
               className={`tab-btn ${activeTab === 'new' ? 'active' : ''}`}
               onClick={() => setActiveTab('new')}
             >
+              <Sparkles size={18} />
               New Arrivals
             </button>
         </div>
 
           {/* Products Grid */}
-        <div className="products-grid">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                id={product.id}
-                name={product.name}
-                brand={product.brand}
-                price={product.price}
-                originalPrice={product.originalPrice}
-                usdtPrice={product.usdtPrice.toString()}
-                rating={product.rating}
-                reviews={product.reviews}
-                image={product.image}
-                badges={product.badges}
-                inStock={product.inStock}
-                onAddToCart={handleAddToCart}
-                isInCart={cart[product.id] > 0}
-                isInWishlist={wishlist.includes(product.id)} // NEW
-                onToggleWishlist={handleToggleWishlist} // NEW
-              />
-            ))}
+          <div className="products-grid">
+            {getCurrentLoading() ? (
+              <div className="loading-products">
+                <div className="loading-spinner">Loading products...</div>
+              </div>
+            ) : getCurrentError() ? (
+              <div className="error-products">
+                <div className="error-message">{getCurrentError()}</div>
+              </div>
+            ) : getCurrentProducts().length === 0 ? (
+              <div className="empty-products">
+                <div className="empty-state">
+                  {activeTab === 'featured' && (
+                    <>
+                      <Star size={48} className="empty-icon" />
+                      <h3>No Featured Products Yet</h3>
+                      <p>We're curating the best products for you. Check back soon!</p>
+                    </>
+                  )}
+                  {activeTab === 'bestsellers' && (
+                    <>
+                      <Award size={48} className="empty-icon" />
+                      <h3>No Best Sellers Yet</h3>
+                      <p>Our top-selling products will appear here once available.</p>
+                    </>
+                  )}
+                  {activeTab === 'new' && (
+                    <>
+                      <Sparkles size={48} className="empty-icon" />
+                      <h3>No New Arrivals Yet</h3>
+                      <p>Fresh products are on the way. Stay tuned for updates!</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            ) : (
+              getCurrentProducts().map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  slug={product.slug}
+                  name={product.name}
+                  brand={product.brand}
+                  price={parseFloat(product.current_price)}
+                  originalPrice={parseFloat(product.original_price)}
+                  usdtPrice={product.current_price_usdt}
+                  rating={4.5} // Default rating since not in API response
+                  reviews={0} // Default reviews since not in API response
+                  image={product.main_image}
+                  badges={
+                    product.is_featured ? ['featured'] :
+                    product.is_best_seller ? ['best-seller'] :
+                    product.is_new_arrival ? ['new-arrival'] : []
+                  }
+                  inStock={product.is_in_stock}
+                  onAddToCart={handleAddToCart}
+                  isInCart={cart[product.id] > 0}
+                  isInWishlist={wishlist.includes(product.id)}
+                  onToggleWishlist={handleToggleWishlist}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>

@@ -1,14 +1,34 @@
 import { useState, useEffect } from 'react';
-import { productService } from '../services/api';
+import { apiRequest, API_CONFIG } from '../config/api';
 
 export interface Product {
   id: number;
   name: string;
-  price: number;
-  image: string;
-  category: string;
-  rating: number;
-  // Add other product properties as needed
+  slug: string;
+  category_name: string;
+  short_description: string;
+  current_price: string;
+  current_price_usdt: string;
+  original_price: string;
+  original_price_usdt: string;
+  brand: string;
+  model: string;
+  main_image: string;
+  is_featured: boolean;
+  is_on_sale: boolean;
+  discount_percentage: number;
+  savings_usd: string;
+  savings_usdt: string;
+  is_in_stock: boolean;
+  is_new_arrival: boolean;
+  is_best_seller: boolean;
+  stock_quantity: number;
+  total_sales: number;
+  views_count: number;
+  created_at: string;
+  is_available: boolean;
+  is_new: boolean;
+  is_bestseller: boolean;
 }
 
 export const useFeaturedProducts = () => {
@@ -20,8 +40,8 @@ export const useFeaturedProducts = () => {
     const fetchFeaturedProducts = async () => {
       try {
         setLoading(true);
-        const data = await productService.getFeaturedProducts();
-        setProducts(data);
+        const data = await apiRequest<{ products: Product[] }>(API_CONFIG.ENDPOINTS.PRODUCTS_FEATURED_COLLECTION);
+        setProducts(data.products || []);
         setError(null);
       } catch (err) {
         setError('Failed to fetch featured products');
