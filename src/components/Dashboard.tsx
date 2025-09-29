@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Bell, 
+import {
+  Bell,
   ExternalLink,
   TrendingUp,
   Trash2,
-  Plus
+  Plus,
+  ShoppingBag,
+  Heart,
+  CheckCircle,
+  Clock,
+  Truck
 } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
+import OrderTrackingModal from './OrderTrackingModal';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
   // Sample user data
   const userData = {
@@ -44,9 +52,9 @@ const Dashboard: React.FC = () => {
       productName: 'iPhone 13 Pro',
       image: '/phone1.png',
       date: '1/10/2024',
-      status: 'Delivered',
+      status: 'En Route',
       price: 540000,
-      statusColor: 'delivered'
+      statusColor: 'en-route'
     },
     {
       id: 'ORD-2025-003',
@@ -108,8 +116,14 @@ const Dashboard: React.FC = () => {
 
   const handleSidebarNavigation = (itemId: string) => {
     setActiveTab(itemId);
-    
+
     switch (itemId) {
+      case 'profile':
+        navigate('/profile-settings');
+        break;
+      case 'orders':
+        navigate('/order-history');
+        break;
       case 'wishlist':
         navigate('/wishlist');
         break;
@@ -117,143 +131,152 @@ const Dashboard: React.FC = () => {
         // Navigate to support page when created
         console.log('Navigate to support page');
         break;
+      case 'logout':
+        navigate('/login');
+        break;
       default:
-        // Let the Sidebar component handle navigation for other items
         break;
     }
+  };
+
+  const handleTrackOrder = (order: any) => {
+    setSelectedOrder(order);
+    setTrackingModalOpen(true);
+  };
+
+  const closeTrackingModal = () => {
+    setTrackingModalOpen(false);
+    setSelectedOrder(null);
   };
 
   return (
     <div className="dashboard">
       <Navbar />
-      
-      <div className="dashboard-container">
-        {/* Sidebar */}
-        <Sidebar activeTab={activeTab} onItemClick={handleSidebarNavigation} />
 
-        {/* Main Content */}
-        <main className="dashboard-main">
-          {/* Welcome Section */}
-          <div className="welcome-section">
-            <div className="welcome-content">
-              <h1>Welcome back, {userData.name}</h1>
-              <p>Manage your account and track your orders.</p>
+      <Sidebar activeTab={activeTab} onItemClick={handleSidebarNavigation}>
+        {/* Header Cards */}
+        <div className="header-cards">
+          <div className="header-card">
+            <div className="card-icon">
+              <ShoppingBag size={20} color="#00C896" />
             </div>
-            <div className="profile-section">
-              <img src={userData.profileImage} alt="Profile" className="profile-image" />
-              <div className="profile-info">
-                <span className="profile-name">{userData.fullName}</span>
-                <span className="profile-role">{userData.role}</span>
-              </div>
-              <button className="notification-button">
-                <Bell size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Summary Cards */}
-          <div className="summary-cards">
-            <div className="summary-card">
-              <div className="card-header">
-                <h3>Total Orders</h3>
-                <span className="card-number">{userData.totalOrders}</span>
-              </div>
-              <div className="card-footer">
+            <div className="card-content">
+              <h3>Total Orders</h3>
+              <div className="card-value">
+                <span className="main-number">{userData.totalOrders}</span>
                 <div className="growth-indicator positive">
-                  <TrendingUp size={16} />
+                  <TrendingUp size={14} />
                   <span>+{userData.ordersGrowth}% from last month</span>
                 </div>
-                <span className="card-description">All-time purchases</span>
               </div>
             </div>
+          </div>
 
-            <div className="summary-card">
-              <div className="card-header">
-                <h3>Wishlist</h3>
-                <span className="card-number">{userData.wishlistCount}</span>
-              </div>
-              <div className="card-footer">
+          <div className="header-card">
+            <div className="card-icon">
+              <Heart size={20} color="#00C896" />
+            </div>
+            <div className="card-content">
+              <h3>Wishlist</h3>
+              <div className="card-value">
+                <span className="main-number">{userData.wishlistCount}</span>
                 <div className="growth-indicator positive">
-                  <TrendingUp size={16} />
+                  <TrendingUp size={14} />
                   <span>+{userData.wishlistGrowth} this week</span>
                 </div>
-                <span className="card-description">Saved for later</span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Main Content Grid */}
-          <div className="dashboard-grid">
-            {/* Recent Orders */}
-            <div className="orders-section">
-              <div className="section-header">
-                <h2>Recent Orders</h2>
-                <Link to="/orders" className="view-all-link">
-                  View All
-                  <ExternalLink size={16} />
-                </Link>
-              </div>
-              <div className="orders-list">
-                {recentOrders.slice(0, 4).map((order) => (
-                  <div key={order.id} className="order-item">
+        {/* Main Content Grid */}
+        <div className="dashboard-grid">
+          {/* Recent Orders */}
+          <div className="orders-section">
+            <div className="section-header">
+              <h2>Recent Orders</h2>
+              <Link to="/orders" className="view-all-link">
+                View All
+                <ExternalLink size={16} />
+              </Link>
+            </div>
+            <div className="orders-list">
+              {recentOrders.slice(0, 4).map((order) => (
+                <div key={order.id} className="order-item">
+                  <div className="order-item-content">
                     <img src={order.image} alt={order.productName} className="order-image" />
-                    <div className="order-details">
-                      <div className="order-id">{order.id}</div>
+                    <div className="order-info">
+                      <div className="order-header">
+                        <div className="order-id">{order.id}</div>
+                      </div>
                       <div className="order-product">{order.productName}</div>
-                      <div className="order-date">{order.date}</div>
-                      <Link to={`/track/${order.id}`} className="track-link">Track Order</Link>
-                    </div>
-                    <div className="order-status">
-                      <span className={`status-badge ${order.statusColor}`}>{order.status}</span>
-                      <div className="order-price">{formatNaira(order.price)}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Wishlist */}
-            <div className="wishlist-section">
-              <div className="section-header">
-                <h2>Wishlist</h2>
-                <Link to="/wishlist" className="view-all-link">
-                  View All
-                  <ExternalLink size={16} />
-                </Link>
-              </div>
-              <div className="wishlist-items">
-                {wishlistItems.slice(0, 4).map((item) => (
-                  <div key={item.id} className="wishlist-item">
-                    <img src={item.image} alt={item.productName} className="wishlist-image" />
-                    <div className="wishlist-details">
-                      <div className="item-brand">{item.brand}</div>
-                      <div className="item-name">{item.productName}</div>
-                      <div className="item-pricing">
-                        <span className="current-price">{formatNaira(item.currentPrice)}</span>
-                        <span className="original-price">{formatNaira(item.originalPrice)}</span>
-                        <span className="discount-tag">-{item.discount}%</span>
-                      </div>
-                      <div className="stock-info">
-                        <span className="stock-amount">{formatNaira(item.stock)} In Stock</span>
+                      <div className="order-meta">
+                        <div className="order-date">{order.date}</div>
+                        <button onClick={() => handleTrackOrder(order)} className="track-link">Track Order</button>
                       </div>
                     </div>
-                    <div className="wishlist-actions">
-                      <button className="action-button add-to-cart">
-                        <Plus size={16} />
-                      </button>
-                      <button className="action-button remove">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
                   </div>
-                ))}
-              </div>
+                  <div className="order-right-section">
+                    <span className={`status-badge ${order.statusColor}`}>
+                      {order.statusColor === 'delivered' && <CheckCircle size={12} />}
+                      {order.statusColor === 'processing' && <Clock size={12} />}
+                      {order.statusColor === 'en-route' && <Truck size={12} />}
+                      {order.status}
+                    </span>
+                    <div className="order-price">{formatNaira(order.price)}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        </main>
-      </div>
-      
+
+          {/* Wishlist */}
+          <div className="wishlist-section">
+            <div className="section-header">
+              <h2><Heart size={20} className="section-icon" />Wishlist</h2>
+              <Link to="/wishlist" className="view-all-link">
+                View All
+                <ExternalLink size={16} />
+              </Link>
+            </div>
+            <div className="wishlist-items">
+              {wishlistItems.slice(0, 4).map((item) => (
+                <div key={item.id} className="wishlist-item">
+                  <img src={item.image} alt={item.productName} className="wishlist-image" />
+                  <div className="wishlist-info">
+                    <div className="item-brand">{item.brand}</div>
+                    <div className="item-name">{item.productName}</div>
+                    <div className="item-pricing">
+                      <span className="current-price">{formatNaira(item.currentPrice)}</span>
+                      <span className="original-price">{formatNaira(item.originalPrice)}</span>
+                      <span className="discount-badge">-{item.discount}%</span>
+                    </div>
+                    <div className="stock-info">
+                      <span className="stock-text">{formatNaira(item.stock)} in stock</span>
+                    </div>
+                  </div>
+                  <div className="wishlist-actions">
+                    <button className="cart-button">
+                      <ShoppingBag size={16} />
+                    </button>
+                    <button className="remove-button">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Sidebar>
+
       <Footer />
+
+      <OrderTrackingModal
+        isOpen={trackingModalOpen}
+        onClose={closeTrackingModal}
+        order={selectedOrder}
+      />
     </div>
   );
 };

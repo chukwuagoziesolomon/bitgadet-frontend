@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MessageCircle, Clock, Send, CheckCircle, X } from 'lucide-react';
 import { apiRequest } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './ContactPage.css';
 
 const ContactPage: React.FC = () => {
+  const { showError, showSuccess } = useToast();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -42,6 +44,7 @@ const ContactPage: React.FC = () => {
 
       if (response) {
         setShowSuccessModal(true);
+        showSuccess('Success', 'Your message has been sent successfully!');
         // Reset form
         setFormData({
           fullName: '',
@@ -51,9 +54,19 @@ const ContactPage: React.FC = () => {
           message: ''
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to submit contact form:', error);
-      // You could add error handling here
+      
+      // Handle validation errors from API
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        const errorMessages = Object.values(errors).flat().join(', ');
+        showError('Validation Error', errorMessages);
+      } else if (error.response?.data?.message) {
+        showError('Error', error.response.data.message);
+      } else {
+        showError('Error', 'Failed to send your message. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }

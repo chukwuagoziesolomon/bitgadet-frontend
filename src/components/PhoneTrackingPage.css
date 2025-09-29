@@ -6,7 +6,7 @@
 
 /* Hero Section */
 .phone-tracking-page .hero-section {
-  background: #00C896;
+  background: #00C896 !important;
   color: white;
   padding: 80px 20px;
   text-align: center;

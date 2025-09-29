@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, ChevronDown, Search, Menu, Heart, Phone, FileText, HelpCircle, LogOut, X } from 'lucide-react';
-import TrendingUp from './icons/TrendingUp';
+import { ShoppingCart, User, ChevronDown, Search, Menu, Heart, Phone, FileText, HelpCircle, LogOut, X, BarChart3 } from 'lucide-react';
 import { apiRequest } from '../config/api';
 import './Navbar.css';
 
@@ -12,6 +11,7 @@ const Navbar: React.FC = () => {
   const [isServicesOpen, setIsServicesOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileMoreOpen, setIsMobileMoreOpen] = useState(false);
+  const [isTabletMenuOpen, setIsTabletMenuOpen] = useState(false);
 
   // Search functionality
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,7 +39,7 @@ const Navbar: React.FC = () => {
 
   // Sidebar items for dashboard
   const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: TrendingUp, path: '/dashboard' },
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3, path: '/dashboard' },
     { id: 'profile', label: 'Profile Settings', icon: User, path: '/profile-settings' },
     { id: 'orders', label: 'Order History', icon: FileText, path: '/order-history' },
     { id: 'wishlist', label: 'Wishlist', icon: Heart, path: '/wishlist' },
@@ -297,9 +297,215 @@ const Navbar: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+       </div>
 
-      {/* Mobile View */}
+       {/* Tablet View */}
+       <div className="tablet-view">
+         {/* Top Bar */}
+         <div className="navbar-top">
+           <div className="navbar-container">
+             {/* Logo */}
+             <Link to="/" className="logo-link">
+               <img src="/logo.png" alt="BitGadgetz" className="logo-image" />
+             </Link>
+
+             {/* Search bar */}
+             <div className="search-container" ref={searchRef}>
+               <form onSubmit={handleSearchSubmit} className="search-wrapper">
+                 <input
+                   type="text"
+                   placeholder="Find your dream device here"
+                   className="search-input"
+                   value={searchQuery}
+                   onChange={handleSearchInputChange}
+                 />
+                 {searchQuery && (
+                   <button
+                     type="button"
+                     className="clear-search-button"
+                     onClick={clearSearch}
+                   >
+                     <X size={16} />
+                   </button>
+                 )}
+                 <button type="submit" className="search-button">
+                   <Search size={20} />
+                 </button>
+               </form>
+
+               {/* Search Results Dropdown */}
+               {isSearchDropdownOpen && searchResults && (
+                 <div className="search-dropdown">
+                   {isSearching ? (
+                     <div className="search-loading">Searching...</div>
+                   ) : searchResults.has_results ? (
+                     <>
+                       {/* Products Section */}
+                       {searchResults.products?.count > 0 && (
+                         <div className="search-section">
+                           <div className="search-section-header">
+                             <h4>Products ({searchResults.products.count})</h4>
+                           </div>
+                           <div className="search-items">
+                             {searchResults.products.results.map((product: any) => (
+                               <Link
+                                 key={product.id}
+                                 to={product.url}
+                                 className="search-item"
+                                 onClick={() => setIsSearchDropdownOpen(false)}
+                               >
+                                 <img src={product.main_image} alt={product.name} className="search-item-image" />
+                                 <div className="search-item-info">
+                                   <div className="search-item-name">{product.name}</div>
+                                   <div className="search-item-price">₦{parseFloat(product.current_price).toLocaleString()}</div>
+                                 </div>
+                               </Link>
+                             ))}
+                           </div>
+                         </div>
+                       )}
+
+                       {/* Brands Section */}
+                       {searchResults.brands?.count > 0 && (
+                         <div className="search-section">
+                           <div className="search-section-header">
+                             <h4>Brands ({searchResults.brands.count})</h4>
+                           </div>
+                           <div className="search-items">
+                             {searchResults.brands.results.map((brand: any) => (
+                               <Link
+                                 key={brand.id}
+                                 to={brand.url}
+                                 className="search-item brand-item"
+                                 onClick={() => setIsSearchDropdownOpen(false)}
+                               >
+                                 <img src={brand.logo} alt={brand.display_name} className="search-item-image brand-logo" />
+                                 <div className="search-item-info">
+                                   <div className="search-item-name">{brand.display_name}</div>
+                                 </div>
+                               </Link>
+                             ))}
+                           </div>
+                         </div>
+                       )}
+
+                       {/* View All Results */}
+                       <div className="search-footer">
+                         <button
+                           className="view-all-results"
+                           onClick={() => {
+                             navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+                             setIsSearchDropdownOpen(false);
+                           }}
+                         >
+                           View all {searchResults.total_results} results
+                         </button>
+                       </div>
+                     </>
+                   ) : (
+                     <div className="search-no-results">
+                       No results found for "{searchQuery}"
+                     </div>
+                   )}
+                 </div>
+               )}
+             </div>
+
+             {/* Right side icons */}
+             <div className="navbar-right">
+               <Link to="/wishlist" className="nav-icon">
+                 <Heart size={20} />
+               </Link>
+               <Link to="/cart" className="nav-icon">
+                 <ShoppingCart size={20} />
+               </Link>
+               <Link to="/login" className="nav-icon">
+                 <User size={20} />
+               </Link>
+             </div>
+           </div>
+         </div>
+
+         {/* Bottom Navigation Bar */}
+         <div className="navbar-bottom">
+           <div className="navbar-container">
+             {/* Left: Hamburger Menu with Categories */}
+             <div className="tablet-left">
+               <button
+                 className="tablet-menu-button"
+                 onClick={() => setIsTabletMenuOpen(!isTabletMenuOpen)}
+               >
+                 <Menu size={24} />
+               </button>
+               <span className="tablet-nav-text">
+                 {isInDashboard ? 'Dashboard Menu' : 'Categories'}
+               </span>
+
+               {/* Tablet Menu Dropdown */}
+               {isTabletMenuOpen && (
+                 <div className="tablet-menu-dropdown">
+                   {isInDashboard ? (
+                     // Dashboard sidebar content
+                     <div className="tablet-menu-content">
+                       {sidebarItems.map((item) => (
+                         <Link
+                           key={item.id}
+                           to={item.path || '#'}
+                           className="tablet-menu-item"
+                           onClick={() => setIsTabletMenuOpen(false)}
+                         >
+                           <item.icon size={18} />
+                           <span>{item.label}</span>
+                         </Link>
+                       ))}
+                     </div>
+                   ) : (
+                     // Regular categories content
+                     <div className="tablet-menu-content">
+                       <Link
+                         to="/all-products"
+                         className="tablet-menu-item"
+                         onClick={() => setIsTabletMenuOpen(false)}
+                       >
+                         <span>All Products</span>
+                       </Link>
+                       <Link
+                         to="/categories"
+                         className="tablet-menu-item"
+                         onClick={() => setIsTabletMenuOpen(false)}
+                       >
+                         <span>Categories</span>
+                       </Link>
+                     </div>
+                   )}
+                 </div>
+               )}
+             </div>
+
+             {/* Center: Main Navigation */}
+             <div className="tablet-navigation">
+               <Link to="/home" className={isActive('/home') ? 'active' : ''}>Home</Link>
+               <Link to="/brands" className={isActive('/brands') ? 'active' : ''}>Brands</Link>
+               <div className="tablet-services-dropdown" ref={servicesRef}>
+                 <button
+                   className={`tablet-services-button ${isServicesOpen || isActive('/services') || isActive('/phone-tracking') || isActive('/phone-swap') ? 'active' : ''}`}
+                   onClick={() => setIsServicesOpen(!isServicesOpen)}
+                 >
+                   Services <ChevronDown size={16} />
+                 </button>
+                 <div className={`tablet-services-menu ${isServicesOpen ? 'show' : ''}`}>
+                   <Link to="/phone-tracking" className={isActive('/phone-tracking') ? 'active' : ''}>Phone Tracking</Link>
+                   <Link to="/phone-swap" className={isActive('/phone-swap') ? 'active' : ''}>Phone Swap</Link>
+                 </div>
+               </div>
+               <Link to="/about" className={isActive('/about') ? 'active' : ''}>About Us</Link>
+               <Link to="/contact" className={isActive('/contact') ? 'active' : ''}>Contact Us</Link>
+             </div>
+           </div>
+         </div>
+       </div>
+
+       {/* Mobile View */}
       <div className="mobile-view">
         {/* Mobile Top Bar */}
         <div className="mobile-top-bar">

@@ -20,14 +20,12 @@ const ProductCardExample: React.FC = () => {
 
   const handleAddToCart = (productId: number) => {
     console.log(`Adding product ${productId} to cart`);
-    // Add your cart logic here
-    alert(`Product ${productId} added to cart!`);
+    // Cart logic handled by ProductCard component - no alert needed
   };
 
   const handleToggleWishlist = (productId: number) => {
     console.log(`Toggling wishlist for product ${productId}`);
-    // Add your wishlist logic here
-    alert(`Product ${productId} wishlist toggled!`);
+    // Wishlist logic handled by ProductCard component - no alert needed
   };
 
   return (

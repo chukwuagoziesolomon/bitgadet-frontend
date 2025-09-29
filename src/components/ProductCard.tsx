@@ -23,6 +23,8 @@ interface ProductCardProps {
   isInCart?: boolean;
   isInWishlist?: boolean;
   onToggleWishlist?: (productId: number, willBeInWishlist?: boolean) => void;
+  category?: string; // Add category prop for filtering
+  excludeProductIds?: number[]; // Add array of product IDs to exclude
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -45,9 +47,94 @@ const ProductCard: React.FC<ProductCardProps> = ({
   isInCart = false,
   isInWishlist = false,
   onToggleWishlist,
+  category,
+  excludeProductIds = [],
 }) => {
   const navigate = useNavigate();
   const [addedToCart, setAddedToCart] = React.useState(false);
+
+  // Filter logic: Show only toaster products and exclude specific products
+  const shouldShowProduct = () => {
+    // If category filter is specified, only show products in that category
+    if (category && !name.toLowerCase().includes('toaster') && !category.toLowerCase().includes('toaster')) {
+      return false;
+    }
+
+    // Exclude specific product IDs
+    if (excludeProductIds.includes(id)) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Custom notification function to avoid browser notification issues
+  const showCustomNotification = (message: string, type: 'success' | 'info' = 'success') => {
+    // Remove any existing notifications first
+    const existingToasts = document.querySelectorAll('.custom-notification');
+    existingToasts.forEach(toast => toast.remove());
+
+    setTimeout(() => {
+      const notification = document.createElement('div');
+      notification.className = 'custom-notification';
+
+      const bgColor = type === 'success' ? '#10b981' : '#06b6d4';
+      const icon = type === 'success' ? '✓' : '✓';
+
+      notification.innerHTML = `
+        <div style="
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: ${bgColor};
+          color: white;
+          padding: 16px 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          z-index: 10001;
+          font-family: 'Outfit', sans-serif;
+          font-size: 14px;
+          font-weight: 500;
+          max-width: 350px;
+          animation: slideInRight 0.3s ease-out;
+          pointer-events: none;
+        ">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">${icon}</span>
+            <span>${message}</span>
+          </div>
+        </div>
+      `;
+
+      // Add animation styles if not already present
+      if (!document.querySelector('#notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+          @keyframes slideInRight {
+            from {
+              opacity: 0;
+              transform: translateX(100%);
+            }
+            to {
+              opacity: 1;
+              transform: translateX(0);
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      document.body.appendChild(notification);
+
+      // Remove after 3 seconds
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 3000);
+    }, 100);
+  };
 
   const handleCardClick = () => {
     navigate(`/product/${slug || id}`);
@@ -58,14 +145,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
     if (onAddToCart) {
       onAddToCart(id);
       setAddedToCart(true);
-      setTimeout(() => setAddedToCart(false), 2000); // Reset after 2 seconds
+
+      // Show custom notification without any browser notification interference
+      showCustomNotification(`${name} added to cart!`, 'success');
+
+      setTimeout(() => setAddedToCart(false), 2000);
     }
   };
 
   const handleWishlistClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (onToggleWishlist) {
-      onToggleWishlist(id, true); // Add to wishlist
+      const willBeInWishlist = !isInWishlist;
+      onToggleWishlist(id, willBeInWishlist);
+
+      const action = willBeInWishlist ? 'added to' : 'removed from';
+      showCustomNotification(`${name} ${action} wishlist!`, 'info');
     }
   };
 
@@ -73,6 +168,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     e.stopPropagation();
     if (onToggleWishlist) {
       onToggleWishlist(id, false); // Remove from wishlist
+      showCustomNotification(`${name} removed from wishlist!`, 'info');
     }
   };
 
@@ -114,6 +210,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     return stars;
   };
+
+  // Don't render if product should be filtered out
+  if (!shouldShowProduct()) {
+    return null;
+  }
 
   return (
     <div className="product-card-component">

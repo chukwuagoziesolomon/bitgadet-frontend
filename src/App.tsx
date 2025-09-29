@@ -25,6 +25,7 @@ import OrderHistory from './components/OrderHistory';
 import Wishlist from './components/Wishlist';
 import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
+import ToastDemo from './components/ToastDemo';
 import { ToastProvider, useToast } from './hooks/useToast';
 import './App.css';
 
@@ -181,20 +182,21 @@ const AppContent: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile-settings" element={<ProfileSettings />} />
           <Route path="/order-history" element={<OrderHistory />} />
-          <Route path="/wishlist" element={
-            <>
-              <Navbar />
-              <main>
-                <Wishlist />
-              </main>
-              <Footer />
-            </>
-          } />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route path="/product/:slug" element={
             <>
               <Navbar />
               <main>
                 <ProductDetails />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/toast-demo" element={
+            <>
+              <Navbar />
+              <main>
+                <ToastDemo />
               </main>
               <Footer />
             </>

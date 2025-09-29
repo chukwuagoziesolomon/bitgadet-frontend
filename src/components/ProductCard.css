@@ -80,6 +80,8 @@
 .product-card-component .wishlist-btn.in-wishlist {
   background-color: #20c997;
   color: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(32, 201, 151, 0.3);
 }
 
 /* Product Image */
@@ -274,6 +276,59 @@
   background: #e8f8f5;
   border-color: #17a589;
   color: #17a589;
+}
+
+/* Tablet: optimized size for tablet screens */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .product-card-component .brands-product-card {
+    max-width: 280px; /* Larger than mobile but smaller than desktop */
+    margin: 0 auto;
+    padding: 24px; /* More padding for better spacing */
+  }
+
+  .product-card-component .brands-product-image-container {
+    min-height: 220px; /* Larger than mobile */
+    padding: 24px; /* More padding */
+    margin: 20px 0;
+  }
+
+  .product-card-component .brands-product-image {
+    max-height: 200px; /* Larger images */
+  }
+
+  .product-card-component .brands-product-name {
+    font-size: 20px; /* Larger text */
+    margin-bottom: 12px;
+  }
+
+  .product-card-component .brands-product-brand {
+    font-size: 14px; /* Slightly larger */
+    margin-bottom: 8px;
+  }
+
+  .product-card-component .brands-current-price {
+    font-size: 22px; /* Larger price */
+  }
+
+  .product-card-component .brands-original-price {
+    font-size: 18px; /* Larger original price */
+  }
+
+  .product-card-component .brands-actions {
+    flex-direction: row; /* Horizontal layout like desktop */
+    gap: 12px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+
+  .product-card-component .add-to-cart-btn,
+  .product-card-component .whatsapp-btn {
+    width: 200px; /* Wider than mobile but not as wide as desktop */
+    height: 42px; /* Taller buttons */
+    padding: 0 16px;
+    font-size: 13px; /* Larger font */
+    border-radius: 6px;
+  }
 }
 
 /* Desktop: larger action buttons */

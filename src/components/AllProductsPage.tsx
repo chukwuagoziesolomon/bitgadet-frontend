@@ -4,7 +4,6 @@ import ProductCard from './ProductCard';
 import './AllProductsPage.css';
 import { apiRequest } from '../config/api';
 import { useAllProducts } from '../hooks/useAllProducts';
-
 const AllProductsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -17,6 +16,11 @@ const AllProductsPage: React.FC = () => {
   const [sortBy, setSortBy] = useState('');
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [cart, setCart] = useState<Record<number, number>>({});
+  const [productFilter, setProductFilter] = useState<'all' | 'toasters' | 'exclude-specific'>('all');
+  // Add specific product IDs to exclude here (e.g., the toaster model from the image)
+  const [excludedProductIds, setExcludedProductIds] = useState<number[]>([
+    // Example: 123, 456  // Replace with actual product IDs to exclude
+  ]);
 
   // Use the new hook with all filtering options
   const {
@@ -37,13 +41,20 @@ const AllProductsPage: React.FC = () => {
   });
 
   useEffect(() => {
-    // Fetch wishlist on mount
+    // Fetch wishlist on mount (silent - no error toasts)
     apiRequest<any>('/api/wishlist/').then(res => {
       setWishlist(res.wishlist || []);
+    }).catch(error => {
+      console.error('Failed to fetch wishlist:', error);
+      // Silent failure - don't show error toast to user
     });
-    // Fetch cart on mount
+
+    // Fetch cart on mount (silent - no error toasts)
     apiRequest<any>('/api/cart/').then(res => {
       setCart(res.cart || {});
+    }).catch(error => {
+      console.error('Failed to fetch cart:', error);
+      // Silent failure - don't show error toast to user
     });
   }, []);
 
@@ -89,6 +100,63 @@ const AllProductsPage: React.FC = () => {
     setSelectedRatings([]);
     setSearchQuery('');
     setCurrentPage(1);
+    setProductFilter('all');
+    setExcludedProductIds([]);
+  };
+
+  // Filter products based on current filter settings
+  const getFilteredProducts = () => {
+    let filteredProducts = products;
+
+    // Apply toaster filter
+    if (productFilter === 'toasters') {
+      filteredProducts = filteredProducts.filter(product =>
+        product.name.toLowerCase().includes('toaster')
+      );
+    }
+
+    // Apply product exclusions
+    if (excludedProductIds.length > 0) {
+      filteredProducts = filteredProducts.filter(product =>
+        !excludedProductIds.includes(product.id)
+      );
+    }
+
+    return filteredProducts;
+  };
+
+  // Get filter props for ProductCard
+  const getProductCardProps = (product: any) => {
+    const baseProps = {
+      key: product.id,
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      brand: product.brand,
+      image: product.main_image,
+      price: parseFloat(product.current_price),
+      originalPrice: parseFloat(product.original_price),
+      usdtPrice: product.current_price_usdt,
+      rating: 4.5,
+      reviews: 0,
+      badges: product.is_featured ? ['featured'] : product.is_best_seller ? ['best-seller'] : product.is_new_arrival ? ['new-arrival'] : [],
+      inStock: product.is_in_stock,
+      onAddToCart: handleAddToCart,
+      isInCart: cart[product.id] > 0,
+      isInWishlist: wishlist.includes(product.id),
+      onToggleWishlist: handleToggleWishlist,
+    };
+
+    // Add filtering props based on current filter state
+    if (productFilter === 'toasters') {
+      return {
+        ...baseProps,
+        category: 'toasters',
+        excludeProductIds: excludedProductIds,
+      };
+    }
+
+    return baseProps;
   };
 
   const handleAddToCart = (productId: number) => {
@@ -97,6 +165,10 @@ const AllProductsPage: React.FC = () => {
       body: JSON.stringify({ product_id: productId, quantity: 1 }),
     }).then(res => {
       setCart(res.cart || {});
+      // Toast notification handled by ProductCard component
+    }).catch(error => {
+      console.error('Failed to add to cart:', error);
+      // Silent failure - ProductCard already shows success toast
     });
   };
 
@@ -108,6 +180,10 @@ const AllProductsPage: React.FC = () => {
       body: JSON.stringify({ product_id: productId }),
     }).then(res => {
       setWishlist(res.wishlist || []);
+      // Toast notification handled by ProductCard component
+    }).catch(error => {
+      console.error('Failed to toggle wishlist:', error);
+      // Silent failure - ProductCard already shows appropriate toast
     });
   };
 
@@ -131,8 +207,8 @@ const AllProductsPage: React.FC = () => {
         <div className="search-container">
           <div className="search-input-container">
             <Search className="search-icon" size={24} />
-            <input
-              type="text"
+            <input 
+              type="text" 
               placeholder="Search products..."
               className="search-input"
               value={searchQuery}
@@ -222,6 +298,32 @@ const AllProductsPage: React.FC = () => {
           </div>
 
           <div className="filter-section">
+            <h3>Product Filter</h3>
+            <div className="filter-options">
+              <label className="filter-option">
+                <input
+                  type="radio"
+                  name="productFilter"
+                  value="all"
+                  checked={productFilter === 'all'}
+                  onChange={(e) => setProductFilter(e.target.value as any)}
+                />
+                <span>All Products</span>
+              </label>
+              <label className="filter-option">
+                <input
+                  type="radio"
+                  name="productFilter"
+                  value="toasters"
+                  checked={productFilter === 'toasters'}
+                  onChange={(e) => setProductFilter(e.target.value as any)}
+                />
+                <span>Toaster Products Only</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="filter-section">
             <h3>Sort By</h3>
             <div className="sort-options">
               <select
@@ -249,7 +351,7 @@ const AllProductsPage: React.FC = () => {
         <div className="products-section">
           <div className="products-header">
             <div className="products-count">
-              {loading ? 'Loading...' : `${totalCount} products found`}
+              {loading ? 'Loading...' : `${getFilteredProducts().length} of ${totalCount} products found`}
             </div>
             <div className="products-controls">
             {/* Mobile/Tablet: Categories toggle button */}
@@ -266,16 +368,16 @@ const AllProductsPage: React.FC = () => {
             <div className="categories-dropdown">
               <button className="categories-btn">
                 Categories <ChevronDown size={16} />
-              </button>
-            </div>
+                </button>
+              </div>
               <div className="view-toggle">
-                <button
+                <button 
                   className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
                   onClick={() => setViewMode('grid')}
                 >
                   <Grid3X3 size={18} />
                 </button>
-                <button
+                <button 
                   className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
                   onClick={() => setViewMode('list')}
                 >
@@ -379,16 +481,20 @@ const AllProductsPage: React.FC = () => {
               <div className="error-products">
                 <div className="error-message">{error}</div>
               </div>
-            ) : products.length === 0 ? (
+            ) : getFilteredProducts().length === 0 ? (
               <div className="empty-products">
                 <div className="empty-state">
                   <div className="empty-icon-container">
                     <Search size={64} className="empty-icon" />
                   </div>
-                  <h3 className="empty-title">No products found</h3>
+                  <h3 className="empty-title">
+                    {productFilter === 'toasters' ? 'No toaster products found' : 'No products found'}
+                  </h3>
                   <p className="empty-description">
-                    We couldn't find any products matching your criteria.
-                    Try adjusting your search terms or filters.
+                    {productFilter === 'toasters'
+                      ? 'No toaster products match your criteria. Try adjusting your filters.'
+                      : 'We couldn\'t find any products matching your criteria. Try adjusting your search terms or filters.'
+                    }
                   </p>
                   <button
                     className="empty-action-btn"
@@ -400,6 +506,8 @@ const AllProductsPage: React.FC = () => {
                       setSelectedRatings([]);
                       setSortBy('');
                       setCurrentPage(1);
+                      setProductFilter('all');
+                      setExcludedProductIds([]);
                     }}
                   >
                     Clear All Filters
@@ -407,29 +515,9 @@ const AllProductsPage: React.FC = () => {
                 </div>
               </div>
             ) : (
-              products.map((product) => (
+              getFilteredProducts().map((product) => (
                 <ProductCard
-                  key={product.id}
-                  id={product.id}
-                  slug={product.slug}
-                  name={product.name}
-                  brand={product.brand}
-                  image={product.main_image}
-                  price={parseFloat(product.current_price)}
-                  originalPrice={parseFloat(product.original_price)}
-                  usdtPrice={product.current_price_usdt}
-                  rating={4.5} // Default rating since not in API response
-                  reviews={0} // Default reviews since not in API response
-                  badges={
-                    product.is_featured ? ['featured'] :
-                    product.is_best_seller ? ['best-seller'] :
-                    product.is_new_arrival ? ['new-arrival'] : []
-                  }
-                  inStock={product.is_in_stock}
-                  onAddToCart={handleAddToCart}
-                  isInCart={cart[product.id] > 0}
-                  isInWishlist={wishlist.includes(product.id)}
-                  onToggleWishlist={handleToggleWishlist}
+                  {...getProductCardProps(product)}
                 />
               ))
             )}
@@ -459,7 +547,7 @@ const AllProductsPage: React.FC = () => {
                 Next
                 <ChevronRight size={16} />
               </button>
-            </div>
+          </div>
           )}
         </div>
       </div>

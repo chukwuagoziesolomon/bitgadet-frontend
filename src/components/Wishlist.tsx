@@ -1,188 +1,129 @@
 import React, { useState } from 'react';
-import { ShoppingCart, Trash2, TrendingUp, TrendingDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, ShoppingBag, Trash2 } from 'lucide-react';
+import Navbar from './Navbar';
+import Footer from './Footer';
 import Sidebar from './Sidebar';
 import './Wishlist.css';
 
-interface WishlistItem {
-  id: number;
-  name: string;
-  brand: string;
-  image: string;
-  currentPrice: number;
-  originalPrice: number;
-  discount: number;
-  savings: number;
-  stockStatus: 'in-stock' | 'low-stock' | 'out-of-stock';
-  priceTrend: 'up' | 'down';
-}
-
 const Wishlist: React.FC = () => {
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('wishlist');
+
+  // Sample user data
+  const userData = {
+    name: 'Emmanuel',
+    fullName: 'Ux Nuel',
+    role: 'Ux Designer',
+    profileImage: '/profile-placeholder.png',
+  };
+
+  // Sample wishlist data
+  const wishlistItems = [
     {
       id: 1,
-      name: "iPhone 15 Pro Max",
-      brand: "Apple",
-      image: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=300&h=300&fit=crop",
+      brand: 'Apple',
+      productName: 'iPhone 15 Pro Max',
+      image: '/phone1.png',
       currentPrice: 1850000,
       originalPrice: 2100000,
       discount: 20,
-      savings: 250000,
-      stockStatus: 'in-stock',
-      priceTrend: 'up'
+      stock: 50000
     },
     {
       id: 2,
-      name: "iPhone 15 Pro Max",
-      brand: "Apple",
-      image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&h=300&fit=crop",
+      brand: 'Apple',
+      productName: 'iPhone 15 Pro Max',
+      image: '/phone1.png',
       currentPrice: 1850000,
       originalPrice: 2100000,
       discount: 20,
-      savings: 250000,
-      stockStatus: 'low-stock',
-      priceTrend: 'down'
+      stock: 50000
     },
     {
       id: 3,
-      name: "iPhone 15 Pro Max",
-      brand: "Apple",
-      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop",
+      brand: 'Apple',
+      productName: 'iPhone 15 Pro Max',
+      image: '/phone1.png',
       currentPrice: 1850000,
       originalPrice: 2100000,
       discount: 20,
-      savings: 250000,
-      stockStatus: 'in-stock',
-      priceTrend: 'up'
+      stock: 50000
     }
-  ]);
+  ];
 
-  const formatNaira = (amount: number): string => {
-    return new Intl.NumberFormat('en-NG', {
-      style: 'currency',
-      currency: 'NGN',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
+  const formatNaira = (amount: number) => {
+    return `₦${amount.toLocaleString()}`;
   };
 
-  const removeFromWishlist = (id: number) => {
-    setWishlistItems(items => items.filter(item => item.id !== id));
-  };
+  const handleSidebarNavigation = (itemId: string) => {
+    setActiveTab(itemId);
 
-  const addToCart = (id: number) => {
-    // Handle add to cart logic
-    console.log('Adding to cart:', id);
-  };
-
-  const getStockStatusColor = (status: string) => {
-    switch (status) {
-      case 'in-stock':
-        return 'green';
-      case 'low-stock':
-        return 'red';
-      case 'out-of-stock':
-        return 'gray';
+    switch (itemId) {
+      case 'dashboard':
+        navigate('/dashboard');
+        break;
+      case 'profile':
+        navigate('/profile-settings');
+        break;
+      case 'orders':
+        navigate('/order-history');
+        break;
+      case 'wishlist':
+        navigate('/wishlist');
+        break;
+      case 'support':
+        navigate('/contact-support');
+        break;
+      case 'logout':
+        navigate('/login');
+        break;
       default:
-        return 'gray';
-    }
-  };
-
-  const getStockStatusText = (status: string) => {
-    switch (status) {
-      case 'in-stock':
-        return 'In Stock';
-      case 'low-stock':
-        return 'Low Stock';
-      case 'out-of-stock':
-        return 'Out of Stock';
-      default:
-        return 'Unknown';
+        break;
     }
   };
 
   return (
     <div className="wishlist-page">
-      <div className="dashboard-container">
-        {/* Sidebar */}
-        <Sidebar activeTab="wishlist" />
+      <Navbar />
 
-        {/* Main Content */}
-        <main className="dashboard-main">
-          <div className="wishlist-content">
-            {/* Page Header */}
-            <div className="wishlist-header">
-              <h1>Wishlist</h1>
-            </div>
-
-            {/* Wishlist Items */}
-            {wishlistItems.length > 0 ? (
-              <div className="wishlist-grid">
-                {wishlistItems.map((item) => (
-                  <div key={item.id} className="wishlist-card">
-                    {/* Product Image */}
-                    <div className="product-image">
-                      <img src={item.image} alt={item.name} />
-                    </div>
-
-                    {/* Product Info */}
-                    <div className="product-info">
-                      <div className="product-brand">{item.brand}</div>
-                      <div className="product-name">{item.name}</div>
-                      
-                      {/* Pricing */}
-                      <div className="product-pricing">
-                        <div className="price-row">
-                          <span className="current-price">{formatNaira(item.currentPrice)}</span>
-                          <span className="original-price">{formatNaira(item.originalPrice)}</span>
-                        </div>
-                        <div className="discount-badge">-{item.discount}%</div>
-                        <div className="savings">
-                          {item.priceTrend === 'up' ? (
-                            <TrendingUp className="trend-icon up" />
-                          ) : (
-                            <TrendingDown className="trend-icon down" />
-                          )}
-                          <span className="savings-amount">{formatNaira(item.savings)}</span>
-                        </div>
-                      </div>
-
-                      {/* Stock Status */}
-                      <div className={`stock-status ${item.stockStatus}`}>
-                        {getStockStatusText(item.stockStatus)}
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="wishlist-actions">
-                      <button 
-                        className="add-to-cart-btn"
-                        onClick={() => addToCart(item.id)}
-                        title="Add to Cart"
-                      >
-                        <ShoppingCart size={20} />
-                      </button>
-                      <button 
-                        className="remove-btn"
-                        onClick={() => removeFromWishlist(item.id)}
-                        title="Remove from Wishlist"
-                      >
-                        <Trash2 size={20} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="empty-wishlist">
-                <div className="empty-icon">💝</div>
-                <h3>Your wishlist is empty</h3>
-                <p>Start adding products you love to your wishlist!</p>
-                <button className="shop-now-btn">Shop Now</button>
-              </div>
-            )}
+      <Sidebar activeTab={activeTab} onItemClick={handleSidebarNavigation}>
+        {/* Wishlist Section */}
+        <div className="wishlist-section">
+          <div className="section-header">
+            <h2>Wishlist</h2>
           </div>
-        </main>
-      </div>
+          <div className="wishlist-items">
+            {wishlistItems.map((item) => (
+              <div key={item.id} className="wishlist-item">
+                <img src={item.image} alt={item.productName} className="wishlist-image" />
+                <div className="wishlist-info">
+                  <div className="item-brand">{item.brand}</div>
+                  <div className="item-name">{item.productName}</div>
+                  <div className="item-pricing">
+                    <span className="current-price">{formatNaira(item.currentPrice)}</span>
+                    <span className="original-price">{formatNaira(item.originalPrice)}</span>
+                    <span className="discount-badge">-{item.discount}%</span>
+                  </div>
+                  <div className="stock-info">
+                    <span className="stock-text">{formatNaira(item.stock)} in stock</span>
+                  </div>
+                </div>
+                <div className="wishlist-actions">
+                  <button className="cart-button">
+                    <ShoppingBag size={16} />
+                  </button>
+                  <button className="remove-button">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Sidebar>
+
+      <Footer />
     </div>
   );
 };

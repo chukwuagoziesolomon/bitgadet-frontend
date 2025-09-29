@@ -4,8 +4,8 @@ import Laptop from '../icons/Laptop';
 import Watch from '../icons/Watch';
 import Headphones from '../icons/Headphones';
 import ShoppingBag from '../icons/ShoppingBag';
-import TrendingUp from '../icons/TrendingUp';
 import Gamepad2 from '../icons/Gamepad2';
+import { BarChart3 } from 'lucide-react';
 import '../Home.css';
 
 interface CategoryCardProps {
@@ -47,7 +47,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ name, image, description, i
       <h4 className="cat-title">{name}</h4>
       <p className="cat-desc">{description}</p>
       <span className="items-badge">
-        <TrendingUp size={14} color="#008060" />
+        <BarChart3 size={14} color="#008060" />
         {items} Items
       </span>
       <button className="shop-link">Shop Now →</button>
