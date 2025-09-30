@@ -21,6 +21,17 @@ export const API_CONFIG = {
     BANNERS_CTA: '/api/banners/cta/',
     PHONE_SWAP_SUBMIT: '/api/phone-swap/submit/',
     BRANDS: '/api/brands/',
+    AUTH_LOGIN: '/api/auth/login/',
+    AUTH_SIGNUP: '/api/auth/signup/',
+    AUTH_LOGOUT: '/api/auth/logout/',
+    AUTH_ME: '/api/auth/me/',
+    USER_ORDER_STATS: '/api/user/order-stats/',
+    USER_RECENT_ORDERS: '/api/user/recent-orders/',
+    USER_ORDER_HISTORY: '/api/user/order-history/',
+    USER_RECENT_WISHLIST: '/api/user/recent-wishlist/',
+    WISHLIST_ALL: '/api/wishlist/all/',
+    AUTH_PROFILE_SETTINGS: '/api/auth/profile-settings/',
+    AUTH_PASSWORD_REQUIREMENTS: '/api/auth/profile-settings/?info=password-requirements',
   },
   TIMEOUT: 10000, // 10 seconds
 };
@@ -39,9 +50,11 @@ export const apiRequest = async <T>(
 
   console.log('🌐 Making API request to:', url);
 
+  const token = localStorage.getItem('authToken');
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Token ${token}` }),
       ...options.headers,
     },
     ...options,

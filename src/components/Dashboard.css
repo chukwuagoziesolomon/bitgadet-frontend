@@ -219,6 +219,10 @@
   color: #10b981;
 }
 
+.growth-indicator.negative {
+  color: #ef4444;
+}
+
 /* Dashboard Grid */
 .dashboard-grid {
   display: grid;
@@ -580,6 +584,43 @@
 
 .remove-button:hover {
   background: #fee2e2;
+}
+
+/* Empty States */
+.empty-orders,
+.empty-wishlist {
+  padding: 2rem;
+  text-align: center;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.empty-icon {
+  color: #9ca3af;
+  opacity: 0.6;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Loading States */
+.loading-orders,
+.loading-wishlist {
+  padding: 2rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 /* Responsive Design */

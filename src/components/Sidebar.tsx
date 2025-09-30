@@ -29,10 +29,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onItemClick, children }) =
   const location = useLocation();
   const [currentTab, setCurrentTab] = useState(activeTab || 'dashboard');
 
+  // Get user data from localStorage
+  const storedUser = localStorage.getItem('user');
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
   const userData = {
-    name: 'Emmanuel',
-    fullName: 'Ux Nuel',
-    role: 'Ux Designer',
+    name: user?.first_name || 'User',
+    fullName: user ? `${user.first_name} ${user.last_name}` : 'User',
+    role: 'Customer',
     profileImage: '/profile-placeholder.png',
   };
 

@@ -1,16 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ShoppingBag, Trash2 } from 'lucide-react';
+import { Bell, ShoppingBag, Trash2, Heart } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
+import { apiRequest, API_CONFIG } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './Wishlist.css';
 
 const Wishlist: React.FC = () => {
   const navigate = useNavigate();
+  const { showError, showSuccess } = useToast();
   const [activeTab, setActiveTab] = useState('wishlist');
+  const [wishlistItems, setWishlistItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Sample user data
+  // Sample user data (keeping for other parts)
   const userData = {
     name: 'Emmanuel',
     fullName: 'Ux Nuel',
@@ -18,39 +23,24 @@ const Wishlist: React.FC = () => {
     profileImage: '/profile-placeholder.png',
   };
 
-  // Sample wishlist data
-  const wishlistItems = [
-    {
-      id: 1,
-      brand: 'Apple',
-      productName: 'iPhone 15 Pro Max',
-      image: '/phone1.png',
-      currentPrice: 1850000,
-      originalPrice: 2100000,
-      discount: 20,
-      stock: 50000
-    },
-    {
-      id: 2,
-      brand: 'Apple',
-      productName: 'iPhone 15 Pro Max',
-      image: '/phone1.png',
-      currentPrice: 1850000,
-      originalPrice: 2100000,
-      discount: 20,
-      stock: 50000
-    },
-    {
-      id: 3,
-      brand: 'Apple',
-      productName: 'iPhone 15 Pro Max',
-      image: '/phone1.png',
-      currentPrice: 1850000,
-      originalPrice: 2100000,
-      discount: 20,
-      stock: 50000
-    }
-  ];
+  // Fetch wishlist items on component mount
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        setLoading(true);
+        const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.WISHLIST_ALL);
+        setWishlistItems(response.wishlist || []);
+      } catch (error: any) {
+        console.error('Failed to fetch wishlist:', error);
+        showError('Failed to load wishlist', error.message || 'Please try again later.');
+        setWishlistItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWishlist();
+  }, [showError]);
 
   const formatNaira = (amount: number) => {
     return `₦${amount.toLocaleString()}`;
@@ -83,6 +73,35 @@ const Wishlist: React.FC = () => {
     }
   };
 
+  const handleRemoveFromWishlist = async (productId: number) => {
+    try {
+      await apiRequest<any>('/api/wishlist/remove/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      });
+
+      // Remove from local state
+      setWishlistItems(prev => prev.filter(item => item.product_id !== productId));
+      showSuccess('Removed from wishlist', 'Item has been removed from your wishlist.');
+    } catch (error: any) {
+      console.error('Failed to remove from wishlist:', error);
+      showError('Failed to remove item', error.message || 'Please try again.');
+    }
+  };
+
+  const handleAddToCart = async (productId: number) => {
+    try {
+      await apiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      showSuccess('Added to cart', 'Item has been added to your cart.');
+    } catch (error: any) {
+      console.error('Failed to add to cart:', error);
+      showError('Failed to add to cart', error.message || 'Please try again.');
+    }
+  };
+
   return (
     <div className="wishlist-page">
       <Navbar />
@@ -91,35 +110,68 @@ const Wishlist: React.FC = () => {
         {/* Wishlist Section */}
         <div className="wishlist-section">
           <div className="section-header">
-            <h2>Wishlist</h2>
-          </div>
-          <div className="wishlist-items">
-            {wishlistItems.map((item) => (
-              <div key={item.id} className="wishlist-item">
-                <img src={item.image} alt={item.productName} className="wishlist-image" />
-                <div className="wishlist-info">
-                  <div className="item-brand">{item.brand}</div>
-                  <div className="item-name">{item.productName}</div>
-                  <div className="item-pricing">
-                    <span className="current-price">{formatNaira(item.currentPrice)}</span>
-                    <span className="original-price">{formatNaira(item.originalPrice)}</span>
-                    <span className="discount-badge">-{item.discount}%</span>
-                  </div>
-                  <div className="stock-info">
-                    <span className="stock-text">{formatNaira(item.stock)} in stock</span>
-                  </div>
-                </div>
-                <div className="wishlist-actions">
-                  <button className="cart-button">
-                    <ShoppingBag size={16} />
-                  </button>
-                  <button className="remove-button">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+            <h2><Heart size={20} className="section-icon" />Wishlist</h2>
+            {wishlistItems.length > 0 && (
+              <div className="items-count">
+                {wishlistItems.length} item{wishlistItems.length !== 1 ? 's' : ''}
               </div>
-            ))}
+            )}
           </div>
+
+          {loading ? (
+            <div className="loading-wishlist">
+              <div className="loading-spinner">Loading wishlist...</div>
+            </div>
+          ) : wishlistItems.length === 0 ? (
+            <div className="empty-wishlist">
+              <div className="empty-state">
+                <Heart size={48} className="empty-icon" />
+                <p>Your wishlist is empty</p>
+                <p>Start adding items you love!</p>
+              </div>
+            </div>
+          ) : (
+            <div className="wishlist-items">
+              {wishlistItems.map((item) => (
+                <div key={item.product_id} className="wishlist-item">
+                  <img src={item.main_image} alt={item.product_name} className="wishlist-image" />
+                  <div className="wishlist-info">
+                    <div className="item-brand">{item.brand}</div>
+                    <div className="item-name">{item.product_name}</div>
+                    <div className="item-pricing">
+                      <span className="current-price">{formatNaira(item.current_price)}</span>
+                      {item.original_price && item.original_price > item.current_price && (
+                        <span className="original-price">{formatNaira(item.original_price)}</span>
+                      )}
+                      {item.discount_percentage > 0 && (
+                        <span className="discount-badge">-{item.discount_percentage}%</span>
+                      )}
+                    </div>
+                    <div className="stock-info">
+                      <span className={`stock-text ${item.is_in_stock ? 'in-stock' : 'out-of-stock'}`}>
+                        {item.is_in_stock ? `${item.stock_quantity} in stock` : 'Out of stock'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="wishlist-actions">
+                    <button
+                      className="cart-button"
+                      onClick={() => handleAddToCart(item.product_id)}
+                      disabled={!item.is_in_stock}
+                    >
+                      <ShoppingBag size={16} />
+                    </button>
+                    <button
+                      className="remove-button"
+                      onClick={() => handleRemoveFromWishlist(item.product_id)}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </Sidebar>
 

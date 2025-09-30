@@ -19,6 +19,13 @@
   margin-bottom: 1.5rem;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
 .section-header h2 {
   font-family: 'Outfit', sans-serif;
   font-weight: 500;
@@ -28,6 +35,16 @@
   letter-spacing: 0%;
   color: #1f2937;
   margin: 0;
+}
+
+.orders-count {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  letter-spacing: 0%;
+  color: #6b7280;
 }
 
 /* Orders List */
@@ -204,6 +221,83 @@
 
 .status-badge.en-route svg {
   color: #3b82f6;
+}
+
+/* Loading and Empty States */
+.loading-orders,
+.empty-orders {
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.empty-icon {
+  color: #9ca3af;
+  opacity: 0.6;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #374151;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pagination-info {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: #6b7280;
+  padding: 0 1rem;
 }
 
 /* Responsive Design - Updated for horizontal layout */

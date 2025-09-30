@@ -7,6 +7,7 @@ import { apiRequest, API_CONFIG } from '../config/api';
 import { useFeaturedProducts } from '../hooks/useFeaturedProducts';
 import { useBestSellers } from '../hooks/useBestSellers';
 import { useNewArrivals } from '../hooks/useNewArrivals';
+import { useToast } from '../hooks/useToast';
 
 const HomePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('featured');
@@ -18,6 +19,7 @@ const HomePage: React.FC = () => {
   const [wishlist, setWishlist] = useState<number[]>([]); // NEW
   const [cart, setCart] = useState<Record<number, number>>({}); // NEW
   const navigate = useNavigate();
+  const { showError } = useToast();
 
   // Use the new hooks for product data
   const { products: featuredProducts, loading: featuredLoading, error: featuredError } = useFeaturedProducts();
@@ -75,15 +77,26 @@ const HomePage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Fetch wishlist on mount
-    apiRequest<any>('/api/wishlist/').then(res => {
-      setWishlist(res.wishlist || []);
-    });
-    // Fetch cart on mount
-    apiRequest<any>('/api/cart/').then(res => {
-      setCart(res.cart || {});
-    });
-  }, []);
+    const fetchWishlistAndCart = async () => {
+      try {
+        // Fetch wishlist on mount
+        const wishlistRes = await apiRequest<any>('/api/wishlist/');
+        setWishlist(wishlistRes.wishlist || []);
+      } catch (error: any) {
+        showError('Failed to load wishlist', error.message || 'Please try again later.');
+      }
+
+      try {
+        // Fetch cart on mount
+        const cartRes = await apiRequest<any>('/api/cart/');
+        setCart(cartRes.cart || {});
+      } catch (error: any) {
+        showError('Failed to load cart', error.message || 'Please try again later.');
+      }
+    };
+
+    fetchWishlistAndCart();
+  }, [showError]);
 
   // Get current products based on active tab
   const getCurrentProducts = () => {
@@ -125,24 +138,30 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleAddToCart = (productId: number) => {
-    apiRequest<any>('/api/cart/add/', {
-      method: 'POST',
-      body: JSON.stringify({ product_id: productId, quantity: 1 }),
-    }).then(res => {
+  const handleAddToCart = async (productId: number) => {
+    try {
+      const res = await apiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
       setCart(res.cart || {});
-    });
+    } catch (error: any) {
+      showError('Failed to add to cart', error.message || 'Please try again.');
+    }
   };
 
   // Toggle wishlist on single click
-  const handleToggleWishlist = (productId: number, willBeInWishlist?: boolean) => {
+  const handleToggleWishlist = async (productId: number, willBeInWishlist?: boolean) => {
     const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
-    apiRequest<any>(endpoint, {
-      method: 'POST',
-      body: JSON.stringify({ product_id: productId }),
-    }).then(res => {
+    try {
+      const res = await apiRequest<any>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      });
       setWishlist(res.wishlist || []);
-    });
+    } catch (error: any) {
+      showError('Failed to update wishlist', error.message || 'Please try again.');
+    }
   };
 
   const handleHeroCTAClick = (slideIndex: number) => {

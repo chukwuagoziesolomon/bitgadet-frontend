@@ -1,58 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Clock, Truck } from 'lucide-react';
+import { CheckCircle, Clock, Truck, ChevronLeft, ChevronRight } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
 import OrderTrackingModal from './OrderTrackingModal';
+import { apiRequest, API_CONFIG } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './OrderHistory.css';
 
 const OrderHistory: React.FC = () => {
- const navigate = useNavigate();
- const [activeTab, setActiveTab] = useState('orders');
- const [trackingModalOpen, setTrackingModalOpen] = useState(false);
- const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const navigate = useNavigate();
+  const { showError } = useToast();
+  const [activeTab, setActiveTab] = useState('orders');
+  const [trackingModalOpen, setTrackingModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [pagination, setPagination] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(10);
 
+  // Fetch order history
+  useEffect(() => {
+    const fetchOrderHistory = async () => {
+      try {
+        setLoading(true);
+        const response = await apiRequest<any>(
+          `${API_CONFIG.ENDPOINTS.USER_ORDER_HISTORY}?page=${currentPage}&page_size=${pageSize}`
+        );
+        setOrders(response.orders || []);
+        setPagination(response.pagination);
+      } catch (error: any) {
+        console.error('Failed to fetch order history:', error);
+        showError('Failed to load order history', error.message || 'Please try again later.');
+        setOrders([]);
+        setPagination(null);
+      } finally {
+        setLoading(false);
+      }
+    };
 
- // Sample orders data
- const orders = [
-   {
-     id: 'ORD-2025-001',
-     productName: 'MacBook Pro 14" M3',
-     image: '/laptop1.png',
-     date: '1/14/2024',
-     status: 'Delivered',
-     price: 2850000,
-     statusColor: 'delivered'
-   },
-   {
-     id: 'ORD-2025-002',
-     productName: 'iPhone 13 Pro',
-     image: '/phone1.png',
-     date: '1/10/2024',
-     status: 'En Route',
-     price: 540000,
-     statusColor: 'en-route'
-   },
-   {
-     id: 'ORD-2025-003',
-     productName: 'MacBook Pro 14" M3',
-     image: '/laptop.png',
-     date: '1/8/2024',
-     status: 'Processing',
-     price: 2850000,
-     statusColor: 'processing'
-   },
-   {
-     id: 'ORD-2025-004',
-     productName: 'MacBook Pro 14" M3',
-     image: '/headphone.png',
-     date: '1/5/2024',
-     status: 'Processing',
-     price: 2850000,
-     statusColor: 'processing'
-   }
- ];
+    fetchOrderHistory();
+  }, [currentPage, pageSize, showError]);
 
  const formatNaira = (amount: number) => {
    return `₦${amount.toLocaleString()}`;
@@ -86,8 +76,22 @@ const OrderHistory: React.FC = () => {
  };
 
  const handleTrackOrder = (order: any) => {
-   setSelectedOrder(order);
+   // Transform API order data to match modal expectations
+   const transformedOrder = {
+     id: order.order_id,
+     productName: order.products?.[0]?.name || 'Product',
+     image: order.products?.[0]?.image || '/placeholder.png',
+     status: order.status,
+     statusColor: order.status, // Use status as statusColor for now
+     date: order.date,
+     price: order.total_amount
+   };
+   setSelectedOrder(transformedOrder);
    setTrackingModalOpen(true);
+ };
+
+ const handlePageChange = (page: number) => {
+   setCurrentPage(page);
  };
 
  const closeTrackingModal = () => {
@@ -103,37 +107,88 @@ const OrderHistory: React.FC = () => {
        <div className="order-history-section">
          <div className="section-header">
            <h2>Order History</h2>
+           {pagination && (
+             <div className="orders-count">
+               {pagination.total_orders} orders total
+             </div>
+           )}
          </div>
-         <div className="orders-list">
-           {orders.map((order) => (
-             <div key={order.id} className="order-card">
-               <div className="order-image-container">
-                 <img src={order.image} alt={order.productName} className="order-image" />
-               </div>
-               <div className="order-content">
-                 <div className="order-header">
-                   <div className="order-id">{order.id}</div>
+
+         {loading ? (
+           <div className="loading-orders">
+             <div className="loading-spinner">Loading order history...</div>
+           </div>
+         ) : orders.length === 0 ? (
+           <div className="empty-orders">
+             <div className="empty-state">
+               <CheckCircle size={48} className="empty-icon" />
+               <p>No orders found.</p>
+             </div>
+           </div>
+         ) : (
+           <>
+             <div className="orders-list">
+               {orders.map((order) => {
+                 const firstProduct = order.products?.[0];
+                 return (
+                   <div key={order.order_id} className="order-card">
+                     <div className="order-image-container">
+                       <img src={firstProduct?.image || '/placeholder.png'} alt={firstProduct?.name || 'Product'} className="order-image" />
+                     </div>
+                     <div className="order-content">
+                       <div className="order-header">
+                         <div className="order-id">{order.order_id}</div>
+                       </div>
+                       <h3 className="order-product">{firstProduct?.name || 'Product'}</h3>
+                       <div className="order-date">{order.date}</div>
+                       <button onClick={() => handleTrackOrder(order)} className="track-button">
+                         Track Order
+                       </button>
+                     </div>
+                     <div className="order-right-section">
+                       <span className={`status-badge ${order.status}`}>
+                         {order.status === 'delivered' && <CheckCircle size={14} />}
+                         {order.status === 'processing' && <Clock size={14} />}
+                         {order.status === 'en-route' && <Truck size={14} />}
+                         {order.status_display || order.status}
+                       </span>
+                       <div className="order-price">
+                         {formatNaira(order.total_amount)}
+                       </div>
+                     </div>
+                   </div>
+                 );
+               })}
+             </div>
+
+             {/* Pagination */}
+             {pagination && pagination.total_pages > 1 && (
+               <div className="pagination">
+                 <button
+                   className="pagination-btn"
+                   onClick={() => handlePageChange(currentPage - 1)}
+                   disabled={!pagination.has_previous}
+                 >
+                   <ChevronLeft size={16} />
+                   Previous
+                 </button>
+
+                 <div className="pagination-info">
+                   Page {pagination.current_page} of {pagination.total_pages}
                  </div>
-                 <h3 className="order-product">{order.productName}</h3>
-                 <div className="order-date">{order.date}</div>
-                 <button onClick={() => handleTrackOrder(order)} className="track-button">
-                   Track Order
+
+                 <button
+                   className="pagination-btn"
+                   onClick={() => handlePageChange(currentPage + 1)}
+                   disabled={!pagination.has_next}
+                 >
+                   Next
+                   <ChevronRight size={16} />
                  </button>
                </div>
-               <div className="order-right-section">
-                 <span className={`status-badge ${order.statusColor}`}>
-                   {order.statusColor === 'delivered' && <CheckCircle size={14} />}
-                   {order.statusColor === 'processing' && <Clock size={14} />}
-                   {order.statusColor === 'en-route' && <Truck size={14} />}
-                   {order.status}
-                 </span>
-                 <div className="order-price">
-                   {formatNaira(order.price)}
-                 </div>
-               </div>
-             </div>
-           ))}
-         </div>
+             )}
+           </>
+         )}
        </div>
      </Sidebar>
 

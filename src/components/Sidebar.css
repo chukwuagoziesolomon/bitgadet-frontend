@@ -178,6 +178,18 @@
 }
 
 /* Responsive Design - Hide sidebar on tablets and mobile, show only on desktop */
+@media (min-width: 1025px) {
+  .dashboard-sidebar {
+    position: static;
+    transform: none;
+    width: 280px;
+  }
+
+  .sidebar-layout {
+    padding: 2rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .dashboard-sidebar {
     display: none; /* Hide sidebar completely on tablets and mobile */

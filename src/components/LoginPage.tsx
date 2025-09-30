@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
+import { apiRequest, API_CONFIG } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './LoginPage.css';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const { showError, showSuccess } = useToast();
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -23,15 +26,36 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Login attempt:', formData);
-      setIsLoading(false);
-      // In a real app, you would handle the login logic here
-      // For now, we'll navigate to dashboard after successful login
+
+    try {
+      const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_LOGIN, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      // Store token and user data
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('isAdmin', response.is_admin.toString());
+      localStorage.setItem('loginType', response.login_type || 'user');
+
+      showSuccess('Login successful', `Welcome back, ${response.user.first_name}!`);
       navigate('/dashboard');
-    }, 1000);
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      let errorMessage = 'Login failed. Please try again.';
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      showError('Login Failed', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -54,16 +78,16 @@ const LoginPage: React.FC = () => {
           {/* Login Form */}
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="username">Username or Email</label>
+              <label htmlFor="email">Email</label>
               <div className="input-wrapper">
                 <User size={20} className="input-icon" />
                 <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleInputChange}
-                  placeholder="Enter your username or email"
+                  placeholder="Enter your email"
                   required
                 />
               </div>

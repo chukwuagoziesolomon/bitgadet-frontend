@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { apiRequest, API_CONFIG } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './SignUpPage.css';
 
 const SignUpPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { showError, showSuccess } = useToast();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -30,117 +34,51 @@ const SignUpPage: React.FC = () => {
     e.preventDefault();
     
     if (!agreedToTerms) {
-      // Use custom notification instead of browser alert
-      const notification = document.createElement('div');
-      notification.innerHTML = `
-        <div style="
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #ef4444;
-          color: white;
-          padding: 16px 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          z-index: 10001;
-          font-family: 'Outfit', sans-serif;
-          font-size: 14px;
-          font-weight: 500;
-          max-width: 350px;
-          animation: slideInRight 0.3s ease-out;
-        ">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 16px;">⚠️</span>
-            <span>Please agree to the Terms of Service and Privacy Policy</span>
-          </div>
-        </div>
-      `;
-
-      // Add animation styles if not already present
-      if (!document.querySelector('#notification-styles')) {
-        const style = document.createElement('style');
-        style.id = 'notification-styles';
-        style.textContent = `
-          @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
-          }
-        `;
-        document.head.appendChild(style);
-      }
-
-      document.body.appendChild(notification);
-
-      // Remove after 4 seconds
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
-      }, 4000);
-
+      showError('Terms Agreement Required', 'Please agree to the Terms of Service and Privacy Policy');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      // Use custom notification instead of browser alert
-      const notification = document.createElement('div');
-      notification.innerHTML = `
-        <div style="
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          background: #ef4444;
-          color: white;
-          padding: 16px 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-          z-index: 10001;
-          font-family: 'Outfit', sans-serif;
-          font-size: 14px;
-          font-weight: 500;
-          max-width: 350px;
-          animation: slideInRight 0.3s ease-out;
-        ">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 16px;">⚠️</span>
-            <span>Passwords do not match</span>
-          </div>
-        </div>
-      `;
-
-      // Add animation styles if not already present
-      if (!document.querySelector('#notification-styles')) {
-        const style = document.createElement('style');
-        style.id = 'notification-styles';
-        style.textContent = `
-          @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
-          }
-        `;
-        document.head.appendChild(style);
-      }
-
-      document.body.appendChild(notification);
-
-      // Remove after 4 seconds
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
-      }, 4000);
-
+      showError('Password Mismatch', 'Passwords do not match');
       return;
     }
 
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Sign up attempt:', formData);
+
+    try {
+      const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_SIGNUP, {
+        method: 'POST',
+        body: JSON.stringify({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone_number: formData.phoneNumber,
+          email: formData.email,
+          password: formData.password,
+          confirm_password: formData.confirmPassword,
+          agree_to_terms: agreedToTerms,
+        }),
+      });
+
+      // Store token and user data
+      localStorage.setItem('authToken', response.token);
+      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('isAdmin', response.is_admin.toString());
+      localStorage.setItem('loginType', response.login_type || 'user');
+
+      showSuccess('Account Created', response.message || 'Welcome to BitGadgetz!');
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('Signup failed:', error);
+      let errorMessage = 'Signup failed. Please try again.';
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      showError('Signup Failed', errorMessage);
+    } finally {
       setIsLoading(false);
-      // In a real app, you would handle the sign up logic here
-    }, 1000);
+    }
   };
 
   const togglePasswordVisibility = () => {

@@ -354,6 +354,33 @@
   margin-bottom: 2rem;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.change-password-button {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.change-password-button:hover:not(:disabled) {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.change-password-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .profile-header-section h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -388,6 +415,16 @@
 
 .form-section {
   margin-bottom: 2rem;
+}
+
+.loading-profile {
+  padding: 2rem;
+  text-align: center;
+}
+
+.loading-spinner {
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 .form-section:last-child {
@@ -491,6 +528,165 @@
 
 .radio-label:hover .radio-custom {
   border-color: #00C896;
+}
+
+/* Password Requirements Section */
+.password-requirements-section {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.password-requirements-section h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 1rem 0;
+}
+
+.requirements-list,
+.suggestions-list {
+  margin-bottom: 1rem;
+}
+
+.requirements-list:last-child,
+.suggestions-list:last-child {
+  margin-bottom: 0;
+}
+
+.requirements-list h5,
+.suggestions-list h5 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.requirements-list ul,
+.suggestions-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.requirements-list li,
+.suggestions-list li {
+  font-size: 0.875rem;
+  color: #374151;
+  padding: 0.25rem 0;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.requirements-list li::before {
+  content: '⚠️';
+  position: absolute;
+  left: 0;
+  top: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.suggestions-list li::before {
+  content: '💡';
+  position: absolute;
+  left: 0;
+  top: 0.25rem;
+  font-size: 0.75rem;
+}
+
+/* Password Requirements Checkboxes */
+.requirements-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.requirement-item:hover {
+  background: #f9fafb;
+}
+
+.requirement-item.met {
+  color: #059669;
+  background: #ecfdf5;
+}
+
+.requirement-item.unmet {
+  color: #6b7280;
+  background: #fef2f2;
+}
+
+.requirement-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.requirement-item.met .requirement-checkbox {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.requirement-item.unmet .requirement-checkbox {
+  background: white;
+  border-color: #d1d5db;
+}
+
+.requirement-checkbox:checked {
+  background: #10b981;
+  border-color: #10b981;
+}
+
+.requirement-checkbox:checked::after {
+  content: '✓';
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.requirement-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+/* Password Requirements Loading State */
+.requirements-loading {
+  padding: 1rem;
+  text-align: center;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.requirements-loading p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
 }
 
 /* Responsive Design */

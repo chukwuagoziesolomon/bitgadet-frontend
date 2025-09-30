@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -10,31 +10,93 @@ import {
   Heart,
   CheckCircle,
   Clock,
-  Truck
+  Truck,
+  Package
 } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
 import OrderTrackingModal from './OrderTrackingModal';
+import { apiRequest, API_CONFIG } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { showError, showSuccess } = useToast();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [orderStats, setOrderStats] = useState<any>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [apiRecentOrders, setApiRecentOrders] = useState<any[]>([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+  const [recentWishlist, setRecentWishlist] = useState<any[]>([]);
+  const [wishlistLoading, setWishlistLoading] = useState(true);
 
-  // Sample user data
+  // Sample user data (keeping for other parts)
   const userData = {
     name: 'Emmanuel',
     fullName: 'Ux Nuel',
     role: 'Ux Designer',
-    profileImage: '/profile-placeholder.png',
-    totalOrders: 24,
-    wishlistCount: 10,
-    ordersGrowth: 12,
-    wishlistGrowth: 3
+    profileImage: '/profile-placeholder.png'
   };
+
+  // Fetch order stats and recent orders on component mount
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      // Fetch order stats
+      try {
+        setStatsLoading(true);
+        const statsData = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_ORDER_STATS);
+        setOrderStats(statsData);
+      } catch (error: any) {
+        console.error('Failed to fetch order stats:', error);
+        showError('Failed to load dashboard stats', error.message || 'Please try again later.');
+        // Set default values if API fails
+        setOrderStats({
+          total_orders: 0,
+          orders_this_month: 0,
+          orders_last_month: 0,
+          orders_percentage_change: 0,
+          wishlist_count: 0,
+          wishlist_percentage_change: 0
+        });
+      } finally {
+        setStatsLoading(false);
+      }
+
+      // Fetch recent orders
+      try {
+        setOrdersLoading(true);
+        const ordersData = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_RECENT_ORDERS);
+        setApiRecentOrders(ordersData.recent_orders || []);
+      } catch (error: any) {
+        console.error('Failed to fetch recent orders:', error);
+        showError('Failed to load recent orders', error.message || 'Please try again later.');
+        // Keep empty array if API fails
+        setApiRecentOrders([]);
+      } finally {
+        setOrdersLoading(false);
+      }
+
+      // Fetch recent wishlist
+      try {
+        setWishlistLoading(true);
+        const wishlistData = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_RECENT_WISHLIST);
+        setRecentWishlist(wishlistData.recent_wishlist || []);
+      } catch (error: any) {
+        console.error('Failed to fetch recent wishlist:', error);
+        showError('Failed to load recent wishlist', error.message || 'Please try again later.');
+        // Keep empty array if API fails
+        setRecentWishlist([]);
+      } finally {
+        setWishlistLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [showError]);
 
   // Sample orders data
   const recentOrders = [
@@ -76,39 +138,6 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Sample wishlist data
-  const wishlistItems = [
-    {
-      id: 1,
-      brand: 'Apple',
-      productName: 'iPhone 15 Pro Max',
-      image: '/phone1.png',
-      currentPrice: 1850000,
-      originalPrice: 2100000,
-      discount: 20,
-      stock: 50000
-    },
-    {
-      id: 2,
-      brand: 'Apple',
-      productName: 'MacBook Pro 14" M3',
-      image: '/laptop1.png',
-      currentPrice: 1850000,
-      originalPrice: 2100000,
-      discount: 20,
-      stock: 50000
-    },
-    {
-      id: 3,
-      brand: 'Apple',
-      productName: 'iPhone 15 Pro Max',
-      image: '/phone1.png',
-      currentPrice: 1850000,
-      originalPrice: 2100000,
-      discount: 20,
-      stock: 50000
-    }
-  ];
 
   const formatNaira = (amount: number) => {
     return `₦${amount.toLocaleString()}`;
@@ -140,8 +169,47 @@ const Dashboard: React.FC = () => {
   };
 
   const handleTrackOrder = (order: any) => {
-    setSelectedOrder(order);
+    // Transform API order data to match modal expectations
+    const transformedOrder = {
+      id: order.order_id,
+      productName: order.products?.[0]?.name || 'Product',
+      image: order.products?.[0]?.image || '/placeholder.png',
+      status: order.status,
+      statusColor: order.status, // Use status as statusColor for now
+      date: order.date,
+      price: order.total_amount
+    };
+    setSelectedOrder(transformedOrder);
     setTrackingModalOpen(true);
+  };
+
+  const handleRemoveFromWishlist = async (productId: number) => {
+    try {
+      await apiRequest<any>('/api/wishlist/remove/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      });
+
+      // Remove from local state
+      setRecentWishlist(prev => prev.filter(item => item.product_id !== productId));
+      showSuccess('Removed from wishlist', 'Item has been removed from your wishlist.');
+    } catch (error: any) {
+      console.error('Failed to remove from wishlist:', error);
+      showError('Failed to remove item', error.message || 'Please try again.');
+    }
+  };
+
+  const handleAddToCart = async (productId: number) => {
+    try {
+      await apiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      showSuccess('Added to cart', 'Item has been added to your cart.');
+    } catch (error: any) {
+      console.error('Failed to add to cart:', error);
+      showError('Failed to add to cart', error.message || 'Please try again.');
+    }
   };
 
   const closeTrackingModal = () => {
@@ -163,11 +231,15 @@ const Dashboard: React.FC = () => {
             <div className="card-content">
               <h3>Total Orders</h3>
               <div className="card-value">
-                <span className="main-number">{userData.totalOrders}</span>
-                <div className="growth-indicator positive">
-                  <TrendingUp size={14} />
-                  <span>+{userData.ordersGrowth}% from last month</span>
-                </div>
+                <span className="main-number">
+                  {statsLoading ? '...' : (orderStats?.total_orders || 0)}
+                </span>
+                {!statsLoading && orderStats && (
+                  <div className={`growth-indicator ${orderStats.orders_percentage_change >= 0 ? 'positive' : 'negative'}`}>
+                    <TrendingUp size={14} />
+                    <span>{orderStats.orders_percentage_change >= 0 ? '+' : ''}{orderStats.orders_percentage_change.toFixed(1)}% from last month</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -179,11 +251,15 @@ const Dashboard: React.FC = () => {
             <div className="card-content">
               <h3>Wishlist</h3>
               <div className="card-value">
-                <span className="main-number">{userData.wishlistCount}</span>
-                <div className="growth-indicator positive">
-                  <TrendingUp size={14} />
-                  <span>+{userData.wishlistGrowth} this week</span>
-                </div>
+                <span className="main-number">
+                  {statsLoading ? '...' : (orderStats?.wishlist_count || 0)}
+                </span>
+                {!statsLoading && orderStats && (
+                  <div className={`growth-indicator ${orderStats.wishlist_percentage_change >= 0 ? 'positive' : 'negative'}`}>
+                    <TrendingUp size={14} />
+                    <span>{orderStats.wishlist_percentage_change >= 0 ? '+' : ''}{orderStats.wishlist_percentage_change.toFixed(1)}% this week</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -201,71 +277,117 @@ const Dashboard: React.FC = () => {
               </Link>
             </div>
             <div className="orders-list">
-              {recentOrders.slice(0, 4).map((order) => (
-                <div key={order.id} className="order-item">
-                  <div className="order-item-content">
-                    <img src={order.image} alt={order.productName} className="order-image" />
-                    <div className="order-info">
-                      <div className="order-header">
-                        <div className="order-id">{order.id}</div>
-                      </div>
-                      <div className="order-product">{order.productName}</div>
-                      <div className="order-meta">
-                        <div className="order-date">{order.date}</div>
-                        <button onClick={() => handleTrackOrder(order)} className="track-link">Track Order</button>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="order-right-section">
-                    <span className={`status-badge ${order.statusColor}`}>
-                      {order.statusColor === 'delivered' && <CheckCircle size={12} />}
-                      {order.statusColor === 'processing' && <Clock size={12} />}
-                      {order.statusColor === 'en-route' && <Truck size={12} />}
-                      {order.status}
-                    </span>
-                    <div className="order-price">{formatNaira(order.price)}</div>
+              {ordersLoading ? (
+                <div className="loading-orders">
+                  <div className="loading-spinner">Loading recent orders...</div>
+                </div>
+              ) : apiRecentOrders.length === 0 ? (
+                <div className="empty-orders">
+                  <div className="empty-state">
+                    <Package size={48} className="empty-icon" />
+                    <p>No recent orders found.</p>
                   </div>
                 </div>
-              ))}
+              ) : (
+                apiRecentOrders.slice(0, 4).map((order) => {
+                  const firstProduct = order.products?.[0];
+                  return (
+                    <div key={order.order_id} className="order-item">
+                      <div className="order-item-content">
+                        <img src={firstProduct?.image || '/placeholder.png'} alt={firstProduct?.name || 'Product'} className="order-image" />
+                        <div className="order-info">
+                          <div className="order-header">
+                            <div className="order-id">{order.order_id}</div>
+                          </div>
+                          <div className="order-product">{firstProduct?.name || 'Product'}</div>
+                          <div className="order-meta">
+                            <div className="order-date">{order.date}</div>
+                            <button onClick={() => handleTrackOrder(order)} className="track-link">Track Order</button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="order-right-section">
+                        <span className={`status-badge ${order.status}`}>
+                          {order.status === 'delivered' && <CheckCircle size={12} />}
+                          {order.status === 'processing' && <Clock size={12} />}
+                          {order.status === 'en-route' && <Truck size={12} />}
+                          {order.status_display || order.status}
+                        </span>
+                        <div className="order-price">{formatNaira(order.total_amount)}</div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
           {/* Wishlist */}
           <div className="wishlist-section">
             <div className="section-header">
-              <h2><Heart size={20} className="section-icon" />Wishlist</h2>
+              <h2><Heart size={20} className="section-icon" />Recent Wishlist</h2>
               <Link to="/wishlist" className="view-all-link">
                 View All
                 <ExternalLink size={16} />
               </Link>
             </div>
-            <div className="wishlist-items">
-              {wishlistItems.slice(0, 4).map((item) => (
-                <div key={item.id} className="wishlist-item">
-                  <img src={item.image} alt={item.productName} className="wishlist-image" />
-                  <div className="wishlist-info">
-                    <div className="item-brand">{item.brand}</div>
-                    <div className="item-name">{item.productName}</div>
-                    <div className="item-pricing">
-                      <span className="current-price">{formatNaira(item.currentPrice)}</span>
-                      <span className="original-price">{formatNaira(item.originalPrice)}</span>
-                      <span className="discount-badge">-{item.discount}%</span>
-                    </div>
-                    <div className="stock-info">
-                      <span className="stock-text">{formatNaira(item.stock)} in stock</span>
-                    </div>
-                  </div>
-                  <div className="wishlist-actions">
-                    <button className="cart-button">
-                      <ShoppingBag size={16} />
-                    </button>
-                    <button className="remove-button">
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+
+            {wishlistLoading ? (
+              <div className="loading-wishlist">
+                <div className="loading-spinner">Loading wishlist...</div>
+              </div>
+            ) : recentWishlist.length === 0 ? (
+              <div className="empty-wishlist">
+                <div className="empty-state">
+                  <Heart size={48} className="empty-icon" />
+                  <p>No recent wishlist items</p>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="wishlist-items">
+                {recentWishlist.slice(0, 4).map((item) => (
+                  <div key={item.id} className="wishlist-item">
+                    <img src={item.main_image} alt={item.product_name} className="wishlist-image" />
+                    <div className="wishlist-info">
+                      <div className="item-brand">{item.brand}</div>
+                      <div className="item-name">{item.product_name}</div>
+                      <div className="item-pricing">
+                        <span className="current-price">{formatNaira(item.current_price)}</span>
+                        {item.original_price && item.original_price > item.current_price && (
+                          <span className="original-price">{formatNaira(item.original_price)}</span>
+                        )}
+                        {item.discount_percentage > 0 && (
+                          <span className="discount-badge">-{item.discount_percentage}%</span>
+                        )}
+                      </div>
+                      <div className="stock-info">
+                        <span className={`stock-text ${item.is_in_stock ? 'in-stock' : 'out-of-stock'}`}>
+                          {item.is_in_stock ? `${item.stock_quantity} in stock` : 'Out of stock'}
+                        </span>
+                      </div>
+                      <div className="added-date">
+                        Added {item.added_at}
+                      </div>
+                    </div>
+                    <div className="wishlist-actions">
+                      <button
+                        className="cart-button"
+                        onClick={() => handleAddToCart(item.product_id)}
+                        disabled={!item.is_in_stock}
+                      >
+                        <ShoppingBag size={16} />
+                      </button>
+                      <button
+                        className="remove-button"
+                        onClick={() => handleRemoveFromWishlist(item.product_id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </Sidebar>
