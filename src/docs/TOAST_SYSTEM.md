@@ -168,3 +168,4 @@ To customize toast appearance, modify the CSS classes in `Toast.css`:
 - `.toast-error` - Error toast styling  
 - `.toast-warning` - Warning toast styling
 - `.toast-info` - Info toast styling
+

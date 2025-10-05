@@ -54,7 +54,7 @@ const SignUpPage: React.FC = () => {
           phone_number: formData.phoneNumber,
           email: formData.email,
           password: formData.password,
-          confirm_password: formData.confirmPassword,
+          password_confirm: formData.confirmPassword,
           agree_to_terms: agreedToTerms,
         }),
       });

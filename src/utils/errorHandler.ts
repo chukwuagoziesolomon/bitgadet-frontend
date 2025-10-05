@@ -52,3 +52,4 @@ export const isAuthError = (error: any): boolean => {
 export const isValidationError = (error: any): boolean => {
   return error.response?.status === 400 && error.response?.data?.errors;
 };
+

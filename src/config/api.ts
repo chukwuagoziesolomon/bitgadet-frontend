@@ -1,6 +1,6 @@
 // API Configuration
 export const API_CONFIG = {
-  // Prefer environment variable; fallback to relative for local dev
+  // Use environment variable for production, proxy for development
   BASE_URL: process.env.REACT_APP_API_URL || '',
   ENDPOINTS: {
     CATEGORIES_TREND: '/api/categories/trend-indicators/',
@@ -38,7 +38,10 @@ export const API_CONFIG = {
 
 // Helper function to build full API URLs
 export const buildApiUrl = (endpoint: string): string => {
-  return `${API_CONFIG.BASE_URL}${endpoint}`;
+  // Remove trailing slash from base URL and leading slash from endpoint to avoid double slashes
+  const baseUrl = API_CONFIG.BASE_URL.endsWith('/') ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${baseUrl}${cleanEndpoint}`;
 };
 
 // API fetch wrapper with error handling

@@ -60,7 +60,7 @@ const HomePage: React.FC = () => {
     const slugs = ['phones', 'laptops', 'tablets', 'games', 'smartwatches', 'accessories'];
     const fetchOne = async (slug: string) => {
       try {
-        const data = await apiRequest<any>(`/api/categories/${encodeURIComponent(slug)}/products/`);
+        const data = await apiRequest<any>(`/api/categories/${encodeURIComponent(slug)}/products`);
         const total = typeof data?.total_items === 'number' ? data.total_items : (Array.isArray(data?.products) ? data.products.length : 0);
         const trend = data?.trend;
         return [slug, { total_items: total, trend }] as const;

@@ -15,7 +15,7 @@ const CategoryPage: React.FC = () => {
       if (!categoryName) return;
       try {
         setLoading(true);
-        const endpoint = `/api/categories/${encodeURIComponent(categoryName)}/products/`;
+        const endpoint = `/api/categories/${encodeURIComponent(categoryName)}/products`;
         const data = await apiRequest<any>(endpoint);
         const items = Array.isArray(data?.products) ? data.products : [];
         setProducts(items);
