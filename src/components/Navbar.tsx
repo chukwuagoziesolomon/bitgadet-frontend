@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, ChevronDown, Search, Menu, Heart, Phone, FileText, HelpCircle, LogOut, X, BarChart3 } from 'lucide-react';
-import { apiRequest } from '../config/api';
+import { publicApiRequest } from '../config/api';
 import './Navbar.css';
 
 const Navbar: React.FC = () => {
@@ -57,7 +57,7 @@ const Navbar: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const response = await apiRequest<any>(`/api/search/?q=${encodeURIComponent(query)}`);
+      const response = await publicApiRequest<any>(`/api/search/?q=${encodeURIComponent(query)}`);
       setSearchResults(response);
       setIsSearchDropdownOpen(true);
     } catch (error) {

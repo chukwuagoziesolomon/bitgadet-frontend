@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Shield, Truck, Headphones, X, CheckCircle, Copy } from 'lucide-react';
-import { apiRequest } from '../config/api';
+import { publicApiRequest, conditionalApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './Checkout.css';
 
@@ -17,6 +17,16 @@ const Checkout: React.FC = () => {
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
   const [paymentStatus, setPaymentStatus] = useState<string>('pending');
   const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+
+  const formatNaira = (amount: number | undefined) => {
+    if (amount === undefined || amount === null) return '₦0';
+    return `₦${amount.toLocaleString()}`;
+  };
+
+  const formatUSD = (amount: number | undefined) => {
+    if (amount === undefined || amount === null) return '0 USDT';
+    return `${amount.toLocaleString()} USDT`;
+  };
 
   // Form states
   const [customerInfo, setCustomerInfo] = useState({
@@ -46,10 +56,14 @@ const Checkout: React.FC = () => {
 
   const fetchOrderSummary = async () => {
     try {
-      const data = await apiRequest<any>('/api/cart/summary/');
+      const data = await conditionalApiRequest<any>('/api/cart/summary/');
       setOrderSummary(data);
     } catch (error) {
-      console.error('Failed to fetch order summary:', error);
+      // Only log error if user is actually logged in (has token)
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        console.error('Failed to fetch order summary:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -94,12 +108,13 @@ const Checkout: React.FC = () => {
         terms_agreed: additionalInfo.termsAgreed
       };
 
-      const response = await apiRequest<any>('/api/checkout/create/', {
+      const response = await conditionalApiRequest<any>('/api/checkout/create/', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
 
       if (response.success) {
+        console.log('🎉 Order created successfully, showing payment modal');
         handlePaymentMethod(response.payment_info);
       } else {
         // Handle validation errors and show toast notifications
@@ -129,11 +144,13 @@ const Checkout: React.FC = () => {
   };
 
   const handlePaymentMethod = (paymentInfo: any) => {
+    console.log('🔥 handlePaymentMethod called with:', paymentInfo);
     const { payment_method } = paymentInfo;
 
     // Always show payment modal first
     setPaymentInfo(paymentInfo);
     setShowPaymentModal(true);
+    console.log('✅ Modal should be visible now');
 
     switch(payment_method) {
       case 'credit_card':
@@ -156,7 +173,7 @@ const Checkout: React.FC = () => {
   const startPaymentPolling = (orderId: string) => {
     const interval = setInterval(async () => {
       try {
-        const response = await apiRequest<any>(`/api/checkout/status/${orderId}/`);
+        const response = await conditionalApiRequest<any>(`/api/checkout/status/${orderId}/`);
         if (response.payment_status?.status === 'paid') {
           setPaymentStatus('paid');
           clearInterval(interval);
@@ -171,9 +188,13 @@ const Checkout: React.FC = () => {
           });
         }
       } catch (error) {
-        console.error('Failed to check payment status:', error);
+        // Only log error if user is actually logged in (has token)
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          console.error('Failed to check payment status:', error);
+        }
       }
-    }, 10000); // Check every 10 seconds
+    }, 1000); // Check every 1 second
 
     setPollingInterval(interval);
   };
@@ -509,29 +530,29 @@ const Checkout: React.FC = () => {
             ) : orderSummary ? (
               <>
                 <div className="order-row">
-                  <span>Subtotal ({orderSummary.total_items} Items)</span>
-                  <span>₦{orderSummary.subtotal.toLocaleString()}</span>
+                  <span>Subtotal ({orderSummary.total_items || 0} Items)</span>
+                  <span>{formatNaira(orderSummary.subtotal)}</span>
                 </div>
                 <div className="order-row">
                   <span>Tax</span>
-                  <span>₦{orderSummary.tax_amount.toLocaleString()}</span>
+                  <span>{formatNaira(orderSummary.tax)}</span>
                 </div>
                 <div className="order-row">
                   <span>Shipping</span>
-                  <span>₦0</span>
+                  <span>{formatNaira(orderSummary.shipping)}</span>
                 </div>
-                {orderSummary.discount > 0 && (
+                {orderSummary.discount && orderSummary.discount > 0 && (
                   <div className="order-row discount">
                     <span>Discount</span>
-                    <span>-₦{orderSummary.discount.toLocaleString()}</span>
+                    <span>-{formatNaira(orderSummary.discount)}</span>
                   </div>
                 )}
                 <div className="order-total">
                   <span>Total</span>
-                  <span>₦{orderSummary.total.toLocaleString()}</span>
+                  <span>{formatNaira(orderSummary.total)}</span>
                 </div>
                 <div className="usdt-total">
-                  ≈ {orderSummary.total_usdt.toLocaleString()} USDT
+                  ≈ {formatUSD(orderSummary.total_usdt)}
                 </div>
               </>
             ) : (
@@ -578,176 +599,396 @@ const Checkout: React.FC = () => {
             </button>
 
             <div className="modal-content">
-              {paymentInfo.showSuccess ? (
-                <>
-                  <div className="success-icon">
-                    <CheckCircle size={64} />
-                  </div>
-
-                  <h2 className="modal-title">Payment Confirmed!</h2>
-
-                  <p className="modal-message">
-                    {paymentInfo.message}
-                  </p>
-
-                  {paymentInfo.login_credentials && (
-                    <div className="login-credentials">
-                      <h3>Your Account Details</h3>
-                      <div className="credential-item">
-                        <strong>Email:</strong> {paymentInfo.login_credentials.email}
-                      </div>
-                      <div className="credential-item">
-                        <strong>Password:</strong>
-                        <div className="address-container">
-                          <span>{paymentInfo.login_credentials.password}</span>
-                          <button
-                            className="copy-btn"
-                            onClick={() => navigator.clipboard.writeText(paymentInfo.login_credentials.password)}
-                          >
-                            <Copy size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      <p className="credential-note">{paymentInfo.login_credentials.message}</p>
-                    </div>
-                  )}
-
-                  {paymentInfo.next_steps && (
-                    <div className="next-steps">
-                      <h3>Next Steps</h3>
-                      <ul>
-                        {paymentInfo.next_steps.map((step: string, index: number) => (
-                          <li key={index}>{step}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <div className="success-icon">
-                    <CheckCircle size={64} />
-                  </div>
-
-                  <h2 className="modal-title">Order Created Successfully!</h2>
-
-                  <p className="modal-message">
-                    Your order has been created. Please complete your payment using the details below.
-                  </p>
-
-                  {paymentInfo.payment_method === 'crypto' && (
-                    <div className="payment-details">
-                      <h3>Cryptocurrency Payment</h3>
-                      <div className="payment-info-item">
-                        <strong>Amount:</strong> {paymentInfo.expected_amount} {paymentInfo.currency}
-                      </div>
-                      <div className="payment-info-item">
-                        <strong>Network:</strong> {paymentInfo.network}
-                      </div>
-                      <div className="payment-info-item">
-                        <strong>Wallet Address:</strong>
-                        <div className="address-container">
-                          <span>{paymentInfo.wallet_address}</span>
-                          <button
-                            className="copy-btn"
-                            onClick={() => navigator.clipboard.writeText(paymentInfo.wallet_address)}
-                          >
-                            <Copy size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      {paymentInfo.qr_code_url && (
-                        <div className="qr-code">
-                          <img src={paymentInfo.qr_code_url} alt="Payment QR Code" />
-                        </div>
-                      )}
-                      <div className="payment-instructions">
-                        <strong>Instructions:</strong>
-                        <p>{paymentInfo.instructions}</p>
-                      </div>
-                      <div className="payment-status">
-                        <p>Payment Status: <span className={`status-${paymentStatus}`}>{paymentStatus}</span></p>
-                        {paymentStatus === 'pending' && <p>Checking payment status every 10 seconds...</p>}
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentInfo.payment_method === 'bank_transfer' && (
-                    <div className="payment-details">
-                      <h3>Bank Transfer</h3>
-                      <div className="payment-info-item">
-                        <strong>Amount:</strong> ₦{paymentInfo.account_details?.amount_to_pay || paymentInfo.amount_to_pay}
-                      </div>
-                      <div className="payment-info-item">
-                        <strong>Bank Name:</strong> {paymentInfo.account_details?.bank_name}
-                      </div>
-                      <div className="payment-info-item">
-                        <strong>Account Name:</strong> {paymentInfo.account_details?.account_name}
-                      </div>
-                      <div className="payment-info-item">
-                        <strong>Account Number:</strong>
-                        <div className="address-container">
-                          <span>{paymentInfo.account_details?.account_number}</span>
-                          <button
-                            className="copy-btn"
-                            onClick={() => navigator.clipboard.writeText(paymentInfo.account_details?.account_number)}
-                          >
-                            <Copy size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      {paymentInfo.account_details?.expires_in && (
-                        <div className="payment-info-item">
-                          <strong>Expires:</strong> {paymentInfo.account_details.expires_in}
-                        </div>
-                      )}
-                      <div className="payment-instructions">
-                        <strong>Instructions:</strong>
-                        <p>{paymentInfo.account_details?.instructions || paymentInfo.instructions}</p>
-                      </div>
-                      <div className="payment-status">
-                        <p>Payment Status: <span className={`status-${paymentStatus}`}>{paymentStatus}</span></p>
-                        {paymentStatus === 'pending' && <p>Checking payment status every 10 seconds...</p>}
-                      </div>
-                    </div>
-                  )}
-
-                  {paymentInfo.payment_method === 'credit_card' && (
-                    <div className="payment-details">
-                      <h3>Debit/Credit Card Payment</h3>
-                      <p>{paymentInfo.instructions}</p>
-                      <button className="payment-gateway-btn">
-                        Proceed to Payment Gateway
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-
-              <div className="modal-actions">
-                {!paymentInfo.showSuccess && (
-                  <button
-                    className="modal-primary-btn"
-                    onClick={() => setShowPaymentModal(false)}
-                  >
-                    Close
-                  </button>
-                )}
-                {paymentInfo.showSuccess && (
-                  <button
-                    className="modal-primary-btn"
-                    onClick={() => navigate('/login')}
-                  >
-                    Login to Account
-                  </button>
-                )}
-                <button
-                  className="modal-secondary-btn"
-                  onClick={() => navigate('/orders')}
-                >
-                  View Orders
-                </button>
+              {/* Debug Info - Remove this after testing */}
+              <div style={{
+                position: 'absolute',
+                top: 10,
+                left: 10,
+                background: 'red',
+                color: 'white',
+                padding: '10px',
+                fontSize: '12px',
+                zIndex: 9999,
+                maxWidth: '300px',
+                maxHeight: '200px',
+                overflow: 'auto',
+                borderRadius: '8px'
+              }}>
+                <strong>DEBUG INFO:</strong><br/>
+                showPaymentModal: {showPaymentModal ? 'true' : 'false'}<br/>
+                paymentInfo exists: {paymentInfo ? 'true' : 'false'}<br/>
+                paymentInfo keys: {paymentInfo ? Object.keys(paymentInfo).join(', ') : 'none'}<br/>
+                payment_method: {paymentInfo?.payment_method || 'undefined'}<br/>
+                showSuccess: {paymentInfo?.showSuccess ? 'true' : 'false'}<br/>
+                <br/>
+                <strong>Full paymentInfo:</strong><br/>
+                {JSON.stringify(paymentInfo, null, 2)}
               </div>
+              {/* Debug Info - Remove this after testing */}
+              <div style={{
+                position: 'absolute',
+                top: 10,
+                left: 10,
+                background: 'red',
+                color: 'white',
+                padding: '10px',
+                fontSize: '12px',
+                zIndex: 9999,
+                maxWidth: '300px',
+                maxHeight: '200px',
+                overflow: 'auto',
+                borderRadius: '8px'
+              }}>
+                <strong>DEBUG INFO:</strong><br/>
+                showPaymentModal: {showPaymentModal ? 'true' : 'false'}<br/>
+                paymentInfo exists: {paymentInfo ? 'true' : 'false'}<br/>
+                paymentInfo keys: {paymentInfo ? Object.keys(paymentInfo).join(', ') : 'none'}<br/>
+                payment_method: {paymentInfo?.payment_method || 'undefined'}<br/>
+                showSuccess: {paymentInfo?.showSuccess ? 'true' : 'false'}<br/>
+                <br/>
+                <strong>Full paymentInfo:</strong><br/>
+                {JSON.stringify(paymentInfo, null, 2)}
+              </div>
+              {paymentInfo.showSuccess ? (
+                /* SUCCESS STATE */
+                <div className="success-state">
+                  <div className="success-header">
+                    <div className="success-icon-wrapper">
+                      <CheckCircle size={80} />
+                      <div className="success-particles">
+                        <div className="particle particle-1"></div>
+                        <div className="particle particle-2"></div>
+                        <div className="particle particle-3"></div>
+                      </div>
+                    </div>
+                    <h2 className="modal-title">🎉 Payment Successful!</h2>
+                    <p className="modal-subtitle">Your order has been confirmed</p>
+                  </div>
+
+                  <div className="success-content">
+                    {/* Account Information Card */}
+                    {paymentInfo.login_credentials && (
+                      <div className="info-card account-card">
+                        <div className="card-header">
+                          <div className="card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                              <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                          </div>
+                          <h3>Your Account Created</h3>
+                        </div>
+                        <div className="card-content">
+                          <div className="credential-row">
+                            <span className="label">Email:</span>
+                            <span className="value">{paymentInfo.login_credentials.email}</span>
+                          </div>
+                          <div className="credential-row">
+                            <span className="label">Password:</span>
+                            <div className="password-field">
+                              <span className="value">{paymentInfo.login_credentials.password}</span>
+                              <button
+                                className="copy-btn"
+                                onClick={() => navigator.clipboard.writeText(paymentInfo.login_credentials.password)}
+                                title="Copy password"
+                              >
+                                <Copy size={16} />
+                              </button>
+                            </div>
+                          </div>
+                          <p className="credential-note">{paymentInfo.login_credentials.message}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Next Steps Card */}
+                    {paymentInfo.next_steps && (
+                      <div className="info-card steps-card">
+                        <div className="card-header">
+                          <div className="card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M9 11l3 3L22 4"></path>
+                              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                            </svg>
+                          </div>
+                          <h3>What's Next?</h3>
+                        </div>
+                        <div className="card-content">
+                          <ul className="steps-list">
+                            {paymentInfo.next_steps.map((step: string, index: number) => (
+                              <li key={index} className="step-item">
+                                <div className="step-number">{index + 1}</div>
+                                <span>{step}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="success-actions">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => navigate('/login')}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10,17 15,12 10,7"></polyline>
+                        <line x1="15" x2="3" y1="12" y2="12"></line>
+                      </svg>
+                      Login to Your Account
+                    </button>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => navigate('/orders')}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z"></path>
+                      </svg>
+                      View Orders
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* PAYMENT PENDING STATE */
+                <div className="payment-state">
+                  <div className="payment-header">
+                    <div className="payment-icon-wrapper">
+                      <div className="payment-icon">
+                        {paymentInfo.payment_method === 'bank_transfer' && '🏦'}
+                        {paymentInfo.payment_method === 'crypto' && '₿'}
+                        {paymentInfo.payment_method === 'credit_card' && '💳'}
+                      </div>
+                    </div>
+                    <h2 className="modal-title">Complete Your Payment</h2>
+                    <p className="modal-subtitle">Choose your preferred payment method</p>
+                  </div>
+
+                  <div className="payment-content">
+                    {/* Payment Method Card */}
+                    <div className="info-card payment-method-card">
+                      <div className="card-header">
+                        <div className="card-icon">
+                          {paymentInfo.payment_method === 'bank_transfer' && (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                              <line x1="2" y1="10" x2="22" y2="10"></line>
+                            </svg>
+                          )}
+                          {paymentInfo.payment_method === 'crypto' && (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                              <path d="M12 17h.01"></path>
+                            </svg>
+                          )}
+                          {paymentInfo.payment_method === 'credit_card' && (
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                              <line x1="2" y1="10" x2="22" y2="10"></line>
+                            </svg>
+                          )}
+                        </div>
+                        <div>
+                          <h3>{paymentInfo.payment_method_display || paymentInfo.payment_method}</h3>
+                          <p className="payment-amount">Total: ₦{paymentInfo.total_amount?.toLocaleString() || paymentInfo.amount_to_pay}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bank Transfer Details */}
+                    {paymentInfo.payment_method === 'bank_transfer' && paymentInfo.account_details && (
+                      <div className="info-card bank-details-card">
+                        <div className="card-header">
+                          <h3>Bank Transfer Details</h3>
+                          <span className="status-badge">Required</span>
+                        </div>
+                        <div className="card-content">
+                          <div className="bank-details-grid">
+                            <div className="detail-item">
+                              <span className="label">Amount to Pay:</span>
+                              <span className="value highlight">₦{paymentInfo.account_details.amount_to_pay?.toLocaleString() || paymentInfo.amount_to_pay}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Bank Name:</span>
+                              <span className="value">{paymentInfo.account_details.bank_name}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Account Name:</span>
+                              <span className="value">{paymentInfo.account_details.account_name}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Account Number:</span>
+                              <div className="account-number-field">
+                                <span className="value">{paymentInfo.account_details.account_number}</span>
+                                <button
+                                  className="copy-btn"
+                                  onClick={() => navigator.clipboard.writeText(paymentInfo.account_details.account_number)}
+                                  title="Copy account number"
+                                >
+                                  <Copy size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          {paymentInfo.account_details.expires_in && (
+                            <div className="expiry-notice">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12,6 12,12 16,14"></polyline>
+                              </svg>
+                              Expires in: {paymentInfo.account_details.expires_in}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Crypto Payment Details */}
+                    {paymentInfo.payment_method === 'crypto' && (
+                      <div className="info-card crypto-details-card">
+                        <div className="card-header">
+                          <h3>Cryptocurrency Payment</h3>
+                          <span className="status-badge recommended">Fast & Secure</span>
+                        </div>
+                        <div className="card-content">
+                          <div className="crypto-details">
+                            <div className="detail-item">
+                              <span className="label">Amount:</span>
+                              <span className="value highlight">{paymentInfo.expected_amount} {paymentInfo.currency}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Network:</span>
+                              <span className="value">{paymentInfo.network}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Wallet Address:</span>
+                              <div className="wallet-address-field">
+                                <span className="value">{paymentInfo.wallet_address}</span>
+                                <button
+                                  className="copy-btn"
+                                  onClick={() => navigator.clipboard.writeText(paymentInfo.wallet_address)}
+                                  title="Copy wallet address"
+                                >
+                                  <Copy size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          {paymentInfo.qr_code_url && (
+                            <div className="qr-section">
+                              <p className="qr-label">Scan QR Code</p>
+                              <div className="qr-container">
+                                <img src={paymentInfo.qr_code_url} alt="Payment QR Code" className="qr-code" />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Credit Card Payment */}
+                    {paymentInfo.payment_method === 'credit_card' && (
+                      <div className="info-card card-details-card">
+                        <div className="card-header">
+                          <h3>Card Payment</h3>
+                          <span className="status-badge">Secure</span>
+                        </div>
+                        <div className="card-content">
+                          <p className="card-instructions">{paymentInfo.instructions}</p>
+                          <button className="btn btn-primary card-payment-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                              <line x1="2" y1="10" x2="22" y2="10"></line>
+                            </svg>
+                            Proceed to Secure Payment
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Payment Status */}
+                    <div className="info-card status-card">
+                      <div className="card-header">
+                        <div className="card-icon">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12,6 12,12 16,14"></polyline>
+                          </svg>
+                        </div>
+                        <h3>Payment Status</h3>
+                      </div>
+                      <div className="card-content">
+                        <div className="status-indicator">
+                          <div className={`status-dot ${paymentStatus === 'paid' ? 'success' : 'pending'}`}></div>
+                          <span className={`status-text ${paymentStatus}`}>
+                            {paymentStatus === 'paid' ? 'Payment Confirmed' : 'Waiting for Payment'}
+                          </span>
+                        </div>
+                        {paymentStatus === 'pending' && (
+                          <p className="status-note">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="loading-icon">
+                              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" strokeDasharray="31.416" strokeDashoffset="31.416">
+                                <animate attributeName="stroke-dashoffset" dur="1s" repeatCount="indefinite" values="31.416;0" />
+                              </circle>
+                            </svg>
+                            Checking payment status every second...
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Instructions */}
+                    <div className="info-card instructions-card">
+                      <div className="card-header">
+                        <div className="card-icon">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <path d="M12 17h.01"></path>
+                          </svg>
+                        </div>
+                        <h3>Payment Instructions</h3>
+                      </div>
+                      <div className="card-content">
+                        <div className="instructions-content">
+                          {paymentInfo.account_details?.instructions || paymentInfo.instructions || 'Please complete your payment using the details above.'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="payment-actions">
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => setShowPaymentModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="btn btn-primary confirm-payment-btn"
+                      onClick={() => navigate('/order-confirmation')}
+                      disabled={paymentStatus !== 'paid'}
+                    >
+                      {paymentStatus === 'paid' ? (
+                        <>
+                          <CheckCircle size={20} />
+                          View Order Confirmation
+                        </>
+                      ) : (
+                        <>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12,6 12,12 16,14"></polyline>
+                          </svg>
+                          Confirm Payment
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

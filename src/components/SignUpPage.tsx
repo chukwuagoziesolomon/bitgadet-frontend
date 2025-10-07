@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, Lock, Eye, EyeOff } from 'lucide-react';
-import { apiRequest, API_CONFIG } from '../config/api';
+import { publicApiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './SignUpPage.css';
 
@@ -46,7 +46,7 @@ const SignUpPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_SIGNUP, {
+      const response = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_SIGNUP, {
         method: 'POST',
         body: JSON.stringify({
           first_name: formData.firstName,

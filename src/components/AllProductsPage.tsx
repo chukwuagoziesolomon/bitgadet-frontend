@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Grid3X3, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import './AllProductsPage.css';
-import { apiRequest } from '../config/api';
+import { apiRequest, publicApiRequest, conditionalApiRequest } from '../config/api';
 import { useAllProducts } from '../hooks/useAllProducts';
 const AllProductsPage: React.FC = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -42,18 +42,26 @@ const AllProductsPage: React.FC = () => {
 
   useEffect(() => {
     // Fetch wishlist on mount (silent - no error toasts)
-    apiRequest<any>('/api/wishlist/').then(res => {
+    conditionalApiRequest<any>('/api/wishlist/').then(res => {
       setWishlist(res.wishlist || []);
     }).catch(error => {
-      console.error('Failed to fetch wishlist:', error);
+      // Only log error if user is actually logged in (has token)
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        console.error('Failed to fetch wishlist:', error);
+      }
       // Silent failure - don't show error toast to user
     });
 
     // Fetch cart on mount (silent - no error toasts)
-    apiRequest<any>('/api/cart/').then(res => {
+    conditionalApiRequest<any>('/api/cart/').then(res => {
       setCart(res.cart || {});
     }).catch(error => {
-      console.error('Failed to fetch cart:', error);
+      // Only log error if user is actually logged in (has token)
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        console.error('Failed to fetch cart:', error);
+      }
       // Silent failure - don't show error toast to user
     });
   }, []);
@@ -159,32 +167,62 @@ const AllProductsPage: React.FC = () => {
     return baseProps;
   };
 
-  const handleAddToCart = (productId: number) => {
-    apiRequest<any>('/api/cart/add/', {
-      method: 'POST',
-      body: JSON.stringify({ product_id: productId, quantity: 1 }),
-    }).then(res => {
+  const handleAddToCart = async (productId: number) => {
+    const token = localStorage.getItem('authToken');
+
+    // Optimistic update
+    setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
+
+    try {
+      const res = await conditionalApiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
       setCart(res.cart || {});
-      // Toast notification handled by ProductCard component
-    }).catch(error => {
-      console.error('Failed to add to cart:', error);
+    } catch (error) {
+      console.error('❌ Add to cart failed:', error);
+      // Revert optimistic update
+      setCart(prev => {
+        const newCart = { ...prev };
+        if (newCart[productId] > 1) {
+          newCart[productId]--;
+        } else {
+          delete newCart[productId];
+        }
+        return newCart;
+      });
+      // Only log error if user is actually logged in (has token)
+      if (token) {
+        console.error('Failed to add to cart:', error);
+      }
       // Silent failure - ProductCard already shows success toast
-    });
+    }
   };
 
   // Toggle wishlist on single click
-  const handleToggleWishlist = (productId: number, willBeInWishlist?: boolean) => {
+  const handleToggleWishlist = async (productId: number, willBeInWishlist?: boolean) => {
+    const token = localStorage.getItem('authToken');
     const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
-    apiRequest<any>(endpoint, {
-      method: 'POST',
-      body: JSON.stringify({ product_id: productId }),
-    }).then(res => {
+
+    // Optimistic update
+    setWishlist(prev => willBeInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
+
+    try {
+      const res = await conditionalApiRequest<any>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      });
       setWishlist(res.wishlist || []);
-      // Toast notification handled by ProductCard component
-    }).catch(error => {
-      console.error('Failed to toggle wishlist:', error);
+    } catch (error) {
+      console.error('❌ Wishlist update failed:', error);
+      // Revert optimistic update
+      setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
+      // Only log error if user is actually logged in (has token)
+      if (token) {
+        console.error('Failed to toggle wishlist:', error);
+      }
       // Silent failure - ProductCard already shows appropriate toast
-    });
+    }
   };
 
   return (

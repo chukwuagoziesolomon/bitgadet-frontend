@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, ShoppingBag, Truck, MapPin, Download, MessageCircle, Bell, Shield, Copy, User, Key } from 'lucide-react';
-import { apiRequest } from '../config/api';
+import { publicApiRequest, conditionalApiRequest } from '../config/api';
 import './OrderConfirmation.css';
 
 const OrderConfirmation: React.FC = () => {
@@ -18,19 +18,23 @@ const OrderConfirmation: React.FC = () => {
   useEffect(() => {
     const fetchOrderData = async () => {
       try {
-        // Fetch cart summary to get purchased items
-        const cartResponse = await apiRequest<any>('/api/cart/summary/');
+        // Fetch cart summary to get purchased items (uses authentication if available)
+        const cartResponse = await conditionalApiRequest<any>('/api/cart/summary/');
 
-        // Fetch order status if we have an order_id
+        // Fetch order status if we have an order_id (uses authentication if available)
         let statusResponse = null;
         if (orderId) {
-          statusResponse = await apiRequest<any>(`/checkout/status/${orderId}/`);
+          statusResponse = await conditionalApiRequest<any>(`/checkout/status/${orderId}/`);
         }
 
         setCartSummary(cartResponse);
         setOrderStatus(statusResponse);
       } catch (error) {
-        console.error('Failed to fetch order data:', error);
+        // Only log error if user is actually logged in (has token)
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          console.error('Failed to fetch order data:', error);
+        }
       } finally {
         setLoading(false);
       }

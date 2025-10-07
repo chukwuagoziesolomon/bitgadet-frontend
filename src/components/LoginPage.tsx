@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
-import { apiRequest, API_CONFIG } from '../config/api';
+import { publicApiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './LoginPage.css';
 
@@ -14,6 +14,49 @@ const LoginPage: React.FC = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState({
+    email: '',
+    password: ''
+  });
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false
+  });
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Load remembered email on component mount
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem('rememberedEmail');
+    if (rememberedEmail) {
+      setFormData(prev => ({ ...prev, email: rememberedEmail }));
+      setRememberMe(true);
+    }
+  }, []);
+
+  // Keyboard navigation support
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !isLoading) {
+      e.preventDefault();
+      const form = e.target as HTMLFormElement;
+      if (form && form.checkValidity()) {
+        handleSubmit(e as any);
+      }
+    }
+  };
+
+  // Validation functions
+  const validateEmail = (email: string): string => {
+    if (!email) return 'Email is required';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return 'Please enter a valid email address';
+    return '';
+  };
+
+  const validatePassword = (password: string): string => {
+    if (!password) return 'Password is required';
+    if (password.length < 6) return 'Password must be at least 6 characters';
+    return '';
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -21,14 +64,57 @@ const LoginPage: React.FC = () => {
       ...prev,
       [name]: value
     }));
+
+    // Validate on change if field has been touched
+    if (touched[name as keyof typeof touched]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: name === 'email' ? validateEmail(value) : validatePassword(value)
+      }));
+    }
+  };
+
+  const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name } = e.target;
+    setTouched(prev => ({
+      ...prev,
+      [name]: true
+    }));
+
+    // Validate on blur
+    setErrors(prev => ({
+      ...prev,
+      [name]: name === 'email' ? validateEmail(formData.email) : validatePassword(formData.password)
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate all fields before submission
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
+
+    setErrors({
+      email: emailError,
+      password: passwordError
+    });
+
+    setTouched({
+      email: true,
+      password: true
+    });
+
+    // Stop submission if there are validation errors
+    if (emailError || passwordError) {
+      showError('Validation Error', 'Please fix the errors in the form before submitting.');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_LOGIN, {
+      const response = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_LOGIN, {
         method: 'POST',
         body: JSON.stringify({
           email: formData.email,
@@ -42,17 +128,39 @@ const LoginPage: React.FC = () => {
       localStorage.setItem('isAdmin', response.is_admin.toString());
       localStorage.setItem('loginType', response.login_type || 'user');
 
+      // Store email if remember me is checked
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', formData.email);
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       showSuccess('Login successful', `Welcome back, ${response.user.first_name}!`);
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login failed:', error);
+
       let errorMessage = 'Login failed. Please try again.';
+      let errorTitle = 'Login Failed';
+
+      // Handle specific error types based on response
       if (error.message) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
+        // Handle specific API error messages
+        if (error.message.includes('No account found with this email')) {
+          errorMessage = 'No account found with this email address. Please check your email or sign up for a new account.';
+          errorTitle = 'Account Not Found';
+        } else if (error.message.includes('Invalid credentials') || error.message.includes('wrong password')) {
+          errorMessage = 'The password you entered is incorrect. Please try again.';
+          errorTitle = 'Invalid Password';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.';
+          errorTitle = 'Connection Error';
+        } else {
+          errorMessage = error.message;
+        }
       }
-      showError('Login Failed', errorMessage);
+
+      showError(errorTitle, errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +184,7 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Login Form */}
-          <form className="login-form" onSubmit={handleSubmit}>
+          <form className="login-form" onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <div className="input-wrapper">
@@ -87,10 +195,13 @@ const LoginPage: React.FC = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  onBlur={handleInputBlur}
                   placeholder="Enter your email"
+                  className={errors.email ? 'error' : ''}
                   required
                 />
               </div>
+              {errors.email && <span className="field-error">{errors.email}</span>}
             </div>
 
             <div className="form-group">
@@ -103,7 +214,9 @@ const LoginPage: React.FC = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  onBlur={handleInputBlur}
                   placeholder="Enter your password"
+                  className={errors.password ? 'error' : ''}
                   required
                 />
                 <button
@@ -114,11 +227,16 @@ const LoginPage: React.FC = () => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {errors.password && <span className="field-error">{errors.password}</span>}
             </div>
 
             <div className="form-options">
               <label className="remember-me">
-                <input type="checkbox" />
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
                 <span>Remember me</span>
               </label>
               <Link to="/forgot-password" className="forgot-password">
@@ -126,12 +244,19 @@ const LoginPage: React.FC = () => {
               </Link>
             </div>
 
-            <button 
-              type="submit" 
-              className="login-button"
-              disabled={isLoading}
+            <button
+              type="submit"
+              className={`login-button ${isLoading ? 'loading' : ''}`}
+              disabled={isLoading || !formData.email || !formData.password}
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              {isLoading ? (
+                <>
+                  <div className="spinner"></div>
+                  Signing in...
+                </>
+              ) : (
+                'Sign In'
+              )}
             </button>
           </form>
 

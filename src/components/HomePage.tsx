@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Smartphone, Laptop, Gamepad2, Watch, Headphones, TrendingUp, TrendingDown, Star, Award, Sparkles, Package } from 'lucide-react';
 import ProductCard from './ProductCard';
 import './HomePage.css';
-import { apiRequest, API_CONFIG } from '../config/api';
+import { apiRequest, publicApiRequest, conditionalApiRequest, API_CONFIG } from '../config/api';
 import { useFeaturedProducts } from '../hooks/useFeaturedProducts';
 import { useBestSellers } from '../hooks/useBestSellers';
 import { useNewArrivals } from '../hooks/useNewArrivals';
@@ -31,8 +31,10 @@ const HomePage: React.FC = () => {
     const fetchBanners = async () => {
       try {
         setBannersLoading(true);
-        const data = await apiRequest<any>(API_CONFIG.ENDPOINTS.BANNERS_CTA);
-        const items = Array.isArray(data?.banners) ? data.banners : [];
+        const data = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.BANNERS_ACTIVE);
+        // New response structure: { banners: { hero: [...], ... }, total_banners, banner_types }
+        const heroBanners = data?.banners?.hero || [];
+        const items = Array.isArray(heroBanners) ? heroBanners : [];
         setBanners(items);
         setBannersError(null);
       } catch (error: any) {
@@ -55,43 +57,59 @@ const HomePage: React.FC = () => {
     return () => clearInterval(interval);
   }, [banners.length]);
 
-  // Fetch per-category total_items and trend for Home category cards
+  // Fetch categories data for Home category cards
   useEffect(() => {
-    const slugs = ['phones', 'laptops', 'tablets', 'games', 'smartwatches', 'accessories'];
-    const fetchOne = async (slug: string) => {
+    const fetchCategories = async () => {
       try {
-        const data = await apiRequest<any>(`/api/categories/${encodeURIComponent(slug)}/products`);
-        const total = typeof data?.total_items === 'number' ? data.total_items : (Array.isArray(data?.products) ? data.products.length : 0);
-        const trend = data?.trend;
-        return [slug, { total_items: total, trend }] as const;
-      } catch {
-        return [slug, { total_items: 0, trend: undefined }] as const;
+        const data = await publicApiRequest<{ categories: any[] } | any[]>('/api/shop/categories/');
+        const categoriesArray = Array.isArray(data) ? data : (data as any).categories || [];
+
+        const meta: Record<string, { total_items: number; trend?: string }> = {};
+        categoriesArray.forEach((category: any) => {
+          meta[category.category_name] = {
+            total_items: category.item_count,
+            trend: category.trend_level
+          };
+        });
+        setCategoryMeta(meta);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        // Set default values for all categories
+        const defaultMeta: Record<string, { total_items: number; trend?: string }> = {};
+        ['phones', 'laptops', 'tablets', 'games', 'smartwatches', 'accessories'].forEach(slug => {
+          defaultMeta[slug] = { total_items: 0, trend: undefined };
+        });
+        setCategoryMeta(defaultMeta);
       }
     };
-    (async () => {
-      const results = await Promise.all(slugs.map(fetchOne));
-      const meta: Record<string, { total_items: number; trend?: string }> = {};
-      results.forEach(([slug, info]) => { meta[slug] = info; });
-      setCategoryMeta(meta);
-    })();
+
+    fetchCategories();
   }, []);
 
   useEffect(() => {
     const fetchWishlistAndCart = async () => {
       try {
-        // Fetch wishlist on mount
-        const wishlistRes = await apiRequest<any>('/api/wishlist/');
+        // Fetch wishlist on mount (uses authentication if available)
+        const wishlistRes = await conditionalApiRequest<any>('/api/wishlist/');
         setWishlist(wishlistRes.wishlist || []);
       } catch (error: any) {
-        showError('Failed to load wishlist', error.message || 'Please try again later.');
+        // Only show error if user is actually logged in (has token)
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          showError('Failed to load wishlist', error.message || 'Please try again later.');
+        }
       }
 
       try {
-        // Fetch cart on mount
-        const cartRes = await apiRequest<any>('/api/cart/');
+        // Fetch cart on mount (uses authentication if available)
+        const cartRes = await conditionalApiRequest<any>('/api/cart/');
         setCart(cartRes.cart || {});
       } catch (error: any) {
-        showError('Failed to load cart', error.message || 'Please try again later.');
+        // Only show error if user is actually logged in (has token)
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          showError('Failed to load cart', error.message || 'Please try again later.');
+        }
       }
     };
 
@@ -139,45 +157,71 @@ const HomePage: React.FC = () => {
   };
 
   const handleAddToCart = async (productId: number) => {
+    const token = localStorage.getItem('authToken');
+    console.log('🛒 Attempting to add product to cart:', productId, 'User logged in:', !!token);
+
+    // Optimistic update
+    setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
+
     try {
-      const res = await apiRequest<any>('/api/cart/add/', {
+      const res = await conditionalApiRequest<any>('/api/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
+      console.log('✅ Add to cart API response:', res);
       setCart(res.cart || {});
+      console.log('🛒 Updated cart state:', res.cart || {});
     } catch (error: any) {
-      showError('Failed to add to cart', error.message || 'Please try again.');
+      console.error('❌ Add to cart failed:', error);
+      // Revert optimistic update
+      setCart(prev => {
+        const newCart = { ...prev };
+        if (newCart[productId] > 1) {
+          newCart[productId]--;
+        } else {
+          delete newCart[productId];
+        }
+        return newCart;
+      });
+      // Only show error if user is actually logged in (has token)
+      if (token) {
+        showError('Failed to add to cart', error.message || 'Please try again.');
+      }
     }
   };
 
   // Toggle wishlist on single click
   const handleToggleWishlist = async (productId: number, willBeInWishlist?: boolean) => {
+    const token = localStorage.getItem('authToken');
     const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
+
+    // Optimistic update
+    setWishlist(prev => willBeInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
+
     try {
-      const res = await apiRequest<any>(endpoint, {
+      const res = await conditionalApiRequest<any>(endpoint, {
         method: 'POST',
         body: JSON.stringify({ product_id: productId }),
       });
       setWishlist(res.wishlist || []);
     } catch (error: any) {
-      showError('Failed to update wishlist', error.message || 'Please try again.');
+      console.error('❌ Wishlist update failed:', error);
+      // Revert optimistic update
+      setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
+      // Only show error if user is actually logged in (has token)
+      if (token) {
+        showError('Failed to update wishlist', error.message || 'Please try again.');
+      }
     }
   };
 
   const handleHeroCTAClick = (slideIndex: number) => {
     const slide = banners[slideIndex];
-    if (slide?.productId) {
-      navigate(`/product/${slide.productId}`);
+    if (slide?.product_url) {
+      navigate(slide.product_url);
       return;
     }
-    if (slide?.deepLink) {
-      navigate(slide.deepLink);
-      return;
-    }
-    if (slide?.category) {
-      navigate(`/products?category=${encodeURIComponent(slide.category)}`);
-      return;
-    }
+    // If no specific URL, navigate to products page
     navigate('/products');
   };
 
@@ -224,20 +268,15 @@ const HomePage: React.FC = () => {
               <div className="slide-wrapper">
                 {banners.map((slide, index) => (
                   <div
-                    key={slide.bannerId || index}
+                    key={slide.id || index}
                     className={`slide ${index === currentSlide ? 'active' : ''}`}
                   >
-                    <img src={slide?.snapshot?.image || '/logo.png'} alt={slide?.productSlug || slide?.ctaLabel || 'Banner'} className="slide-image" />
+                    <img src={slide?.image || '/logo.png'} alt={slide?.product_name || slide?.title || 'Banner'} className="slide-image" />
                     <div className="slide-overlay">
                       <div className="slide-content">
-                        <h1>{slide?.ctaLabel || 'Shop Now'}</h1>
-                        {slide?.snapshot?.price && (
-                          <p>
-                            ₦{slide.snapshot.price}
-                            {slide?.snapshot?.originalPrice ? ` · Was ₦${slide.snapshot.originalPrice}` : ''}
-                          </p>
-                        )}
-                        <button className="cta-button" onClick={() => handleHeroCTAClick(index)}>{slide?.ctaLabel || 'Shop Now'}</button>
+                        <h1>{slide?.title || slide?.button_text || 'Shop Now'}</h1>
+                        {slide?.subtitle && <p>{slide.subtitle}</p>}
+                        <button className="cta-button" onClick={() => handleHeroCTAClick(index)}>{slide?.button_text || slide?.title || 'Shop Now'}</button>
                       </div>
                     </div>
                   </div>
@@ -283,11 +322,9 @@ const HomePage: React.FC = () => {
               <p>Latest smart phones and mobile devices.</p>
               <div className="category-count">
                 <span>{categoryMeta['phones']?.total_items ?? 0} items</span>
-                {categoryMeta['phones']?.trend === 'up' && <TrendingUp size={16} color="#00C896" style={{ marginLeft: 6 }} />}
-                {categoryMeta['phones']?.trend === 'down' && <TrendingDown size={16} color="#FF6B6B" style={{ marginLeft: 6 }} />}
                 <span className="arrow">→</span>
               </div>
-              <button className="shop-now-btn">Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigate('/categories/phones')}>Shop Now →</button>
             </div>
             
             <div className="category-card" onClick={() => navigate('/categories/laptops')}>
@@ -301,11 +338,9 @@ const HomePage: React.FC = () => {
             <p>High-performance laptops and notebooks</p>
               <div className="category-count">
                 <span>{categoryMeta['laptops']?.total_items ?? 0} items</span>
-                {categoryMeta['laptops']?.trend === 'up' && <TrendingUp size={16} color="#00C896" style={{ marginLeft: 6 }} />}
-                {categoryMeta['laptops']?.trend === 'down' && <TrendingDown size={16} color="#FF6B6B" style={{ marginLeft: 6 }} />}
                 <span className="arrow">→</span>
               </div>
-              <button className="shop-now-btn">Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigate('/categories/laptops')}>Shop Now →</button>
             </div>
             
             <div className="category-card" onClick={() => navigate('/categories/tablets')}>
@@ -319,11 +354,9 @@ const HomePage: React.FC = () => {
             <p>iPads, Android Tablets and e-Readers</p>
               <div className="category-count">
                 <span>{categoryMeta['tablets']?.total_items ?? 0} items</span>
-                {categoryMeta['tablets']?.trend === 'up' && <TrendingUp size={16} color="#00C896" style={{ marginLeft: 6 }} />}
-                {categoryMeta['tablets']?.trend === 'down' && <TrendingDown size={16} color="#FF6B6B" style={{ marginLeft: 6 }} />}
                 <span className="arrow">→</span>
               </div>
-              <button className="shop-now-btn">Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigate('/categories/tablets')}>Shop Now →</button>
             </div>
             
             <div className="category-card" onClick={() => navigate('/categories/games')}>
@@ -337,11 +370,9 @@ const HomePage: React.FC = () => {
             <p>Gaming consoles and accessories</p>
               <div className="category-count">
                 <span>{categoryMeta['games']?.total_items ?? 0} items</span>
-                {categoryMeta['games']?.trend === 'up' && <TrendingUp size={16} color="#00C896" style={{ marginLeft: 6 }} />}
-                {categoryMeta['games']?.trend === 'down' && <TrendingDown size={16} color="#FF6B6B" style={{ marginLeft: 6 }} />}
                 <span className="arrow">→</span>
               </div>
-              <button className="shop-now-btn">Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigate('/categories/games')}>Shop Now →</button>
             </div>
             
             <div className="category-card" onClick={() => navigate('/categories/smartwatches')}>
@@ -355,11 +386,9 @@ const HomePage: React.FC = () => {
             <p>Smart wearables and fitness trackers</p>
               <div className="category-count">
                 <span>{categoryMeta['smartwatches']?.total_items ?? 0} items</span>
-                {categoryMeta['smartwatches']?.trend === 'up' && <TrendingUp size={16} color="#00C896" style={{ marginLeft: 6 }} />}
-                {categoryMeta['smartwatches']?.trend === 'down' && <TrendingDown size={16} color="#FF6B6B" style={{ marginLeft: 6 }} />}
                 <span className="arrow">→</span>
               </div>
-              <button className="shop-now-btn">Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigate('/categories/smartwatches')}>Shop Now →</button>
             </div>
             
             <div className="category-card" onClick={() => navigate('/categories/accessories')}>
@@ -373,11 +402,9 @@ const HomePage: React.FC = () => {
             <p>Phone cases, chargers, and more</p>
               <div className="category-count">
                 <span>{categoryMeta['accessories']?.total_items ?? 0} items</span>
-                {categoryMeta['accessories']?.trend === 'up' && <TrendingUp size={16} color="#00C896" style={{ marginLeft: 6 }} />}
-                {categoryMeta['accessories']?.trend === 'down' && <TrendingDown size={16} color="#FF6B6B" style={{ marginLeft: 6 }} />}
                 <span className="arrow">→</span>
               </div>
-              <button className="shop-now-btn">Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigate('/categories/accessories')}>Shop Now →</button>
             </div>
           </div>
         </div>

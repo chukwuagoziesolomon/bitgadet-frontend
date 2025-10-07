@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
-import { apiRequest } from '../config/api';
+import { publicApiRequest, conditionalApiRequest } from '../config/api';
 import './ShoppingCart.css';
 
 interface CartItem {
@@ -29,14 +29,48 @@ const ShoppingCart: React.FC = () => {
   }, []);
 
   const fetchCart = async () => {
+    console.log('🛒 Fetching cart data...');
     try {
-      const data = await apiRequest<any>('/api/cart/');
-      const products = data.products || [];
-      setCartItems(products);
-      setOrderSummary(data.order_summary || {});
-      setItemCount(data.item_count || 0);
+      // Fetch cart items
+      const cartData = await conditionalApiRequest<any>('/api/cart/');
+      console.log('✅ Cart API response:', cartData);
+      const products = cartData.products || [];
+
+      // Transform API response to match CartItem interface
+      const transformedProducts = products.map((product: any) => ({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: parseFloat(product.current_price) || 0, // Convert string to number
+        quantity: product.quantity || 1,
+        item_total: product.quantity ? (parseFloat(product.current_price) || 0) * product.quantity : undefined,
+        brand: product.brand,
+        image: product.main_image,
+        usdPrice: parseFloat(product.current_price_usdt) || undefined,
+        discount: product.discount_percentage || undefined,
+      }));
+
+      console.log('🛒 Transformed cart products:', transformedProducts);
+      setCartItems(transformedProducts);
+      setItemCount(transformedProducts.length);
+
+      // Fetch cart summary
+      try {
+        const summaryData = await conditionalApiRequest<any>('/api/cart/summary/');
+        console.log('✅ Cart summary API response:', summaryData);
+        setOrderSummary(summaryData);
+      } catch (summaryError) {
+        console.error('❌ Failed to fetch cart summary:', summaryError);
+        // Fallback to empty summary
+        setOrderSummary({});
+      }
     } catch (error) {
-      console.error('Failed to fetch cart:', error);
+      console.error('❌ Failed to fetch cart:', error);
+      // Only log error if user is actually logged in (has token)
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        console.error('Failed to fetch cart:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -45,35 +79,45 @@ const ShoppingCart: React.FC = () => {
   const updateQuantity = async (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     try {
-      await apiRequest<any>('/api/cart/update/', {
+      await conditionalApiRequest<any>('/api/cart/update/', {
         method: 'POST',
         body: JSON.stringify({ product_id: id, quantity: newQuantity }),
       });
       // Refetch cart to get updated data
       fetchCart();
     } catch (error) {
-      console.error('Failed to update quantity:', error);
+      // Only log error if user is actually logged in (has token)
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        console.error('Failed to update quantity:', error);
+      }
     }
   };
 
   const removeItem = async (id: number) => {
     try {
-      await apiRequest<any>('/api/cart/remove/', {
+      await conditionalApiRequest<any>('/api/cart/remove/', {
         method: 'POST',
         body: JSON.stringify({ product_id: id }),
       });
       // Refetch cart to get updated data
       fetchCart();
     } catch (error) {
-      console.error('Failed to remove item:', error);
+      // Only log error if user is actually logged in (has token)
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        console.error('Failed to remove item:', error);
+      }
     }
   };
 
-  const formatNaira = (amount: number) => {
+  const formatNaira = (amount: number | undefined) => {
+    if (amount === undefined || amount === null) return '₦0';
     return `₦${amount.toLocaleString()}`;
   };
 
-  const formatUSD = (amount: number) => {
+  const formatUSD = (amount: number | undefined) => {
+    if (amount === undefined || amount === null) return '0 USDT';
     return `${amount.toLocaleString()} USDT`;
   };
 
@@ -137,8 +181,24 @@ const ShoppingCart: React.FC = () => {
                       {/* Product Image */}
                       <div className="product-image">
                         <div className="image-placeholder">
-                          <div className="product-icon">
-                            {item.image || '📱'}
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="cart-product-image"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                const placeholder = target.parentElement?.querySelector('.product-icon') as HTMLElement;
+                                if (placeholder) placeholder.style.display = 'block';
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            className="product-icon"
+                            style={{ display: item.image ? 'none' : 'block' }}
+                          >
+                            📱
                           </div>
                         </div>
                       </div>
@@ -200,7 +260,7 @@ const ShoppingCart: React.FC = () => {
                         <div className="item-subtotal">
                           <span className="subtotal-label">Subtotal: </span>
                           <span className="subtotal-amount">
-                            {formatNaira(item.item_total || (item.price * item.quantity))}
+                            {formatNaira(item.item_total || (item.price && item.quantity ? item.price * item.quantity : 0))}
                           </span>
                         </div>
                       </div>
@@ -229,23 +289,18 @@ const ShoppingCart: React.FC = () => {
                 </div>
                 <div className="summary-row">
                   <span className="summary-label">Shipping</span>
-                  <span className="summary-value">{formatNaira(orderSummary?.shipping_cost || 0)}</span>
+                  <span className="summary-value">{formatNaira(orderSummary?.shipping || 0)}</span>
                 </div>
                 <div className="summary-row">
                   <span className="summary-label">Tax</span>
                   <span className="summary-value">{formatNaira(orderSummary?.tax || 0)}</span>
                 </div>
-                {orderSummary?.discount > 0 && (
-                  <div className="summary-row">
-                    <span className="summary-label">Discount</span>
-                    <span className="summary-value">-{formatNaira(orderSummary.discount)}</span>
-                  </div>
-                )}
                 <hr className="summary-divider" />
                 <div className="summary-total">
                   <span className="total-label">Total</span>
                   <div className="total-values">
                     <div className="total-naira">{formatNaira(orderSummary?.total || 0)}</div>
+                    <div className="total-usd">{formatUSD(orderSummary?.total_usdt || 0)}</div>
                   </div>
                 </div>
               </div>

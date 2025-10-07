@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiRequest, API_CONFIG } from '../config/api';
+import { publicApiRequest, API_CONFIG } from '../config/api';
 import './CategoryPage.css';
 
 const CategoryPage: React.FC = () => {
@@ -15,8 +15,8 @@ const CategoryPage: React.FC = () => {
       if (!categoryName) return;
       try {
         setLoading(true);
-        const endpoint = `/api/categories/${encodeURIComponent(categoryName)}/products`;
-        const data = await apiRequest<any>(endpoint);
+        const endpoint = `/api/categories/${encodeURIComponent(categoryName)}/products/`;
+        const data = await publicApiRequest<any>(endpoint);
         const items = Array.isArray(data?.products) ? data.products : [];
         setProducts(items);
         setSummary({ category: data?.category, total_items: data?.total_items, trend: data?.trend });

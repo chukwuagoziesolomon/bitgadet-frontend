@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Check, X, CheckCircle } from 'lucide-react';
-import { apiRequest } from '../config/api';
+import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './PhoneTrackingPage.css';
 
@@ -8,15 +8,14 @@ const PhoneTrackingPage: React.FC = () => {
   const { showError } = useToast();
 
   const [formData, setFormData] = useState({
-    fullName: '',
     phoneNumber: '',
     imeiNumber: '',
     deviceModel: '',
     lastKnownLocation: '',
-    additionalInfo: '',
-    servicePlan: 'premium',
-    communicationPreference: 'email',
-    customerEmail: ''
+    servicePlan: 'basic',
+    communicationPreference: 'phone',
+    whatsappNumber: '',
+    currentPhoneNumber: ''
   });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,18 +34,16 @@ const PhoneTrackingPage: React.FC = () => {
 
     try {
       const payload = {
-        full_name: formData.fullName,
         phone_number: formData.phoneNumber,
         imei_number: formData.imeiNumber,
         device_model: formData.deviceModel,
         last_known_location: formData.lastKnownLocation,
-        additional_information: formData.additionalInfo,
         service_plan: formData.servicePlan,
         communication_preference: formData.communicationPreference,
-        customer_email: formData.customerEmail
+        customer_phone: formData.communicationPreference === 'phone' ? formData.currentPhoneNumber : formData.whatsappNumber
       };
 
-      const response = await apiRequest<any>('/api/phone-tracking/submit/', {
+      const response = await publicApiRequest<any>('/api/phone-tracking/submit/', {
         method: 'POST',
         body: JSON.stringify(payload),
       });
@@ -55,15 +52,14 @@ const PhoneTrackingPage: React.FC = () => {
         setShowSuccessModal(true);
         // Reset form
         setFormData({
-          fullName: '',
           phoneNumber: '',
           imeiNumber: '',
           deviceModel: '',
           lastKnownLocation: '',
-          additionalInfo: '',
-          servicePlan: 'premium',
-          communicationPreference: 'email',
-          customerEmail: ''
+          servicePlan: 'basic',
+          communicationPreference: 'phone',
+          whatsappNumber: '',
+          currentPhoneNumber: ''
         });
       }
     } catch (error: any) {
@@ -78,8 +74,15 @@ const PhoneTrackingPage: React.FC = () => {
           const nonFieldErrors = errors.non_field_errors.join(', ');
           showError('Validation Error', nonFieldErrors);
         } else {
-          // Handle field-specific errors
-          const errorMessages = Object.values(errors).flat().join(', ');
+          // Handle field-specific errors - flatten all error arrays
+          const errorMessages = Object.entries(errors)
+            .map(([field, messages]) => {
+              if (Array.isArray(messages)) {
+                return `${field}: ${messages.join(', ')}`;
+              }
+              return `${field}: ${messages}`;
+            })
+            .join('; ');
           showError('Validation Error', errorMessages);
         }
       } else if (error.response?.data?.message) {
@@ -124,18 +127,6 @@ const PhoneTrackingPage: React.FC = () => {
             <div className="form-section">
               <h2>Submit Tracking Request</h2>
               <form onSubmit={handleSubmit} className="tracking-form">
-                <div className="form-group">
-                  <label htmlFor="fullName">Full Name *</label>
-                  <input
-                    type="text"
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
                 <div className="form-row">
                   <div className="form-group">
                     <label htmlFor="phoneNumber">Phone Number *</label>
@@ -149,12 +140,12 @@ const PhoneTrackingPage: React.FC = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="customerEmail">Email Address *</label>
+                    <label htmlFor="deviceModel">Device Model *</label>
                     <input
-                      type="email"
-                      id="customerEmail"
-                      name="customerEmail"
-                      value={formData.customerEmail}
+                      type="text"
+                      id="deviceModel"
+                      name="deviceModel"
+                      value={formData.deviceModel}
                       onChange={handleInputChange}
                       required
                     />
@@ -174,14 +165,13 @@ const PhoneTrackingPage: React.FC = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="deviceModel">Device Model *</label>
+                    <label htmlFor="lastKnownLocation">Last Known Location</label>
                     <input
                       type="text"
-                      id="deviceModel"
-                      name="deviceModel"
-                      value={formData.deviceModel}
+                      id="lastKnownLocation"
+                      name="lastKnownLocation"
+                      value={formData.lastKnownLocation}
                       onChange={handleInputChange}
-                      required
                     />
                   </div>
                 </div>
@@ -198,17 +188,6 @@ const PhoneTrackingPage: React.FC = () => {
                 </div>
 
 
-                <div className="form-group">
-                  <label htmlFor="additionalInfo">Additional Information</label>
-                  <textarea
-                    id="additionalInfo"
-                    name="additionalInfo"
-                    value={formData.additionalInfo}
-                    onChange={handleInputChange}
-                    rows={4}
-                    placeholder="Any additional details that might help with the tracking..."
-                  />
-                </div>
 
                 <div className="form-row">
                   <div className="form-group">
@@ -234,12 +213,42 @@ const PhoneTrackingPage: React.FC = () => {
                       onChange={handleInputChange}
                       required
                     >
-                      <option value="email">Email</option>
                       <option value="phone">Phone</option>
                       <option value="whatsapp">WhatsApp</option>
                     </select>
                   </div>
                 </div>
+
+                {/* Conditional fields based on communication preference */}
+                {formData.communicationPreference === 'whatsapp' && (
+                  <div className="form-group">
+                    <label htmlFor="whatsappNumber">WhatsApp Number *</label>
+                    <input
+                      type="tel"
+                      id="whatsappNumber"
+                      name="whatsappNumber"
+                      value={formData.whatsappNumber}
+                      onChange={handleInputChange}
+                      placeholder="Enter your WhatsApp number"
+                      required
+                    />
+                  </div>
+                )}
+
+                {formData.communicationPreference === 'phone' && (
+                  <div className="form-group">
+                    <label htmlFor="currentPhoneNumber">Current Phone Number *</label>
+                    <input
+                      type="tel"
+                      id="currentPhoneNumber"
+                      name="currentPhoneNumber"
+                      value={formData.currentPhoneNumber}
+                      onChange={handleInputChange}
+                      placeholder="Enter your current phone number for calls"
+                      required
+                    />
+                  </div>
+                )}
 
                 <button type="submit" className="submit-btn" disabled={isSubmitting}>
                   {isSubmitting ? 'Submitting...' : 'Submit Tracking Request'}
@@ -381,9 +390,9 @@ const PhoneTrackingPage: React.FC = () => {
               <h2 className="modal-title">Tracking Request Submitted!</h2>
 
               <p className="modal-message">
-                Thank you, <strong>{formData.fullName}</strong>! Your phone tracking request has been submitted successfully.
-                Our team will begin the investigation process and contact you via {formData.communicationPreference === 'email' ? 'email' : formData.communicationPreference === 'phone' ? 'phone' : 'WhatsApp'}
-                at <strong>{formData.communicationPreference === 'email' ? formData.customerEmail : formData.phoneNumber}</strong> within 24 hours.
+                Thank you! Your phone tracking request has been submitted successfully.
+                Our team will begin the investigation process and contact you via {formData.communicationPreference}
+                at <strong>{formData.communicationPreference === 'phone' ? formData.currentPhoneNumber : formData.whatsappNumber}</strong> within 24 hours.
               </p>
 
               <div className="modal-actions">

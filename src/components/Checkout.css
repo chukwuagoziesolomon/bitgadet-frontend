@@ -955,44 +955,53 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(16, 24, 39, 0.9) 100%);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease-out;
+  padding: 20px;
 }
 
 .payment-modal {
-  background: white;
-  border-radius: 20px;
-  padding: 40px;
-  max-width: 600px;
-  width: 90%;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 24px;
+  padding: 0;
+  max-width: 700px;
+  width: 100%;
   position: relative;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.4s ease-out;
+  box-shadow:
+    0 25px 80px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   text-align: center;
   max-height: 90vh;
   overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .modal-close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  background: none;
+  top: 24px;
+  right: 24px;
+  background: rgba(255, 255, 255, 0.9);
   border: none;
   color: #6b7280;
   cursor: pointer;
-  padding: 8px;
+  padding: 12px;
   border-radius: 50%;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  z-index: 10;
 }
 
 .modal-close-btn:hover {
-  background: #f3f4f6;
+  background: rgba(255, 255, 255, 1);
   color: #374151;
+  transform: scale(1.05);
 }
 
 .modal-content {
@@ -1290,35 +1299,647 @@
   }
 }
 
-/* Responsive Modal */
+/* Success State Styles */
+.success-state {
+  padding: 40px 32px;
+}
+
+.success-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.success-icon-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 24px;
+}
+
+.success-icon {
+  color: #10b981;
+  filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.3));
+}
+
+.success-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.particle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: particleFloat 2s ease-in-out infinite;
+}
+
+.particle-1 {
+  top: -10px;
+  left: 20px;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  top: 10px;
+  right: -10px;
+  animation-delay: 0.5s;
+}
+
+.particle-3 {
+  bottom: -10px;
+  left: 30px;
+  animation-delay: 1s;
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 1;
+  }
+}
+
+.modal-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.modal-subtitle {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Info Cards */
+.info-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.account-card .card-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+}
+
+.steps-card .card-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.payment-method-card .card-icon {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+}
+
+.bank-details-card .card-icon,
+.card-details-card .card-icon {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.crypto-details-card .card-icon {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+  color: white;
+}
+
+.status-card .card-icon {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+.instructions-card .card-icon {
+  background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+  color: white;
+}
+
+.card-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge.required {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.status-badge.recommended {
+  background: #d1fae5;
+  color: #10b981;
+}
+
+.status-badge.secure {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+/* Success Content */
+.success-content {
+  margin-bottom: 32px;
+}
+
+.credential-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.credential-row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.value {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.password-field,
+.account-number-field,
+.wallet-address-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.credential-note {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f0f9ff;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #374151;
+  border-left: 3px solid #3b82f6;
+}
+
+/* Steps List */
+.steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  position: relative;
+}
+
+.step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #10b981;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.step-item span {
+  color: #4b5563;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* Payment State */
+.payment-state {
+  padding: 40px 32px;
+}
+
+.payment-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.payment-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.payment-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.3);
+}
+
+.payment-amount {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* Payment Content */
+.payment-content {
+  margin-bottom: 32px;
+}
+
+/* Bank Details */
+.bank-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.detail-item {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-item .label {
+  display: block;
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.detail-item .value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.detail-item .value.highlight {
+  color: #10b981;
+  font-size: 1.1rem;
+}
+
+.expiry-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fef3c7;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+/* Crypto Details */
+.crypto-details {
+  margin-bottom: 24px;
+}
+
+.crypto-details .detail-item {
+  margin-bottom: 12px;
+}
+
+.crypto-details .detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.qr-section {
+  text-align: center;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.qr-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.qr-container {
+  display: inline-block;
+  padding: 16px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.qr-code {
+  width: 120px;
+  height: 120px;
+  border-radius: 8px;
+}
+
+/* Status Indicator */
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.pending {
+  background: #f59e0b;
+  animation: pulse 2s infinite;
+}
+
+.status-dot.success {
+  background: #10b981;
+}
+
+.status-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.status-text.pending {
+  color: #f59e0b;
+}
+
+.status-text.paid {
+  color: #10b981;
+}
+
+.status-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Instructions */
+.instructions-content {
+  color: #4b5563;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn {
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-secondary {
+  background: #f8fafc;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background: #f1f5f9;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+}
+
+.confirm-payment-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.card-payment-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* Actions */
+.success-actions,
+.payment-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.success-actions .btn {
+  min-width: 180px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .payment-modal {
+    margin: 20px;
+    max-width: calc(100vw - 40px);
+  }
+
+  .success-state,
+  .payment-state {
+    padding: 32px 24px;
+  }
+
+  .modal-title {
+    font-size: 1.75rem;
+  }
+
+  .info-card {
+    padding: 20px;
+  }
+
+  .bank-details-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .success-actions,
+  .payment-actions {
+    flex-direction: column;
+  }
+
+  .success-actions .btn,
+  .payment-actions .btn {
+    width: 100%;
+  }
+
+  .step-item {
+    align-items: flex-start;
+    padding-left: 32px;
+  }
+
+  .step-number {
+    position: absolute;
+    left: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .payment-modal {
-    padding: 32px 24px;
-    margin: 20px;
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .success-state,
+  .payment-state {
+    padding: 24px 16px;
   }
 
   .modal-title {
     font-size: 1.5rem;
   }
 
-  .modal-message {
-    font-size: 0.95rem;
+  .info-card {
+    padding: 16px;
+    margin-bottom: 16px;
   }
 
-  .payment-details {
-    padding: 20px;
+  .card-header {
+    gap: 8px;
   }
 
-  .modal-actions {
-    flex-direction: column;
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
   }
 
-  .modal-primary-btn,
-  .modal-secondary-btn {
-    width: 100%;
+  .card-header h3 {
+    font-size: 1.1rem;
   }
 
-  .address-container {
-    font-size: 0.8rem;
+  .payment-icon {
+    width: 64px;
+    height: 64px;
+    font-size: 1.5rem;
+  }
+
+  .btn {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+
+  .qr-code {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
   }
 }

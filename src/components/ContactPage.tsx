@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MessageCircle, Clock, Send, CheckCircle, X } from 'lucide-react';
-import { apiRequest } from '../config/api';
+import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './ContactPage.css';
 
@@ -37,7 +37,7 @@ const ContactPage: React.FC = () => {
         message: formData.message
       };
 
-      const response = await apiRequest<any>('/api/contact/submit/', {
+      const response = await publicApiRequest<any>('/api/contact/submit/', {
         method: 'POST',
         body: JSON.stringify(payload),
       });

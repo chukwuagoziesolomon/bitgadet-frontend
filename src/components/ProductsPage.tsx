@@ -1,8 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
 import './ProductsPage.css';
+import { conditionalApiRequest } from '../config/api';
 
 const ProductsPage: React.FC = () => {
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [cart, setCart] = useState<Record<number, number>>({});
+
+  // Fetch wishlist and cart on mount
+  useEffect(() => {
+    const fetchWishlistAndCart = async () => {
+      try {
+        const wishlistRes = await conditionalApiRequest<any>('/api/wishlist/');
+        setWishlist(wishlistRes.wishlist || []);
+      } catch (error: any) {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          console.error('Failed to fetch wishlist:', error);
+        }
+      }
+
+      try {
+        const cartRes = await conditionalApiRequest<any>('/api/cart/');
+        setCart(cartRes.cart || {});
+      } catch (error: any) {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          console.error('Failed to fetch cart:', error);
+        }
+      }
+    };
+
+    fetchWishlistAndCart();
+  }, []);
+
   // Sample products data
   const products = [
     {
@@ -111,14 +142,60 @@ const ProductsPage: React.FC = () => {
     }
   ];
 
-  const handleAddToCart = (productId: number) => {
-    console.log(`Adding product ${productId} to cart`);
-    // Cart logic handled by ProductCard component - no alert needed
+  const handleAddToCart = async (productId: number) => {
+    const token = localStorage.getItem('authToken');
+    console.log('🛒 Attempting to add product to cart:', productId, 'User logged in:', !!token);
+
+    // Optimistic update
+    setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
+
+    try {
+      const res = await conditionalApiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      console.log('✅ Add to cart API response:', res);
+      setCart(res.cart || {});
+      console.log('🛒 Updated cart state:', res.cart || {});
+    } catch (error: any) {
+      console.error('❌ Add to cart failed:', error);
+      // Revert optimistic update
+      setCart(prev => {
+        const newCart = { ...prev };
+        if (newCart[productId] > 1) {
+          newCart[productId]--;
+        } else {
+          delete newCart[productId];
+        }
+        return newCart;
+      });
+      if (token) {
+        console.error('Failed to add to cart:', error);
+      }
+    }
   };
 
-  const handleToggleWishlist = (productId: number) => {
-    console.log(`Toggling wishlist for product ${productId}`);
-    // Wishlist logic handled by ProductCard component - no alert needed
+  const handleToggleWishlist = async (productId: number, willBeInWishlist?: boolean) => {
+    const token = localStorage.getItem('authToken');
+    const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
+
+    // Optimistic update
+    setWishlist(prev => willBeInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
+
+    try {
+      const res = await conditionalApiRequest<any>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      });
+      setWishlist(res.wishlist || []);
+    } catch (error: any) {
+      console.error('❌ Wishlist update failed:', error);
+      // Revert optimistic update
+      setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
+      if (token) {
+        console.error('Failed to update wishlist:', error);
+      }
+    }
   };
 
   return (
@@ -145,6 +222,8 @@ const ProductsPage: React.FC = () => {
               badges={product.badges}
               inStock={product.inStock}
               onAddToCart={handleAddToCart}
+              isInCart={cart[product.id] > 0}
+              isInWishlist={wishlist.includes(product.id)}
               onToggleWishlist={handleToggleWishlist}
             />
           ))}

@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Grid3X3, List } from 'lucide-react';
-import { API_CONFIG, apiRequest } from '../config/api';
+import { API_CONFIG, publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './CategoriesPage.css';
 
 interface Category {
   id: number;
-  name: string;
+  category_name: string;
   display_name: string;
   description: string;
-  image: string;
-  is_active: boolean;
-  product_count: number;
-  created_at: string;
-  updated_at: string;
+  image_url: string;
+  item_count: number;
+  item_count_display: string;
+  trend_level: string;
+  trend_description: string;
+  trend_color: string;
+  has_items: boolean;
+  shop_url: string;
+  api_shop_url: string;
 }
 
 const CategoriesPage: React.FC = () => {
@@ -27,10 +31,10 @@ const CategoriesPage: React.FC = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const data = await apiRequest<Category[] | { results: Category[] }>(API_CONFIG.ENDPOINTS.CATEGORIES);
+        const data = await publicApiRequest<{ categories: Category[] } | Category[]>('/api/shop/categories/');
 
-        // Handle both direct array response and paginated response
-        const categoriesArray = Array.isArray(data) ? data : (data as any).results || [];
+        // Handle both direct array response and object with categories array
+        const categoriesArray = Array.isArray(data) ? data : (data as any).categories || [];
         setCategories(categoriesArray);
         setError(null);
       } catch (err: any) {
@@ -135,7 +139,7 @@ const CategoriesPage: React.FC = () => {
           <p>Explore our wide range of tech products and gadgets</p>
           <div className="hero-features">
             <span>{categories.length} Categories</span>
-            <span>{categories.reduce((total, cat) => total + cat.product_count, 0)}+ Products</span>
+            <span>{categories.reduce((total, cat) => total + cat.item_count, 0)}+ Products</span>
             <span>Fast Delivery</span>
           </div>
         </div>
@@ -182,7 +186,7 @@ const CategoriesPage: React.FC = () => {
             <div key={category.id} className="category-card">
               <div className="category-image">
                 <img
-                  src={category.image}
+                  src={category.image_url}
                   alt={category.display_name}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -190,12 +194,16 @@ const CategoriesPage: React.FC = () => {
                   }}
                 />
                 <div className="product-count-badge">
-                  {category.product_count} Products
+                  {category.item_count_display}
                 </div>
               </div>
               <div className="category-info">
                 <h3 className="category-name">{category.display_name}</h3>
                 <p className="category-description">{category.description}</p>
+                <div className="trend-indicator" style={{ backgroundColor: category.trend_color }}>
+                  <span className="trend-level">{category.trend_level}</span>
+                  <span className="trend-description">{category.trend_description}</span>
+                </div>
               </div>
             </div>
           ))}

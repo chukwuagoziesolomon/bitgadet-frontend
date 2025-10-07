@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag } from 'lucide-react';
-import { API_CONFIG, apiRequest } from '../config/api';
+import { API_CONFIG, publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './BrandsPage.css';
 
@@ -27,7 +27,7 @@ const BrandsPage: React.FC = () => {
     const fetchBrands = async () => {
       try {
         setLoading(true);
-        const data = await apiRequest<Brand[] | { results: Brand[] }>(API_CONFIG.ENDPOINTS.BRANDS);
+        const data = await publicApiRequest<Brand[] | { results: Brand[] }>(API_CONFIG.ENDPOINTS.BRANDS);
 
         // Handle both direct array response and paginated response
         const brandsArray = Array.isArray(data) ? data : (data as any).results || [];

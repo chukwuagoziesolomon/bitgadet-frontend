@@ -1,3 +1,25 @@
+// Function to get CSRF token from cookies
+export const getCsrfToken = (): string | null => {
+  // Try common CSRF token names
+  const possibleNames = ['csrftoken', 'bitgadgets_csrf', 'csrf_token'];
+  let cookieValue = null;
+
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      for (const name of possibleNames) {
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+      if (cookieValue) break;
+    }
+  }
+  return cookieValue;
+};
+
 // API Configuration
 export const API_CONFIG = {
   // Use environment variable for production, proxy for development
@@ -51,13 +73,18 @@ export const apiRequest = async <T>(
 ): Promise<T> => {
   const url = buildApiUrl(endpoint);
 
-  console.log('🌐 Making API request to:', url);
+  console.log('🌐 Making authenticated API request to:', url);
 
   const token = localStorage.getItem('authToken');
+  const isPostOrPut = options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH';
+  const csrfToken = isPostOrPut ? getCsrfToken() : null;
+
   const defaultOptions: RequestInit = {
+    credentials: 'include', // Important for Django sessions - send cookies
     headers: {
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Token ${token}` }),
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
       ...options.headers,
     },
     ...options,
@@ -78,5 +105,61 @@ export const apiRequest = async <T>(
   } catch (error) {
     console.error(`❌ API request failed for ${url}:`, error);
     throw error;
+  }
+};
+
+// Public API fetch wrapper without authentication headers
+export const publicApiRequest = async <T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  const url = buildApiUrl(endpoint);
+
+  console.log('🌐 Making public API request to:', url);
+
+  const isPostOrPut = options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH';
+  const csrfToken = isPostOrPut ? getCsrfToken() : null;
+
+  const defaultOptions: RequestInit = {
+    credentials: 'include', // Important for Django sessions - send cookies
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  try {
+    const response = await fetch(url, defaultOptions);
+
+    console.log('📡 Response status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('📦 Response data:', data);
+    return data;
+  } catch (error) {
+    console.error(`❌ Public API request failed for ${url}:`, error);
+    throw error;
+  }
+};
+
+// Conditional API request that uses authentication when token is available
+export const conditionalApiRequest = async <T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  const token = localStorage.getItem('authToken');
+
+  if (token) {
+    // Use authenticated request if token exists
+    return apiRequest<T>(endpoint, options);
+  } else {
+    // Use public request if no token
+    return publicApiRequest<T>(endpoint, options);
   }
 };

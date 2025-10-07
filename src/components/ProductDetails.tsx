@@ -14,7 +14,7 @@ import {
   CheckCircle,
   X
 } from 'lucide-react';
-import { apiRequest } from '../config/api';
+import { publicApiRequest } from '../config/api';
 import './ProductDetails.css';
 
 interface Category {
@@ -127,7 +127,7 @@ const ProductDetails: React.FC = () => {
         setError(null);
 
         // Fetch product details
-        const productData = await apiRequest<ProductDetails>(`/api/products/${slug}/`);
+        const productData = await publicApiRequest<ProductDetails>(`/api/products/${slug}/`);
         setProduct(productData);
 
         // Set default selections
@@ -143,7 +143,7 @@ const ProductDetails: React.FC = () => {
 
         // Fetch reviews
         try {
-          const reviewsData = await apiRequest<Review[]>(`/api/products/${slug}/reviews/`);
+          const reviewsData = await publicApiRequest<Review[]>(`/api/products/${slug}/reviews/`);
           setReviews(reviewsData);
         } catch (reviewError) {
           console.warn('Failed to fetch reviews:', reviewError);
@@ -152,7 +152,7 @@ const ProductDetails: React.FC = () => {
 
         // Fetch recommendations
         try {
-          const recommendationsData = await apiRequest<Recommendation[]>(`/api/products/recommendations/?category=${productData.category.name}&limit=6`);
+          const recommendationsData = await publicApiRequest<Recommendation[]>(`/api/products/recommendations/?category=${productData.category.name}&limit=6`);
           setRecommendations(recommendationsData);
         } catch (recError) {
           console.warn('Failed to fetch recommendations:', recError);

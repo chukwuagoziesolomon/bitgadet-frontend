@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle, X } from 'lucide-react';
-import { API_CONFIG, apiRequest } from '../config/api';
+import { API_CONFIG, publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './PhoneSwapPage.css';
 
@@ -176,7 +176,7 @@ const PhoneSwapPage: React.FC = () => {
 
       console.log('Submitting phone swap request:', payload);
 
-      const response = await apiRequest(API_CONFIG.ENDPOINTS.PHONE_SWAP_SUBMIT, {
+      const response = await publicApiRequest(API_CONFIG.ENDPOINTS.PHONE_SWAP_SUBMIT, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
