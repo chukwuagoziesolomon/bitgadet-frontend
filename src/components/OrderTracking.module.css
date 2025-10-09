@@ -1,0 +1,209 @@
+.container {
+  font-family: 'Open Sans', Arial, sans-serif;
+  background: #f7fafd;
+  padding: 40px 20px;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trackingCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 2rem;
+}
+
+.searchSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.inputGroup label {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+}
+
+.orderIdInput,
+.emailInput {
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.orderIdInput {
+  background-color: #f7fafc;
+  color: #718096;
+}
+
+.emailInput:focus {
+  outline: none;
+  border-color: #3182ce;
+}
+
+.trackButton {
+  background: #3182ce;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.trackButton:hover:not(:disabled) {
+  background: #2c5aa0;
+}
+
+.trackButton:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.errorMessage {
+  background: #fed7d7;
+  color: #c53030;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.orderDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.orderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.orderHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0;
+}
+
+.statusBadge {
+  background: #48bb78;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.orderInfo {
+  background: #f7fafc;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.orderInfo p {
+  margin: 0.5rem 0;
+  color: #4a5568;
+}
+
+.trackingSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.trackingSteps h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.trackingStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #f7fafc;
+}
+
+.completedIcon {
+  color: #48bb78;
+}
+
+.pendingIcon {
+  color: #a0aec0;
+}
+
+.stepContent {
+  flex: 1;
+}
+
+.stepTitle {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.25rem;
+}
+
+.stepDesc {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.newSearchButton {
+  background: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.newSearchButton:hover {
+  background: #cbd5e0;
+}
+
+@media (max-width: 640px) {
+  .trackingCard {
+    padding: 20px;
+    margin: 20px;
+  }
+  
+  .orderHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}

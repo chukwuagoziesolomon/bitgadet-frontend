@@ -15,6 +15,7 @@ import PhoneSwapPage from './components/PhoneSwapPage';
 import ShoppingCart from './components/ShoppingCart';
 import Checkout from './components/Checkout';
 import OrderConfirmation from './components/OrderConfirmation';
+import PaymentDetails from './components/PaymentDetails';
 import LoginPage from './components/LoginPage';
 import SignUpPage from './components/SignUpPage';
 import Dashboard from './components/Dashboard';
@@ -168,6 +169,7 @@ const AppContent: React.FC = () => {
               <Footer />
             </>
           } />
+          <Route path="/payment-details" element={<PaymentDetails />} />
           <Route path="/order-confirmation" element={
             <>
               <Navbar />

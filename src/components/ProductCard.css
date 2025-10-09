@@ -512,3 +512,69 @@
     font-size: 8px; /* Very small font */
   }
 }
+
+/* New Badge Styles for Product Status */
+.product-card-component .badge.out-of-stock {
+  background: #ef4444;
+  color: white;
+}
+
+.product-card-component .badge.in-stock {
+  background: #10b981;
+  color: white;
+}
+
+.product-card-component .badge.featured {
+  background: #8b5cf6;
+  color: white;
+}
+
+.product-card-component .badge.on-sale {
+  background: #ec4899;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.product-card-component .badge.brand-new {
+  background: #10b981;
+  color: white;
+}
+
+.product-card-component .badge.uk-used {
+  background: #3b82f6;
+  color: white;
+}
+
+.product-card-component .badge.nigeria-used {
+  background: #6366f1;
+  color: white;
+}
+
+.product-card-component .badge.refurbished {
+  background: #f97316;
+  color: white;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Disabled Button Styles */
+.product-card-component .brands-actions .add-to-cart-btn:disabled,
+.product-card-component .brands-actions .whatsapp-btn:disabled {
+  background: #9ca3af !important;
+  color: white !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+.product-card-component .brands-actions .whatsapp-btn:disabled:hover {
+  background: #9ca3af !important;
+  color: white !important;
+  cursor: not-allowed !important;
+}

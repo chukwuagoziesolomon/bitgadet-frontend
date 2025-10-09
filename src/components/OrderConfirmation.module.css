@@ -1,0 +1,391 @@
+/* IMPORTANT: Make sure to load Open Sans font globally via Google Fonts or similar in your public/index.html or main CSS. */
+
+.container, .card, .confirmHeaderWrapper, .contentGrid, .leftCol, .rightCol, .orderNumberLine, .orderNumber, .dot, .placedOn, .productName, .productPrice, .summaryRow, .summaryLabel, .summaryTotal, .deliveryInfo, .stepTitle, .stepDesc, .whatsNextLabel, .whatsNextDesc, .helpText, .contactItem, .confirmOrderLine, .confirmSubhead {
+  font-family: 'Open Sans', Arial, sans-serif !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  letter-spacing: 0 !important;
+}
+/* Headings or bold only adjust weight */
+.orderConfirmedText, .sectionTitle, .summaryTotal, .boldTotal, .whatsNextTitle {
+  font-family: 'Open Sans', Arial, sans-serif !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+}
+/* Smaller details if needed */
+.productQty, .estimatedDelivery, .deliveryDate, .downloadBtn, .whatsappBtn, .continueBtn {
+  font-size: 15px !important;
+}
+
+.container {
+  font-family: 'Open Sans', Arial, sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  background: #f7fafd;
+  padding: 32px 0;
+  min-height: 100vh;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.title {
+  text-align: center;
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #2F2F2F;
+}
+.orderNumberLine {
+  text-align: center;
+  color: #929ea8;
+  margin-bottom: 36px;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+.orderNumber {
+  font-weight: 500;
+}
+.dot {
+  margin: 0 8px;
+}
+.placedOn {
+}
+.contentGrid {
+  display: flex;
+  max-width: 1050px;
+  margin: 0 auto;
+  gap: 32px;
+  align-items: flex-start;
+}
+.leftCol {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.rightCol {
+  flex: 0.85;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.card {
+  background: #fff;
+  box-shadow: 0 2px 8px 0 #ecf2fa60;
+  border-radius: 14px;
+  padding: 26px 28px 22px 28px;
+  margin-bottom: 0;
+  border: 1px solid #eaf3fa;
+}
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #212a33;
+  display: flex;
+  align-items: center;
+  margin-bottom: 18px;
+  gap: 7px;
+}
+.icon, .deliveryIcon {
+  font-size: 18px;
+  margin-bottom: 1px;
+}
+.orderItemRow {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.productImg {
+  height: 64px;
+  width: 64px;
+  border-radius: 11px;
+  object-fit: cover;
+  border: 1px solid #e7e7ef;
+  margin-right: 9px;
+  background: #f4f7fa;
+}
+.productName {
+  font-weight: 500;
+  margin-bottom: 2px;
+  color: #222d35;
+}
+.productPrice {
+  font-size: 16px;
+  color: #276f41;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.productQty {
+  font-size: 13px;
+  color: #9baab3;
+}
+.trackingStep {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 13px;
+  gap: 13px;
+}
+.checkIcon {
+  color: #24b168;
+  font-size: 21px !important;
+  margin-top: 3px;
+}
+.grayIcon {
+  color: #d1dde8;
+  font-size: 21px !important;
+  margin-top: 3px;
+}
+.stepTitle {
+  font-weight: 500;
+  font-size: 15px;
+  color: #253647;
+}
+.stepDesc {
+  font-size: 13px;
+  color: #9baab3;
+}
+.deliveryInfo {
+  margin-top: 6px;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+.deliveryLabel {
+  font-weight: 500;
+  color: #24354d;
+  margin-bottom: 2px;
+}
+.estimatedDelivery {
+  color: #92a2b1;
+  font-size: 14px;
+  margin-top: 16px;
+}
+.deliveryDate {
+  background: #E8FCF4;
+  border-radius: 8px;
+  color: #23b26d;
+  padding: 2px 12px;
+  margin-left: 9px;
+  font-weight: 500;
+}
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 15px;
+  color: #222d3a;
+}
+.summaryLabel {
+  color: #7e8891;
+  font-size: 13.7px;
+}
+.summaryTotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: #1a262d;
+  margin: 10px 0;
+}
+.bold {
+  font-weight: 600;
+}
+.boldTotal {
+  font-weight: 800;
+  color: #222a34;
+}
+.success {
+  color: #2ed573;
+  font-weight: 500;
+}
+.methodTag {
+  background: #f6fafb;
+  color: #008203;
+  font-size: 13px;
+  padding: 3px 13px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: 1px solid #e0f7ea;
+}
+.downloadBtn {
+  background: #f4f8fa;
+  border: 1px solid #e2edf4;
+  color: #11467a;
+  font-size: 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 8px 0;
+  width: 100%;
+  margin-bottom: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 7px;
+}
+.downloadIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  margin-bottom: 1px;
+  margin-right: 7px;
+}
+.whatsappBtn {
+  background: #23b26d;
+  color: #fff;
+  font-size: 15.1px;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 9px 0;
+  width: 100%;
+  margin-bottom: 13px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 8px;
+}
+.whatsappIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 9px;
+}
+.continueBtn {
+  background: #fff;
+  border: 1px solid #e2e6ed;
+  color: #1952d2;
+  font-size: 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 8.5px 0;
+  width: 100%;
+  margin-bottom: 5px;
+  cursor: pointer;
+  margin-top: 3px;
+  transition: background 0.17s;
+}
+.continueBtn:hover {
+  background: #f6f8ff;
+}
+.helpText {
+  color: #5e6c7a;
+  font-size: 15px;
+  margin-bottom: 9px;
+}
+.contactItem {
+  color: #62676e;
+  font-size: 15px;
+}
+.contactVal {
+  font-weight: 500;
+  color: #1a8e3d;
+}
+.whatsNextCard {
+  margin: 38px auto 0 auto;
+  max-width: 900px;
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 2px 16px 0 #ecf2fc55;
+  padding: 34px 28px 30px 28px;
+  text-align: center;
+}
+.whatsNextTitle {
+  text-align: left;
+  font-weight: 700;
+  font-size: 18px;
+  color: #263647;
+  margin-bottom: 24px;
+}
+.whatsNextGrid {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 5vw;
+  flex-wrap: wrap;
+}
+.whatsNextFeature {
+  flex: 1;
+  min-width: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.whatsNextIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 10px;
+}
+.whatsNextLabel {
+  color: #172142;
+  font-weight: 700;
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+.whatsNextDesc {
+  color: #747e90;
+  font-size: 15px;
+  margin-bottom: 0;
+}
+.confirmHeaderWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 36px auto;
+  padding-top: 14px;
+}
+.confirmIconCircle {
+  width: 90px;
+  height: 90px;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+.orderConfirmedText {
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 0.45rem;
+  text-align: center;
+}
+.confirmSubhead {
+  color: #516273;
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+.confirmOrderLine {
+  font-size: 1.03rem;
+  color: #8b98a8;
+  text-align: center;
+  margin-bottom: 6px;
+}
+@media (max-width: 900px) {
+  .contentGrid {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .rightCol, .leftCol {
+    flex: unset;
+  }
+  .card {
+    padding: 17px 5vw 19px 5vw;
+  }
+  .whatsNextGrid {
+    flex-direction: column;
+    gap: 36px;
+  }
+  .whatsNextCard {
+    padding: 25px 5vw 23px 5vw;
+  }
+}

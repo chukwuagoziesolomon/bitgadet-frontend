@@ -10,12 +10,12 @@ interface ProductCardProps {
   brand: string;
   image: string;
   price: number;
-  originalPrice: number;
+  originalPrice?: number | null;
   usdtPrice: string;
   rating: number;
   reviews: number;
-  badges: string[];
-  inStock: boolean;
+  badges?: string[];
+  inStock?: boolean;
   showBadges?: boolean;
   showWishlist?: boolean;
   showActions?: boolean;
@@ -23,8 +23,20 @@ interface ProductCardProps {
   isInCart?: boolean;
   isInWishlist?: boolean;
   onToggleWishlist?: (productId: number, willBeInWishlist?: boolean) => void;
-  category?: string; // Add category prop for filtering
-  excludeProductIds?: number[]; // Add array of product IDs to exclude
+  category?: string;
+
+  // New API response fields
+  is_in_stock?: boolean;
+  is_out_of_stock?: boolean;
+  stock_status?: string;
+  is_featured?: boolean;
+  is_on_sale?: boolean;
+  discount_percentage?: number;
+  is_new_arrival?: boolean;
+  is_best_seller?: boolean;
+  product_condition?: string;
+  condition_display?: string;
+  stock_quantity?: number;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -38,7 +50,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   usdtPrice,
   rating,
   reviews,
-  badges,
+  badges = [],
   inStock,
   showBadges = true,
   showWishlist = true,
@@ -48,20 +60,71 @@ const ProductCard: React.FC<ProductCardProps> = ({
   isInWishlist = false,
   onToggleWishlist,
   category,
-  excludeProductIds = [],
+  // New API fields
+  is_in_stock,
+  is_out_of_stock,
+  stock_status,
+  is_featured,
+  is_on_sale,
+  discount_percentage,
+  is_new_arrival,
+  is_best_seller,
+  product_condition,
+  condition_display,
+  stock_quantity,
 }) => {
   const navigate = useNavigate();
   const [addedToCart, setAddedToCart] = React.useState(false);
+
+  // Determine stock status - prioritize API fields over legacy prop
+  const isInStock = is_in_stock !== undefined ? is_in_stock : inStock;
+  const isOutOfStock = is_out_of_stock || !isInStock;
+
+  // Generate badges based on product properties
+  const generateBadges = () => {
+    const generatedBadges: string[] = [...badges];
+
+    // Stock status badge
+    if (isOutOfStock) {
+      generatedBadges.push('Out of Stock');
+    } else if (stock_status) {
+      generatedBadges.push(stock_status);
+    }
+
+    // Featured badge
+    if (is_featured) {
+      generatedBadges.push('Featured');
+    }
+
+    // Sale badge
+    if (is_on_sale && discount_percentage && discount_percentage > 0) {
+      generatedBadges.push(`-${discount_percentage}%`);
+    }
+
+    // New arrival badge
+    if (is_new_arrival) {
+      generatedBadges.push('New Arrival');
+    }
+
+    // Best seller badge
+    if (is_best_seller) {
+      generatedBadges.push('Best Seller');
+    }
+
+    // Condition badge
+    if (condition_display) {
+      generatedBadges.push(condition_display);
+    }
+
+    return generatedBadges;
+  };
+
+  const productBadges = generateBadges();
 
   // Filter logic: Show only toaster products and exclude specific products
   const shouldShowProduct = () => {
     // If category filter is specified, only show products in that category
     if (category && !name.toLowerCase().includes('toaster') && !category.toLowerCase().includes('toaster')) {
-      return false;
-    }
-
-    // Exclude specific product IDs
-    if (excludeProductIds.includes(id)) {
       return false;
     }
 
@@ -223,7 +286,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       <div className="card-header">
         {showBadges && (
           <div className="badges">
-            {badges.map((badge, index) => (
+            {productBadges.map((badge, index) => (
               <span key={index} className={`badge ${badge.toLowerCase().replace(/\s+/g, "-")}`}>
                 {badge}
               </span>
@@ -272,9 +335,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <span className="brands-current-price">
             ₦{price.toLocaleString()}
           </span>
-          <span className="brands-original-price">
-            ₦{originalPrice.toLocaleString()}
-          </span>
+          {originalPrice && (
+            <span className="brands-original-price">
+              ₦{originalPrice.toLocaleString()}
+            </span>
+          )}
         </div>
         <p className="brands-usdt-price">{usdtPrice}</p>
       </div>
@@ -285,15 +350,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <button
             className={`add-to-cart-btn ${addedToCart ? 'added-animation' : ''}`}
             onClick={handleAddToCart}
-            disabled={!inStock || addedToCart}
+            disabled={isOutOfStock || addedToCart}
           >
-            {addedToCart ? "✓ Added!" : (inStock ? (isInCart ? "Added to Cart" : "Add to Cart") : "Out of Stock")}
+            {addedToCart ? "✓ Added!" : (isOutOfStock ? "Out of Stock" : (isInCart ? "Added to Cart" : "Add to Cart"))}
           </button>
-          <button 
-            className="whatsapp-btn" 
+          <button
+            className={`whatsapp-btn ${isOutOfStock ? 'disabled' : ''}`}
             onClick={handleWhatsAppEnquiry}
+            disabled={isOutOfStock}
           >
-            WhatsApp Enquiry
+            {isOutOfStock ? "Unavailable" : "WhatsApp Enquiry"}
           </button>
         </div>
       )}
