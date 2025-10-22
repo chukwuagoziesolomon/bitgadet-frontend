@@ -738,16 +738,64 @@ const PhoneSwapPage: React.FC = () => {
 
             {/* Terms and Conditions */}
             <div className="terms-section">
-              <label className="terms-checkbox">
-                <input
-                  type="checkbox"
-                  name="agreeToTerms"
-                  checked={additionalInfo.agreeToTerms}
-                  onChange={handleAdditionalInfoChange}
-                  required
-                />
-                I agree to all terms and conditions and understand that the final swap will be determined based on physical inspection of my device.
-              </label>
+              <h3>Phone Swapping Terms & Conditions</h3>
+              <div className="terms-content">
+                <div className="terms-item">
+                  <h4>1. Service Overview</h4>
+                  <p>The BitGadgetz Phone Swapping service allows customers to exchange their current device for another device owned and provided by BitGadgetz. All devices available for swap are verified, tested, and owned by BitGadgetz.</p>
+                </div>
+                
+                <div className="terms-item">
+                  <h4>2. User Responsibility</h4>
+                  <p>You must be the legal owner of the device you are offering for a swap. Devices that are stolen, blacklisted, or reported lost will not be accepted. You must disclose the true condition of your device during the evaluation process.</p>
+                </div>
+                
+                <div className="terms-item">
+                  <h4>3. Device Evaluation</h4>
+                  <p>BitGadgetz will inspect and evaluate your device before confirming eligibility for a swap. Device condition, market value, and model type will determine the available swap options. Once a device is accepted and swapped, the process is final.</p>
+                </div>
+                
+                <div className="terms-item">
+                  <h4>4. Swap Process</h4>
+                  <p>Customers may choose from the range of devices available in BitGadgetz inventory. If the selected device has a higher value than the evaluated device, the customer must pay the difference. If the selected device has a lower value, no cash refunds will be issued; instead, customers may choose to add accessories or services to balance the value.</p>
+                </div>
+                
+                <div className="terms-item">
+                  <h4>5. Liability</h4>
+                  <p>BitGadgetz ensures that all swapped devices are tested and verified before release. However, BitGadgetz does not provide lifetime warranties on swapped devices. Any warranties provided will be clearly stated at the time of swap.</p>
+                </div>
+                
+                <div className="terms-item">
+                  <h4>6. Fees</h4>
+                  <p>A service fee may apply to each swap, which will be communicated before finalizing the process. All payments are non-refundable once the swap is completed.</p>
+                </div>
+                
+                <div className="terms-item">
+                  <h4>7. Privacy</h4>
+                  <p>Any personal data left on a swapped device is the sole responsibility of the customer. Customers must back up and wipe their devices before handing them over. BitGadgetz is not liable for any data left behind.</p>
+                </div>
+                
+                <div className="terms-item">
+                  <h4>8. Acceptance</h4>
+                  <p>By using the BitGadgetz Phone Swapping service, you agree to these Terms & Conditions. BitGadgetz reserves the right to reject any device that does not meet our standards or violates these terms.</p>
+                </div>
+              </div>
+              
+              <div className="terms-agreement">
+                <label className="terms-checkbox">
+                  <input
+                    type="checkbox"
+                    name="agreeToTerms"
+                    checked={additionalInfo.agreeToTerms}
+                    onChange={handleAdditionalInfoChange}
+                    required
+                  />
+                  <span className="checkmark"></span>
+                  <span className="terms-text">
+                    I have read and agree to the <strong>BitGadgetz Phone Swapping Terms & Conditions</strong> outlined above. I understand that the final swap will be determined based on physical inspection of my device.
+                  </span>
+                </label>
+              </div>
             </div>
 
             <button type="submit" className="submit-button" disabled={isSubmitting}>

@@ -39,19 +39,26 @@ const AboutUs: React.FC = () => {
             </div>
             <div className="story-text">
               <p>
-                Founded in 2019, BitGadgetz started with a simple mission: to make authentic, high-quality 
-                tech gadgets accessible to everyone in Nigeria. What began as a small online store has grown 
-                into the country's most trusted electronics retailer.
+              Bitgadgetz was founded in 2025 with a simple mission to build a trusted gadget store in Nigeria where people could buy and swap gadgets 
+              without the fear of scams, fake products, or bad deals. We had all seen the struggles, friends losing money to counterfeit phones, 
+              unreliable swaps, and sellers who could not deliver on their promises. We came together to create a better solution.
+
               </p>
               <p>
-                We recognized the challenges Nigerians faced when trying to purchase genuine tech products - 
-                from counterfeit goods to unreliable delivery. That's why we built BitGadgetz with authenticity, 
-                reliability, and customer satisfaction at its core.
+              What started small, helping people around us find genuine smartphones, guiding safe phone swaps, and making sure buyers got
+               what they paid for, quickly grew into something bigger. We realized that Nigerians needed more than just another online shop. 
+               They needed an online gadget store built on authenticity, convenience, and trust.
+
               </p>
               <p>
-                Today, we're proud to serve over 10,000 satisfied customers across Nigeria, offering everything 
-                from the latest smartphones to cutting-edge laptops, all with flexible payment options including 
-                cryptocurrency.
+              That is how Bitgadgetz took shape. Today, we specialize in gadget sales, phone swapping, and phone tracking services,
+               giving people across Nigeria peace of mind when shopping for technology. We are still a young startup, but our focus 
+               remains clear, to make gadget shopping simple, safe, and reliable for everyone.
+
+              </p>
+              <p>
+              Every order we fulfill and every customer we serve brings us closer to our vision of becoming Nigeria's most reliable gadget store.
+               This is only the beginning, and we are excited to grow Bitgadgetz into a platform that truly changes how people buy, swap, and track gadgets in Nigeria.
               </p>
             </div>
           </div>
@@ -68,8 +75,9 @@ const AboutUs: React.FC = () => {
               </div>
               <h3>Our Mission</h3>
               <p>
-                To democratize access to authentic technology products in Nigeria by providing a reliable, 
-                secure, and convenient platform that accepts both traditional and cryptocurrency payments.
+              Our mission is to make buying, swapping, and tracking gadgets in Nigeria simple, safe, and reliable.
+               We aim to provide authentic products, trustworthy services, and a seamless online experience so that every customer can enjoy technology without stress.
+
               </p>
             </div>
             <div className="vision-card">
@@ -78,8 +86,9 @@ const AboutUs: React.FC = () => {
               </div>
               <h3>Our Vision</h3>
               <p>
-                To become Africa's leading technology retailer, known for authenticity, innovation, and 
-                exceptional customer service, while pioneering the adoption of cryptocurrency in everyday commerce.
+              Our vision is to become Africa’s most trusted digital gadget store, known for reliability, authenticity,
+               and excellent customer service. We aspire to transform how people across Africa buy, swap, and track gadgets by building a platform that they can truly rely on.
+
               </p>
             </div>
           </div>

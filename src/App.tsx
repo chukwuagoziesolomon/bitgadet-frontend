@@ -24,6 +24,7 @@ import ProductDetails from './components/ProductDetails';
 import AboutUs from './components/AboutUs';
 import OrderHistory from './components/OrderHistory';
 import Wishlist from './components/Wishlist';
+import TermsAndConditions from './components/TermsAndConditions';
 import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import ToastDemo from './components/ToastDemo';
@@ -111,6 +112,15 @@ const AppContent: React.FC = () => {
               <Navbar />
               <main>
                 <AboutUs />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/terms" element={
+            <>
+              <Navbar />
+              <main>
+                <TermsAndConditions />
               </main>
               <Footer />
             </>

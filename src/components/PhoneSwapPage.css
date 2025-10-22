@@ -570,3 +570,123 @@
   transform: none;
   box-shadow: none;
 }
+
+/* Terms and Conditions Section */
+.phone-swap-page .terms-section {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 24px 0;
+}
+
+.phone-swap-page .terms-section h3 {
+  color: #00C896;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #00C896;
+  padding-bottom: 8px;
+}
+
+.phone-swap-page .terms-content {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 8px;
+}
+
+.phone-swap-page .terms-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.phone-swap-page .terms-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.phone-swap-page .terms-content::-webkit-scrollbar-thumb {
+  background: #00C896;
+  border-radius: 3px;
+}
+
+.phone-swap-page .terms-item {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.phone-swap-page .terms-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.phone-swap-page .terms-item h4 {
+  color: #00C896;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.phone-swap-page .terms-item p {
+  color: #374151;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.phone-swap-page .terms-agreement {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.phone-swap-page .terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.phone-swap-page .terms-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.phone-swap-page .checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.phone-swap-page .terms-checkbox input[type="checkbox"]:checked + .checkmark {
+  background: #00C896;
+  border-color: #00C896;
+}
+
+.phone-swap-page .terms-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  content: '✓';
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.phone-swap-page .terms-text {
+  color: #333;
+  flex: 1;
+}
+
+.phone-swap-page .terms-text strong {
+  color: #00C896;
+  font-weight: 600;
+}

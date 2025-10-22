@@ -1,0 +1,237 @@
+/* Terms and Conditions Page Styles */
+
+.terms-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 40px 20px;
+  font-family: 'Outfit', sans-serif;
+}
+
+.terms-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.terms-header {
+  background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+  color: white;
+  padding: 40px;
+  text-align: center;
+}
+
+.terms-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  margin: 0 0 16px 0;
+}
+
+.terms-intro {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  opacity: 0.95;
+}
+
+.last-updated {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  font-style: italic;
+}
+
+.terms-content {
+  padding: 40px;
+}
+
+.terms-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.terms-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.terms-section h2 {
+  color: #00b894;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.terms-section h2::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: #00b894;
+  margin-right: 12px;
+  border-radius: 2px;
+}
+
+.terms-section p {
+  color: #374151;
+  line-height: 1.7;
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.terms-section ul {
+  margin: 16px 0;
+  padding-left: 24px;
+}
+
+.terms-section li {
+  color: #374151;
+  line-height: 1.7;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.terms-section li::marker {
+  color: #00b894;
+}
+
+.terms-contact {
+  background: #f8fafc;
+  padding: 32px;
+  margin-top: 32px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.terms-contact h3 {
+  color: #00b894;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.terms-contact p {
+  color: #374151;
+  margin-bottom: 16px;
+  font-size: 1rem;
+}
+
+.contact-details {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.contact-details p {
+  margin-bottom: 8px;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.contact-details strong {
+  color: #00b894;
+  font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .terms-page {
+    padding: 20px 10px;
+  }
+
+  .terms-container {
+    border-radius: 8px;
+  }
+
+  .terms-header {
+    padding: 30px 20px;
+  }
+
+  .terms-header h1 {
+    font-size: 2rem;
+  }
+
+  .terms-intro {
+    font-size: 1rem;
+  }
+
+  .terms-content {
+    padding: 30px 20px;
+  }
+
+  .terms-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+  }
+
+  .terms-section h2 {
+    font-size: 1.3rem;
+  }
+
+  .terms-section h2::before {
+    width: 3px;
+    height: 20px;
+    margin-right: 8px;
+  }
+
+  .terms-contact {
+    padding: 24px 20px;
+  }
+
+  .contact-details {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terms-header {
+    padding: 24px 16px;
+  }
+
+  .terms-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .terms-content {
+    padding: 24px 16px;
+  }
+
+  .terms-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .terms-section p,
+  .terms-section li {
+    font-size: 0.95rem;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .terms-page {
+    background: white;
+    padding: 0;
+  }
+
+  .terms-container {
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .terms-header {
+    background: #00b894 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  .terms-section h2 {
+    color: #00b894 !important;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+  }
+}

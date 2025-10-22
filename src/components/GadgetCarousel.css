@@ -26,7 +26,8 @@
   justify-content: center;
   background: white;
   border-radius: 50%;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(16, 185, 129, 0.2);
   transition: all 0.3s ease;
   transform-origin: center;
 }
@@ -40,6 +41,14 @@
 .gadget-icon {
   color: #4B5563;
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gadget-icon svg {
+  width: 32px;
+  height: 32px;
 }
 
 .gadget-name {
@@ -85,20 +94,60 @@
     width: 350px;
     height: 350px;
   }
-  
+
   .gadget-item {
     width: 70px;
     height: 70px;
   }
-  
+
+  .gadget-icon {
+    margin-bottom: 2px;
+  }
+
+  .gadget-icon svg {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
   .center-logo {
     width: 100px;
     height: 100px;
     font-size: 0.9rem;
   }
-  
+
   .gadget-name {
     font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gadget-carousel {
+    width: 280px;
+    height: 280px;
+  }
+
+  .gadget-item {
+    width: 60px;
+    height: 60px;
+  }
+
+  .gadget-icon {
+    margin-bottom: 1px;
+  }
+
+  .gadget-icon svg {
+    width: 26px !important;
+    height: 26px !important;
+  }
+
+  .center-logo {
+    width: 80px;
+    height: 80px;
+    font-size: 0.8rem;
+  }
+
+  .gadget-name {
+    font-size: 0.5rem;
   }
 }
 

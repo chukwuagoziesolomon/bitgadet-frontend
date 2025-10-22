@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
+import { conditionalApiRequest } from '../config/api';
 import './Checkout.css';
 
 const Checkout: React.FC = () => {
@@ -42,8 +43,7 @@ const Checkout: React.FC = () => {
   useEffect(() => {
     if (paymentMethod === 'crypto') {
       setCryptoLoading(true);
-      fetch('/api/payments/crypto/currencies/')
-        .then(response => response.json())
+      conditionalApiRequest<any>('/api/payments/crypto/currencies/')
         .then(data => {
           if (data.currencies) {
             setCryptoCurrencies(data.currencies);
@@ -68,12 +68,21 @@ const Checkout: React.FC = () => {
     const fetchOrderSummary = async () => {
       setSummaryLoading(true);
       try {
-        const response = await fetch('/api/cart/summary/');
-        const data = await response.json();
+        console.log('Fetching order summary from /api/cart/summary/');
+        const data = await conditionalApiRequest<any>('/api/cart/summary/');
+        console.log('Order summary data:', data);
         setOrderSummary(data);
       } catch (error) {
         console.error('Error fetching order summary:', error);
         showError('Failed to load order summary');
+        // Set a fallback summary for development
+        setOrderSummary({
+          total_items: 1,
+          subtotal: 155000,
+          shipping_cost: 5000,
+          total: 160000,
+          total_usdt: 100
+        });
       } finally {
         setSummaryLoading(false);
       }
@@ -121,15 +130,15 @@ const Checkout: React.FC = () => {
         terms_agreed: agree
       };
 
-      const response = await fetch('/api/checkout/create/', {
+      const result = await conditionalApiRequest<any>('/api/checkout/create/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(orderData)
       });
-
-      const result = await response.json();
+      
+      // Debug logging
+      console.log('Checkout API Response:', result);
+      console.log('Payment Info:', result.payment_info);
+      console.log('Order Data:', result.order);
 
       if (result.success) {
         showSuccess('Order created successfully!', 'Redirecting to payment details...');

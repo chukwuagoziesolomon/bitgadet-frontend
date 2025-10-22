@@ -675,3 +675,162 @@
     width: 100%;
   }
 }
+
+/* Disclaimer Section */
+.phone-tracking-page .disclaimer-section {
+  margin-top: 24px;
+}
+
+.phone-tracking-page .disclaimer-card {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 4px solid #f39c12;
+}
+
+.phone-tracking-page .disclaimer-card h4 {
+  color: #856404;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.phone-tracking-page .disclaimer-card p {
+  color: #856404;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Terms & Conditions Section */
+.phone-tracking-page .terms-section {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 24px 0;
+}
+
+.phone-tracking-page .terms-section h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 2px solid #00C896;
+  padding-bottom: 8px;
+}
+
+.phone-tracking-page .terms-content {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+  padding-right: 8px;
+}
+
+.phone-tracking-page .terms-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.phone-tracking-page .terms-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.phone-tracking-page .terms-content::-webkit-scrollbar-thumb {
+  background: #00C896;
+  border-radius: 3px;
+}
+
+.phone-tracking-page .terms-item {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.phone-tracking-page .terms-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.phone-tracking-page .terms-item h4 {
+  color: #00C896;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.phone-tracking-page .terms-item p {
+  color: #666;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.phone-tracking-page .terms-agreement {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.phone-tracking-page .terms-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.phone-tracking-page .terms-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.phone-tracking-page .checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.phone-tracking-page .terms-checkbox input[type="checkbox"]:checked + .checkmark {
+  background: #00C896;
+  border-color: #00C896;
+}
+
+.phone-tracking-page .terms-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  content: '✓';
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.phone-tracking-page .terms-text {
+  color: #333;
+  flex: 1;
+}
+
+.phone-tracking-page .terms-text strong {
+  color: #00C896;
+  font-weight: 600;
+}
+
+/* Submit button disabled state */
+.phone-tracking-page .submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.phone-tracking-page .submit-btn:disabled:hover {
+  background: #ccc;
+  transform: none;
+}

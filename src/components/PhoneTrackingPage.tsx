@@ -15,7 +15,8 @@ const PhoneTrackingPage: React.FC = () => {
     servicePlan: 'basic',
     communicationPreference: 'phone',
     whatsappNumber: '',
-    currentPhoneNumber: ''
+    currentPhoneNumber: '',
+    agreeToTerms: false
   });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,6 +31,12 @@ const PhoneTrackingPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.agreeToTerms) {
+      showError('Terms Agreement Required', 'You must agree to the Terms & Conditions before submitting your request.');
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -40,7 +47,8 @@ const PhoneTrackingPage: React.FC = () => {
         last_known_location: formData.lastKnownLocation,
         service_plan: formData.servicePlan,
         communication_preference: formData.communicationPreference,
-        customer_phone: formData.communicationPreference === 'phone' ? formData.currentPhoneNumber : formData.whatsappNumber
+        customer_phone: formData.communicationPreference === 'phone' ? formData.currentPhoneNumber : formData.whatsappNumber,
+        agree_to_terms: formData.agreeToTerms
       };
 
       const response = await publicApiRequest<any>('/api/phone-tracking/submit/', {
@@ -59,7 +67,8 @@ const PhoneTrackingPage: React.FC = () => {
           servicePlan: 'basic',
           communicationPreference: 'phone',
           whatsappNumber: '',
-          currentPhoneNumber: ''
+          currentPhoneNumber: '',
+          agreeToTerms: false
         });
       }
     } catch (error: any) {
@@ -103,8 +112,9 @@ const PhoneTrackingPage: React.FC = () => {
           <h1>Phone Tracking</h1>
           <p>Lost your phone? Our professional tracking service can help you locate and recover your device.</p>
           <div className="hero-badges">
-            <span className="badge">95% success rate</span>
+            <span className="badge">Up to 85% success rate</span>
             <span className="badge">24/7 Support</span>
+            <span className="badge">Professional Recovery</span>
           </div>
         </div>
       </section>
@@ -199,9 +209,9 @@ const PhoneTrackingPage: React.FC = () => {
                       onChange={handleInputChange}
                       required
                     >
-                      <option value="basic">Basic Recovery - ₦15,000</option>
-                      <option value="premium">Premium Tracking - ₦35,000</option>
-                      <option value="enterprise">Enterprise Recovery - ₦65,000</option>
+                      <option value="basic">Basic Plan - ₦10,000 (6 USDT)</option>
+                      <option value="standard">Standard Plan - ₦35,000 (25 USDT)</option>
+                      <option value="premium">Premium Plan - ₦65,000 (40 USDT)</option>
                     </select>
                   </div>
                   <div className="form-group">
@@ -250,7 +260,64 @@ const PhoneTrackingPage: React.FC = () => {
                   </div>
                 )}
 
-                <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                {/* Terms & Conditions Section */}
+                <div className="terms-section">
+                  <h3>Terms & Conditions</h3>
+                  <div className="terms-content">
+                    <div className="terms-item">
+                      <h4>1. Service Scope</h4>
+                      <p>Our tracking service is designed to assist in locating lost or stolen mobile devices through available tools such as GPS, IMEI-based tracking, and cooperation with network carriers or law enforcement (depending on the selected plan). While we provide reasonable effort and support, recovery is not 100% guaranteed.</p>
+                    </div>
+                    
+                    <div className="terms-item">
+                      <h4>2. User Responsibility</h4>
+                      <p>You must provide accurate device details (IMEI, phone model, last known information, etc.) when submitting a request. You agree that any misuse of this service (such as attempting to track a device you do not own) will result in immediate termination and may involve legal action.</p>
+                    </div>
+                    
+                    <div className="terms-item">
+                      <h4>3. Investigation Window</h4>
+                      <p>Each plan includes an investigation period during which we actively work on your case (Basic – 48 hrs, Standard – 48 hrs, Premium – 24 hrs). The investigation window refers only to our direct effort and priority handling. It does not mean your payment or case automatically expires once this time ends. Recovery timelines may depend on external parties such as carriers or law enforcement, which are outside our direct control.</p>
+                    </div>
+                    
+                    <div className="terms-item">
+                      <h4>4. Additional Fees</h4>
+                      <p>For Premium Plans, physical recovery attempts by professionals may involve additional fees depending on the location and level of intervention required. These fees will be communicated and must be agreed upon before such recovery is attempted.</p>
+                    </div>
+                    
+                    <div className="terms-item">
+                      <h4>5. Refund Policy</h4>
+                      <p>Payments are for the tracking service effort and investigation, not guaranteed recovery. Refunds will not be issued once an investigation has started.</p>
+                    </div>
+                    
+                    <div className="terms-item">
+                      <h4>6. Privacy and Data Use</h4>
+                      <p>All information you provide (such as IMEI, contact details, or police report) is used strictly for recovery purposes. We do not share your information with third parties except law enforcement or carriers involved in the recovery process.</p>
+                    </div>
+                    
+                    <div className="terms-item">
+                      <h4>7. Legal Disclaimer</h4>
+                      <p>BitGadgetz is not liable for delays, failure of recovery, or damages caused by third parties (including law enforcement or carriers). By using our service, you accept that results may vary and agree not to hold us responsible for unsuccessful recovery attempts.</p>
+                    </div>
+                  </div>
+                  
+                  <div className="terms-agreement">
+                    <label className="terms-checkbox">
+                      <input
+                        type="checkbox"
+                        name="agreeToTerms"
+                        checked={formData.agreeToTerms}
+                        onChange={handleInputChange}
+                        required
+                      />
+                      <span className="checkmark"></span>
+                      <span className="terms-text">
+                        I have read and agree to the <strong>BitGadgetz Tracking Service Terms & Conditions</strong> outlined above. I understand that recovery is not guaranteed and agree to the terms of service.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <button type="submit" className="submit-btn" disabled={isSubmitting || !formData.agreeToTerms}>
                   {isSubmitting ? 'Submitting...' : 'Submit Tracking Request'}
                 </button>
               </form>
@@ -258,51 +325,61 @@ const PhoneTrackingPage: React.FC = () => {
 
             {/* Right Column - Service Plans */}
             <div className="plans-section">
-              <h2>Service Plans</h2>
+              <h2>Tracking Plans</h2>
               
               <div className="plan-card">
-                <h3>Premium Recovery</h3>
+                <h3>Basic Plan</h3>
                 <div className="price">
-                  <span className="amount">₦15,000</span>
-                  <span className="currency">10 USDT</span>
+                  <span className="amount">₦10,000</span>
+                  <span className="currency">6 USDT</span>
                 </div>
                 <ul className="features">
-                  <li><Check size={16} /> IMEI-based tracking</li>
-                  <li><Check size={16} /> Basic location report</li>
-                  <li><Check size={16} /> 48-hour investigation</li>
-                  <li><Check size={16} /> Email report delivery</li>
+                  <li><Check size={16} /> Device side tracking only (Google Find My Device or Apple Find My)</li>
+                  <li><Check size={16} /> Quick guide to try recovery yourself</li>
+                  <li><Check size={16} /> Email support</li>
+                  <li><Check size={16} /> Estimated success rate 25 to 40%</li>
                 </ul>
               </div>
 
               <div className="plan-card popular">
                 <div className="popular-badge">Popular</div>
-                <h3>Advanced Tracking</h3>
+                <h3>Standard Plan</h3>
                 <div className="price">
                   <span className="amount">₦35,000</span>
                   <span className="currency">25 USDT</span>
                 </div>
                 <ul className="features">
-                  <li><Check size={16} /> GPS + IMEI tracking</li>
-                  <li><Check size={16} /> Real-time location updates</li>
-                  <li><Check size={16} /> 24-hour investigation</li>
-                  <li><Check size={16} /> Phone + email support</li>
-                  <li><Check size={16} /> Recovery assistance</li>
+                  <li><Check size={16} /> GPS and IMEI based tracking where available</li>
+                  <li><Check size={16} /> Real time location updates when device is online</li>
+                  <li><Check size={16} /> 48 hour investigation window</li>
+                  <li><Check size={16} /> Phone and email support</li>
+                  <li><Check size={16} /> Assistance preparing police report and IMEI documentation</li>
+                  <li><Check size={16} /> Estimated success rate 40 to 65%</li>
                 </ul>
               </div>
 
               <div className="plan-card">
-                <h3>Premium Recovery</h3>
+                <h3>Premium Plan</h3>
                 <div className="price">
                   <span className="amount">₦65,000</span>
                   <span className="currency">40 USDT</span>
                 </div>
                 <ul className="features">
-                  <li><Check size={16} /> Full tracking suite</li>
-                  <li><Check size={16} /> Law enforcement liaison</li>
-                  <li><Check size={16} /> 12-hour investigation</li>
-                  <li><Check size={16} /> Physical recovery attempt</li>
-                  <li><Check size={16} /> Insurance documentation</li>
+                  <li><Check size={16} /> Full tracking suite GPS IMEI and carrier liaison</li>
+                  <li><Check size={16} /> Law enforcement liaison and priority handling</li>
+                  <li><Check size={16} /> 24 hour investigation window with assigned recovery agent</li>
+                  <li><Check size={16} /> Physical recovery attempt with professional</li>
+                  <li><Check size={16} /> Priority phone and email support</li>
+                  <li><Check size={16} /> Estimated success rate 65 to 85%</li>
                 </ul>
+              </div>
+
+              {/* Disclaimer */}
+              <div className="disclaimer-section">
+                <div className="disclaimer-card">
+                  <h4>Important Disclaimer</h4>
+                  <p><strong>Recovery is not guaranteed.</strong> Additional fees may apply for physical recovery attempts under the Premium Plan.</p>
+                </div>
               </div>
 
               <div className="help-section">

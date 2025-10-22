@@ -48,31 +48,32 @@ const LandingPage: React.FC = () => {
   // Customer reviews data
   const customerReviews = [
     {
-      name: "Chioma A.",
+      name: "Aisha O., Lagos",
       avatar: "/customer-avatar.png",
       rating: 5,
-      review: "BitGadgetz delivered my iPhone 14 Pro Max in perfect condition and the crypto payment process was seamless. Highly recommend!",
-      date: "August 14, 2023"
+      review:"I bought my first smartphone from Bitgadgetz and the experience was amazing. The delivery was fast and the phone was exactly as described. I will definitely order again!"
+      ,
+      date: "August 14, 2025"
     },
     {
-      name: "Emeka O.",
+      name: "Tunde K., Abuja",
       avatar: "/customer-avatar2.png",
       rating: 5,
-      review: "Amazing service! Got my MacBook Pro delivered within 24 hours. The quality is top-notch and the customer support is excellent.",
-      date: "September 2, 2023"
+      review:  "Swapping my old phone was so easy and safe. Bitgadgetz made the whole process stress-free, and their customer support was very helpful whenever I had questions.",
+      date: "September 2, 2025"
     },
     {
-      name: "Fatima K.",
+      name: "Chinwe A., Enugu",
       avatar: "/customer-avatar3.png",
       rating: 5,
-      review: "Best tech store in Nigeria! Their phone swap service saved me so much money. The team is professional and trustworthy.",
-      date: "September 15, 2023"
+      review: "I love that I could pay with crypto. The process was simple and secure, and my gadget arrived quickly. Bitgadgetz is now my go-to store for gadgets!",
+      date: "September 15, 2025"
     },
     {
-      name: "David M.",
+      name: "Emeka J., Port Harcourt",
       avatar: "/customer-avatar4.png",
       rating: 5,
-      review: "Crypto payments made everything so easy. No bank issues, no delays. BitGadgetz has changed how I buy tech gadgets!",
+      review:  "The team at Bitgadgetz really cares about their customers. They guided me through choosing the right phone and even helped me track my device till it got delivered. Highly recommended!",
       date: "October 1, 2023"
     }
   ];
@@ -151,7 +152,8 @@ const LandingPage: React.FC = () => {
               <span className="crypto-text">Crypto</span> & <span className="naira-text">Naira</span>
             </h1>
             <p className="hero-description">
-              BitGadgetz is a modern eCommerce platform that sells gadgets and accessories with crypto and Naira payment options.
+            ​​Bitgadgetz is your trusted online gadget store in Nigeria. Buy new gadgets, swap phones, track lost devices & enjoy secure shopping with fast delivery.
+
             </p>
             <Link to="/home" className="shop-now-btn">
               Shop Now
@@ -271,7 +273,7 @@ const LandingPage: React.FC = () => {
 
             <div className="story-text">
               <div className="story-paragraph">
-                <p>Founded in 2019, BitGadgetz started with a simple mission: to make authentic, high-quality tech gadgets accessible to everyone in Nigeria. What began as a small online shop has grown into the country's most trusted tech retailer.</p>
+                <p>Founded in 2025, BitGadgetz started with a simple mission: to make authentic, high-quality tech gadgets accessible to everyone in Nigeria. What began as a small online shop has grown into the country's most trusted tech retailer.</p>
               </div>
 
               <div className="story-paragraph">
@@ -296,7 +298,7 @@ const LandingPage: React.FC = () => {
       <section className="why-choose-section">
         <div className="why-choose-container">
           <h2>Why Choose <span className="highlight">BitGadgetz</span>?</h2>
-          <p>We're not just another electronics store. Here's what makes us different.</p>
+          <p>We are always available to answer questions and guide you through your orders.</p>
 
           <div className="why-choose-features">
             <div className="why-feature-item">

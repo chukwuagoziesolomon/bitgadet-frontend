@@ -18,6 +18,17 @@ const GadgetCarousel: React.FC = () => {
   const rotationSpeed = 0.1; // Adjust speed as needed
   let isHovered = false;
 
+  // Responsive radius based on screen size
+  const getRadius = () => {
+    if (window.innerWidth <= 480) {
+      return 100;
+    } else if (window.innerWidth <= 768) {
+      return 120;
+    } else {
+      return 180;
+    }
+  };
+
   const rotateCircle = () => {
     if (!isHovered) {
       currentRotation += rotationSpeed;
@@ -30,15 +41,23 @@ const GadgetCarousel: React.FC = () => {
 
   useEffect(() => {
     animationFrameId = requestAnimationFrame(rotateCircle);
-    
+
     const circle = circleRef.current;
     const handleMouseEnter = () => { isHovered = true; };
     const handleMouseLeave = () => { isHovered = false; };
+    const handleResize = () => {
+      // Force re-render to update radius on resize
+      if (circleRef.current) {
+        circleRef.current.style.transform = `rotate(${currentRotation}deg)`;
+      }
+    };
 
     if (circle) {
       circle.addEventListener('mouseenter', handleMouseEnter);
       circle.addEventListener('mouseleave', handleMouseLeave);
     }
+
+    window.addEventListener('resize', handleResize);
 
     return () => {
       cancelAnimationFrame(animationFrameId);
@@ -46,6 +65,7 @@ const GadgetCarousel: React.FC = () => {
         circle.removeEventListener('mouseenter', handleMouseEnter);
         circle.removeEventListener('mouseleave', handleMouseLeave);
       }
+      window.removeEventListener('resize', handleResize);
     };
   }, []);
 
@@ -54,7 +74,7 @@ const GadgetCarousel: React.FC = () => {
       <div className="circle" ref={circleRef}>
         {items.map((item, index) => {
           const angle = (index * (360 / items.length)) * (Math.PI / 180);
-          const radius = 180; // Adjust the radius as needed
+          const radius = getRadius(); // Responsive radius
           const x = Math.cos(angle) * radius;
           const y = Math.sin(angle) * radius;
           

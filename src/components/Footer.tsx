@@ -44,11 +44,10 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Quick Links */}
-        <div className="footer-section">ee
+        <div className="footer-section">
           <h4 className="footer-heading">Quick Links</h4>
           <ul className="footer-links">
             <li><a href="/about">About Us</a></li>
-            <li><a href="/privacy-policy">Privacy Policy</a></li>
             <li><a href="/terms">Terms & Conditions</a></li>
           </ul>
         </div>
@@ -57,9 +56,11 @@ const Footer: React.FC = () => {
         <div className="footer-section">
           <h4 className="footer-heading">Stay Connected</h4>
           <div className="contact-info">
-            <p>Email: info@bitgadgetz.com</p>
-            <p>Phone: +234 123 000 0000</p>
-            <p>WhatsApp: +234 123 000 0000</p>
+            <ul className="footer-links">
+              <li><a href="mailto:support@Bitgadgetz.store">Email: support@Bitgadgetz.store</a></li>
+              <li><a href="https://wa.me/2349061728949">WhatsApp: +234 906 172 8949</a></li>
+              <li><a href="https://wa.me/2349138666111">WhatsApp: +2349138666111</a></li>
+            </ul>
           </div>
           <div className="social-icons">
             <a href="https://facebook.com" aria-label="Facebook">
