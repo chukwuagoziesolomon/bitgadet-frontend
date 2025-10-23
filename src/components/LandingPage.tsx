@@ -3,7 +3,16 @@ import { Link } from 'react-router-dom';
 import { Smartphone, MapPin, RefreshCw, Target, Eye, Headphones, Shield, Truck, CreditCard, RotateCcw, Clock, TruckIcon, Zap } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { publicApiRequest, API_CONFIG } from '../config/api';
 import './LandingPage.css';
+
+interface DealResponse {
+  success: boolean;
+  deal: any;
+  time_info: {
+    time_remaining: number;
+  };
+}
 
 const LandingPage: React.FC = () => {
   // State for animation switches
@@ -16,6 +25,11 @@ const LandingPage: React.FC = () => {
   
   // State for responsive service cards
   const [visibleServiceCards, setVisibleServiceCards] = useState(1);
+
+  // State for deal of the day
+  const [deal, setDeal] = useState<any>(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [formattedTime, setFormattedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
   
   // Service cards data
   const serviceCards = [
@@ -87,11 +101,11 @@ const LandingPage: React.FC = () => {
     return () => clearInterval(topInterval);
   }, []);
 
-  // Customer review rotation effect (every 3 minutes)
+  // Customer review rotation effect (every 5 seconds)
   useEffect(() => {
     const reviewInterval = setInterval(() => {
       setCurrentReviewIndex(prev => (prev + 1) % customerReviews.length);
-    }, 180000); // 3 minutes = 180,000 milliseconds
+    }, 5000); // 5 seconds = 5,000 milliseconds
 
     return () => clearInterval(reviewInterval);
   }, [customerReviews.length]);
@@ -138,6 +152,51 @@ const LandingPage: React.FC = () => {
     // Cleanup
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Fetch current deal
+  useEffect(() => {
+    const fetchDeal = async () => {
+      try {
+        const data = await publicApiRequest<DealResponse>(API_CONFIG.ENDPOINTS.PRODUCTS_CURRENT_DEAL);
+        if (data.success && data.deal) {
+          setDeal(data.deal);
+          setTimeRemaining(data.time_info.time_remaining);
+        } else {
+          setDeal(null);
+        }
+      } catch (error) {
+        console.error('Failed to fetch deal:', error);
+        setDeal(null);
+      }
+    };
+
+    fetchDeal();
+  }, []);
+
+  // Countdown timer
+  useEffect(() => {
+    if (timeRemaining > 0) {
+      const interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [timeRemaining]);
+
+  // Update formatted time
+  useEffect(() => {
+    const hours = Math.floor(timeRemaining / 3600);
+    const minutes = Math.floor((timeRemaining % 3600) / 60);
+    const seconds = timeRemaining % 60;
+    setFormattedTime({ hours, minutes, seconds });
+  }, [timeRemaining]);
 
   return (
     <div className="landing-page">
@@ -388,63 +447,64 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Deal of the Day Banner */}
-      <section className="deal-banner">
-        <div className="deal-banner-container">
-          {/* Left Section - Product Image */}
-          <div className="deal-banner-left">
-            <img src="/salesoff.png" alt="Premium Wireless Headphones" className="deal-product-image" />
+      {deal && (
+        <section className="deal-banner">
+          <div className="deal-banner-container">
+            {/* Left Section - Product Image */}
+            <div className="deal-banner-left">
+              <img src={deal.product.main_image} alt={deal.product.name} className="deal-product-image" />
             </div>
 
-          {/* Right Section - Product Details */}
-          <div className="deal-banner-right">
-            <div className="deal-tag">Deal of the Day</div>
-            
-            <div className="deal-product-info">
-              <div className="deal-title-timer-pricing-row">
-                <div className="deal-left-section">
-                  <h2 className="deal-product-title">
-                Premium Wireless<br />
-                    <span className="deal-title-highlight">Headphones</span>
-              </h2>
-              
-                  <p className="deal-product-description">
-                    Experience crystal clear sound with noise<br />
-                    cancellation technology and 40-hour battery life.
-              </p>
-            </div>
+            {/* Right Section - Product Details */}
+            <div className="deal-banner-right">
+              <div className="deal-tag">Deal of the Day</div>
 
-                <div className="deal-right-section">
-                  <div className="deal-offer-timer">
-                    <span className="deal-timer-label">Offer ends in:</span>
-                    <div className="deal-countdown">
-                      <div className="deal-time-box">
-                        <span className="deal-time-number">23</span>
-                        <span className="deal-time-label">Hours</span>
-                      </div>
-                      <div className="deal-time-box">
-                        <span className="deal-time-number">46</span>
-                        <span className="deal-time-label">Minutes</span>
-                      </div>
-                      <div className="deal-time-box">
-                        <span className="deal-time-number">51</span>
-                        <span className="deal-time-label">Seconds</span>
+              <div className="deal-product-info">
+                <div className="deal-title-timer-pricing-row">
+                  <div className="deal-left-section">
+                    <h2 className="deal-product-title">
+                      {deal.product.name}<br />
+                      <span className="deal-title-highlight">Limited Time</span>
+                    </h2>
+
+                    <p className="deal-product-description">
+                      {deal.subtitle || 'Limited time offer on premium products.'}
+                    </p>
+                  </div>
+
+                  <div className="deal-right-section">
+                    <div className="deal-offer-timer">
+                      <span className="deal-timer-label">Offer ends in:</span>
+                      <div className="deal-countdown">
+                        <div className="deal-time-box">
+                          <span className="deal-time-number">{formattedTime.hours.toString().padStart(2, '0')}</span>
+                          <span className="deal-time-label">Hours</span>
+                        </div>
+                        <div className="deal-time-box">
+                          <span className="deal-time-number">{formattedTime.minutes.toString().padStart(2, '0')}</span>
+                          <span className="deal-time-label">Minutes</span>
+                        </div>
+                        <div className="deal-time-box">
+                          <span className="deal-time-number">{formattedTime.seconds.toString().padStart(2, '0')}</span>
+                          <span className="deal-time-label">Seconds</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="deal-pricing">
-                    <div className="deal-current-price">₦75,000</div>
-                    <div className="deal-original-price">₦105,000</div>
-                    <div className="deal-crypto-price">40.00 USDT</div>
+                    <div className="deal-pricing">
+                      <div className="deal-current-price">₦{deal.deal_price.toLocaleString()}</div>
+                      <div className="deal-original-price">₦{deal.original_price.toLocaleString()}</div>
+                      <div className="deal-crypto-price">{deal.deal_price_usdt.toFixed(2)} USDT</div>
+                    </div>
                   </div>
+                </div>
+
+                <button className="deal-buy-now-btn">Buy Now</button>
               </div>
             </div>
-
-              <button className="deal-buy-now-btn">Buy Now</button>
-            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* What Our Customers Say Section */}
       <section className="customers-say-section">
@@ -475,10 +535,9 @@ const LandingPage: React.FC = () => {
 
           <div className="testimonial-pagination">
             {customerReviews.map((_, index) => (
-              <div 
+              <div
                 key={index}
                 className={`pagination-dot ${index === currentReviewIndex ? 'active' : ''}`}
-                onClick={() => setCurrentReviewIndex(index)}
               ></div>
             ))}
           </div>

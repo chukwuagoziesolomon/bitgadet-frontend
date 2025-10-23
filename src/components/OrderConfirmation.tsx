@@ -32,11 +32,19 @@ const OrderConfirmation = () => {
       setLoading(true);
       fetch(`/api/checkout/status/${orderId}/`)
         .then(res => res.json())
-        .then(data => setCheckoutStatus(data))
+        .then(data => {
+          setCheckoutStatus(data);
+          
+          // Check if order contains coupon products and redirect
+          const hasCouponProducts = data.products?.some((product: any) => product.is_coupon === true) || false;
+          if (hasCouponProducts) {
+            navigate(`/coupon/success/${orderId}`, { replace: true });
+          }
+        })
         .catch(() => setCheckoutStatus(null))
         .finally(() => setLoading(false));
     }
-  }, [orderId]);
+  }, [orderId, navigate]);
 
   const downloadReceipt = async () => {
     setDownloading(true);

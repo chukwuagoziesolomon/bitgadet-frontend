@@ -38,6 +38,8 @@ export const API_CONFIG = {
     PRODUCTS_FEATURED_COLLECTION: '/api/products/featured/',
     PRODUCTS_BEST_SELLERS_COLLECTION: '/api/products/best-sellers/',
     PRODUCTS_NEW_ARRIVALS_COLLECTION: '/api/products/new-arrivals/',
+    PRODUCTS_CURRENT_DEAL: '/api/products/current-deal/',
+    PRODUCTS_COUPONS: '/api/products/?is_coupon=true',
     CATEGORIES: '/api/categories/',
     BANNERS_ACTIVE: '/api/banners/active/',
     BANNERS_CTA: '/api/banners/cta/',

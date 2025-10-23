@@ -25,6 +25,7 @@ import AboutUs from './components/AboutUs';
 import OrderHistory from './components/OrderHistory';
 import Wishlist from './components/Wishlist';
 import TermsAndConditions from './components/TermsAndConditions';
+import CouponSuccess from './components/CouponSuccess';
 import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import ToastDemo from './components/ToastDemo';
@@ -185,6 +186,15 @@ const AppContent: React.FC = () => {
               <Navbar />
               <main>
                 <OrderConfirmation />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/coupon/success/:orderId" element={
+            <>
+              <Navbar />
+              <main>
+                <CouponSuccess />
               </main>
               <Footer />
             </>

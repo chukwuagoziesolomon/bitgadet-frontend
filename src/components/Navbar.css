@@ -6,6 +6,8 @@
   z-index: 1000;
   background: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .navbar-container {
@@ -216,7 +218,7 @@
 .search-button {
   background: #00C896;
   border: none;
-  padding: 14px 24px;
+  padding: 14px 20px;
   color: white;
   cursor: pointer;
   display: flex;
@@ -224,10 +226,13 @@
   justify-content: center;
   transition: all 0.3s ease;
   border-radius: 0 8px 8px 0;
-  min-width: 60px;
+  min-width: 80px;
   box-shadow: 0 2px 4px rgba(0, 200, 150, 0.2);
   flex-shrink: 0;
   margin-left: auto;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Outfit', sans-serif;
 }
 
 .search-button:hover {
@@ -783,10 +788,20 @@
   width: auto;
 }
 
+.mobile-search-row {
+  width: 100%;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background: white;
+  display: flex;
+  justify-content: center;
+}
+
 .mobile-search-container {
   flex: 1;
   min-width: 0;
-  max-width: 150px;
+  max-width: none;
+  width: 100%;
 }
 
 .mobile-search-wrapper {
@@ -819,13 +834,17 @@
   background: #00C896;
   border: none;
   color: white;
-  padding: 6px 8px;
+  padding: 6px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s ease;
   flex-shrink: 0;
+  min-width: 60px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: 'Outfit', sans-serif;
 }
 
 .mobile-search-button:hover {
@@ -894,13 +913,16 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  gap: 4px; /* Reduced from 8px */
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .mobile-left {
   display: flex;
   align-items: center;
-  gap: 4px; /* Reduced from 6px */
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .menu-button {
@@ -969,10 +991,10 @@
 .mobile-center {
   display: flex;
   align-items: center;
-  gap: 8px; /* Reduced from 12px */
+  gap: 8px;
   flex: 1;
-  justify-content: flex-end; /* Changed from center to flex-end to move right */
-  margin-right: 8px; /* Add margin to push further right */
+  justify-content: center;
+  min-width: 0;
 }
 
 .mobile-nav-link {
@@ -997,6 +1019,7 @@
   display: flex;
   align-items: center;
   position: relative;
+  flex-shrink: 0;
 }
 
 .mobile-more-button {
@@ -1084,6 +1107,30 @@
   cursor: pointer;
 }
 
+.cart-icon-with-badge {
+  position: relative;
+  display: inline-flex;
+}
+.cart-badge {
+  position: absolute;
+  top: 0px;
+  right: -4px;
+  background: #00C896;
+  color: #fff;
+  border-radius: 9999px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 2;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 1024px) {
   .phone-contact {
@@ -1121,6 +1168,30 @@
 
   .mobile-view {
     display: block;
+    width: 100%;
+    max-width: none;
+    overflow-x: hidden;
+  }
+
+  .navbar {
+    width: 100%;
+    max-width: none;
+  }
+
+  .navbar-container {
+    max-width: none;
+    padding: 0 12px;
+    width: 100%;
+  }
+
+  .mobile-top-container {
+    width: 100%;
+    max-width: none;
+  }
+
+  .mobile-search-container {
+    width: 100%;
+    max-width: none;
   }
 }
 

@@ -37,6 +37,10 @@ interface ProductCardProps {
   product_condition?: string;
   condition_display?: string;
   stock_quantity?: number;
+  
+  // Coupon fields
+  is_coupon?: boolean;
+  coupon_value?: number;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({
@@ -72,6 +76,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
   product_condition,
   condition_display,
   stock_quantity,
+  // Coupon fields
+  is_coupon = false,
+  coupon_value,
 }) => {
   const navigate = useNavigate();
   const [addedToCart, setAddedToCart] = React.useState(false);
@@ -114,6 +121,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
     // Condition badge
     if (condition_display) {
       generatedBadges.push(condition_display);
+    }
+
+    // Coupon badge
+    if (is_coupon) {
+      generatedBadges.push('Gift Coupon');
     }
 
     return generatedBadges;
@@ -332,16 +344,29 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
         {/* Pricing */}
         <div className="brands-product-pricing">
-          <span className="brands-current-price">
-            ₦{price.toLocaleString()}
-          </span>
-          {originalPrice && (
-            <span className="brands-original-price">
-              ₦{originalPrice.toLocaleString()}
-            </span>
+          {is_coupon ? (
+            <>
+              <span className="brands-current-price coupon-value">
+                ₦{coupon_value?.toLocaleString()} Value
+              </span>
+              <span className="coupon-price">
+                Buy for ₦{price.toLocaleString()}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="brands-current-price">
+                ₦{price.toLocaleString()}
+              </span>
+              {originalPrice && (
+                <span className="brands-original-price">
+                  ₦{originalPrice.toLocaleString()}
+                </span>
+              )}
+            </>
           )}
         </div>
-        <p className="brands-usdt-price">{usdtPrice}</p>
+        {!is_coupon && <p className="brands-usdt-price">{usdtPrice}</p>}
       </div>
 
       {/* Actions */}

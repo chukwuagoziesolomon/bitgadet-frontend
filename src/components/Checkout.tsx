@@ -29,6 +29,7 @@ const Checkout: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSummary, setOrderSummary] = useState<any>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [hasCouponProducts, setHasCouponProducts] = useState(false);
 
   const navigate = useNavigate();
   const { addToast, showSuccess, showError } = useToast();
@@ -72,6 +73,10 @@ const Checkout: React.FC = () => {
         const data = await conditionalApiRequest<any>('/api/cart/summary/');
         console.log('Order summary data:', data);
         setOrderSummary(data);
+        
+        // Check if cart contains coupon products
+        const hasCoupons = data.cart_items?.some((item: any) => item.product?.is_coupon === true) || false;
+        setHasCouponProducts(hasCoupons);
       } catch (error) {
         console.error('Error fetching order summary:', error);
         showError('Failed to load order summary');
@@ -221,6 +226,18 @@ const Checkout: React.FC = () => {
                   <div className="summary-error">Unable to load order summary</div>
                 )}
               </div>
+              
+              {/* Coupon notice */}
+              {hasCouponProducts && (
+                <div className="coupon-notice">
+                  <div className="coupon-notice-icon">🎁</div>
+                  <div className="coupon-notice-text">
+                    <strong>Gift Coupon Purchase</strong><br/>
+                    Your coupon code will be sent to your email after successful payment.
+                  </div>
+                </div>
+              )}
+              
               <div className="shipping-info">
                 <div className="shipping-title">Shipping Information</div>
                 <ul>
@@ -511,6 +528,18 @@ const Checkout: React.FC = () => {
                   <div className="summary-error">Unable to load order summary</div>
                 )}
               </div>
+              
+              {/* Coupon notice */}
+              {hasCouponProducts && (
+                <div className="coupon-notice">
+                  <div className="coupon-notice-icon">🎁</div>
+                  <div className="coupon-notice-text">
+                    <strong>Gift Coupon Purchase</strong><br/>
+                    Your coupon code will be sent to your email after successful payment.
+                  </div>
+                </div>
+              )}
+              
               <div className="shipping-info">
                 <div className="shipping-title">Shipping Information</div>
                 <ul>

@@ -429,6 +429,35 @@
   font-family: 'Outfit', sans-serif;
 }
 
+.crypto-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.crypto-detail-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.crypto-detail-card label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.crypto-detail-card .detail-input {
+  background: #f8fafc;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1a202c;
+  font-family: 'Outfit', sans-serif;
+}
+
 .crypto-amount-section {
   display: flex;
   justify-content: center;

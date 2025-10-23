@@ -1,3 +1,6 @@
+/* Import Outfit Font */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 /* Base Styles */
 :root {
   --primary-green: #00c896;
@@ -8,6 +11,7 @@
   --white: #ffffff;
   --gray-100: #f7fafc;
   --gray-200: #e2e8f0;
+  --Color-Mountain-Meadow-Lighter: #F0FDF4;
   --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
@@ -20,7 +24,7 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: var(--text-dark);
   line-height: 1.6;
   background-color: var(--background-light);
@@ -100,7 +104,11 @@ body {
 
 /* Hero Section */
 .hero-section {
-  background: white !important;
+  background: #F0FDF4 !important;
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
   padding: 3rem 0 5rem;
   min-height: calc(100vh - 120px);
   display: flex;
@@ -248,12 +256,14 @@ body {
 }
 
 .hero-title {
+  font-family: 'Outfit', sans-serif;
   font-size: 4rem;
-  font-weight: 700;
-  line-height: 1.1;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.5;
   margin-bottom: 2rem;
   color: var(--dark-blue);
-  letter-spacing: -0.02em;
+  letter-spacing: 0%;
 }
 
 @media (max-width: 768px) {
@@ -275,12 +285,15 @@ body {
 }
 
 .hero-description {
+  font-family: 'Outfit', sans-serif;
   font-size: 1.2rem;
+  font-weight: 400;
+  font-style: normal;
   color: var(--text-light);
   margin-bottom: 3rem;
-  line-height: 1.7;
+  line-height: 1.5;
   max-width: 520px;
-  font-weight: 400;
+  letter-spacing: 0%;
 }
 
 @media (max-width: 768px) {
@@ -402,8 +415,8 @@ body {
 
 @media (max-width: 768px) {
   .hero-products {
-    height: 280px; /* Increased height for bigger images */
-    margin-top: 1rem;
+    height: 300px; /* Reduced height for mobile */
+    margin-top: 1.5rem;
     justify-self: center;
     display: flex;
     align-items: center;
@@ -414,81 +427,81 @@ body {
     z-index: 1;
   }
   
-  /* Adjust circle sizes for mobile - larger to contain bigger images */
+  /* Adjust circle sizes for mobile - smaller but visible */
   .hero-products::before {
-    width: 320px; /* Increased size */
-    height: 320px;
-    border: 3px solid rgba(0, 200, 150, 0.25); /* Thicker border for visibility */
+    width: 280px; /* Smaller outer circle */
+    height: 280px;
+    border: 2px solid rgba(0, 200, 150, 0.2);
   }
   
   .hero-products::after {
-    width: 260px; /* Increased size */
-    height: 260px;
-    border: 4px solid rgba(0, 200, 150, 0.3); /* Thicker border for visibility */
+    width: 220px; /* Smaller middle circle */
+    height: 220px;
+    border: 2px solid rgba(0, 200, 150, 0.25);
   }
   
   .hero-products .inner-white-circle {
-    width: 120px; /* Increased size */
-    height: 120px;
+    width: 100px; /* Smaller inner circle */
+    height: 100px;
   }
   
   .hero-products .top-green-line {
-    width: 260px; /* Increased size */
-    height: 260px;
-    border: 8px solid transparent; /* Thicker border for visibility */
-    border-right: 8px solid var(--primary-green);
+    width: 220px; /* Smaller green line */
+    height: 220px;
+    border: 4px solid transparent;
+    border-right: 4px solid var(--primary-green);
   }
   
-  /* Adjust product item positions for mobile - bigger images */
+  /* Adjust product item positions for mobile - larger sizes */
   .phone-2 {
-    top: 5%; /* Moved closer to outer edge */
+    top: 8%;
     left: 50%;
     transform: translateX(-50%);
-    width: 60px; /* Increased size */
-    height: 75px;
+    width: 70px;
+    height: 90px;
   }
   
   .laptop {
-    top: 50%;
-    left: 5%; /* Moved closer to outer edge */
+    top: 45%;
+    left: 10%;
     transform: translateY(-50%);
-    width: 75px; /* Increased size */
-    height: 55px;
-  }
-  
-  .phone-3 {
-    top: 50%;
-    right: 5%; /* Moved closer to outer edge */
-    transform: translateY(-50%);
-    width: 60px; /* Increased size */
-    height: 75px;
-  }
-  
-  .headphone {
-    bottom: 5%; /* Moved closer to outer edge */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px; /* Increased size */
+    width: 90px;
     height: 60px;
   }
   
   .watch-group {
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Proper centering */
-    width: 90px; /* Increased size */
-    height: 60px;
-    gap: 0.2rem;
+    transform: translate(-50%, -50%);
+    width: 110px;
+    height: 75px;
+    gap: 0.4rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute; /* Ensure absolute positioning */
-    z-index: 4; /* Higher z-index to ensure visibility */
+    position: absolute;
+    z-index: 4;
+  }
+  
+  .phone-3 {
+    top: 40%;
+    right: 10%;
+    transform: translateY(-50%);
+    width: 70px;
+    height: 90px;
+  }
+  
+  .headphone {
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 70px;
   }
   
   .watch-1, .watch-2 {
-    width: 40px; /* Increased size */
-    height: 40px;
+    width: 50px;
+    height: 50px;
   }
 }
 
@@ -2705,81 +2718,64 @@ body {
   }
 
   .hero-products {
-    height: 240px; /* Increased height for bigger images */
-  }
-
-  /* Override the scale transform to use bigger individual sizes instead */
-  .product-item {
-    transform: none; /* Remove scale transform */
+    height: 280px; /* Adjusted height for smaller mobile */
   }
   
-  /* Adjust circle sizes for smaller mobile - bigger images */
+  /* Adjust circle sizes for smaller mobile */
   .hero-products::before {
-    width: 280px; /* Increased size */
-    height: 280px;
-    border: 3px solid rgba(0, 200, 150, 0.25); /* Thicker border for visibility */
+    width: 240px;
+    height: 240px;
+    border: 1px solid rgba(0, 200, 150, 0.15);
   }
   
   .hero-products::after {
-    width: 220px; /* Increased size */
-    height: 220px;
-    border: 4px solid rgba(0, 200, 150, 0.3); /* Thicker border for visibility */
+    width: 190px;
+    height: 190px;
+    border: 1px solid rgba(0, 200, 150, 0.2);
   }
   
   .hero-products .inner-white-circle {
-    width: 100px; /* Increased size */
-    height: 100px;
+    width: 80px;
+    height: 80px;
   }
   
   .hero-products .top-green-line {
-    width: 220px; /* Increased size */
-    height: 220px;
-    border: 8px solid transparent; /* Thicker border for visibility */
-    border-right: 8px solid var(--primary-green);
+    width: 190px;
+    height: 190px;
+    border: 3px solid transparent;
+    border-right: 3px solid var(--primary-green);
   }
   
-  /* Bigger individual product images for small mobile */
+  /* Adjust product positions for smaller mobile - larger sizes */
   .phone-2 {
-    top: 3%; /* Moved closer to outer edge */
-    width: 50px; /* Increased size */
-    height: 65px;
+    width: 60px;
+    height: 75px;
   }
   
   .laptop {
-    left: 3%; /* Moved closer to outer edge */
-    width: 65px; /* Increased size */
-    height: 45px;
+    width: 75px;
+    height: 55px;
   }
   
   .phone-3 {
-    right: 3%; /* Moved closer to outer edge */
-    width: 50px; /* Increased size */
-    height: 65px;
+    width: 60px;
+    height: 75px;
   }
   
   .headphone {
-    bottom: 3%; /* Moved closer to outer edge */
-    width: 50px; /* Increased size */
-    height: 50px;
+    width: 60px;
+    height: 60px;
   }
   
   .watch-group {
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); /* Proper centering */
-    width: 75px; /* Increased size */
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.15rem;
-    position: absolute; /* Ensure absolute positioning */
-    z-index: 4; /* Higher z-index to ensure visibility */
+    width: 90px;
+    height: 65px;
+    gap: 0.3rem;
   }
   
   .watch-1, .watch-2 {
-    width: 32px; /* Increased size */
-    height: 32px;
+    width: 40px;
+    height: 40px;
   }
 
   .feature-card {

@@ -314,6 +314,35 @@ input[type="tel"]::placeholder {
   font-size: 0.98rem;
   color: #444;
 }
+
+/* Coupon notice */
+.coupon-notice {
+  background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
+  border: 1px solid #a855f7;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.coupon-notice-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.coupon-notice-text {
+  color: #6b21a8;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.coupon-notice-text strong {
+  color: #7c3aed;
+  font-weight: 600;
+}
+
 .trust-badges {
   display: flex;
   flex-wrap: wrap;

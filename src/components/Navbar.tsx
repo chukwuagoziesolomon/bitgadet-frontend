@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, ChevronDown, Search, Menu, Heart, Phone, FileText, HelpCircle, LogOut, X, BarChart3 } from 'lucide-react';
+import { ShoppingCart, User, ChevronDown, Menu, Heart, Phone, FileText, HelpCircle, LogOut, X, BarChart3 } from 'lucide-react';
 import { publicApiRequest } from '../config/api';
 import './Navbar.css';
 
@@ -25,6 +25,30 @@ const Navbar: React.FC = () => {
   const mobileMoreRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
+
+  // Cart count (localStorage fallback for demonstration)
+  const [cartCount, setCartCount] = useState(0);
+  useEffect(() => {
+    // Check for cart in localStorage
+    const cart = localStorage.getItem('cart');
+    try {
+      const cartArr = cart ? JSON.parse(cart) : [];
+      setCartCount(Array.isArray(cartArr) ? cartArr.length : 0);
+    } catch {
+      setCartCount(0);
+    }
+    const onStorage = () => {
+      const updatedCart = localStorage.getItem('cart');
+      try {
+        const arr = updatedCart ? JSON.parse(updatedCart) : [];
+        setCartCount(Array.isArray(arr) ? arr.length : 0);
+      } catch {
+        setCartCount(0);
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -149,7 +173,7 @@ const Navbar: React.FC = () => {
                   </button>
                 )}
                 <button type="submit" className="search-button">
-                  <Search size={20} />
+                  Search
                 </button>
               </form>
 
@@ -329,7 +353,7 @@ const Navbar: React.FC = () => {
                    </button>
                  )}
                  <button type="submit" className="search-button">
-                   <Search size={20} />
+                   Search
                  </button>
                </form>
 
@@ -514,8 +538,21 @@ const Navbar: React.FC = () => {
             <Link to="/" className="mobile-logo-link">
               <img src="/logo.png" alt="BitGadgetz" className="mobile-logo-image" />
             </Link>
-
-            {/* Search bar */}
+            {/* Right side icons */}
+            <div className="mobile-top-icons">
+              <Link to="/cart" className="mobile-top-icon cart-icon-with-badge">
+                <ShoppingCart size={20} />
+                {cartCount > 0 && (
+                  <span className="cart-badge">{cartCount}</span>
+                )}
+              </Link>
+              <Link to="/login" className="mobile-top-icon">
+                <User size={20} />
+              </Link>
+            </div>
+          </div>
+          {/* Search bar moves below logo/icons and is full width */}
+          <div className="mobile-search-row">
             <div className="mobile-search-container" ref={mobileSearchRef}>
               <form onSubmit={handleSearchSubmit} className="mobile-search-wrapper">
                 <input
@@ -535,10 +572,9 @@ const Navbar: React.FC = () => {
                   </button>
                 )}
                 <button type="submit" className="mobile-search-button">
-                  <Search size={18} />
+                  Search
                 </button>
               </form>
-
               {/* Mobile Search Results Dropdown */}
               {isSearchDropdownOpen && searchResults && (
                 <div className="mobile-search-dropdown">
@@ -615,16 +651,6 @@ const Navbar: React.FC = () => {
                   )}
                 </div>
               )}
-            </div>
-
-            {/* Right side icons */}
-            <div className="mobile-top-icons">
-              <Link to="/cart" className="mobile-top-icon">
-                <ShoppingCart size={20} />
-              </Link>
-              <Link to="/login" className="mobile-top-icon">
-                <User size={20} />
-              </Link>
             </div>
           </div>
         </div>

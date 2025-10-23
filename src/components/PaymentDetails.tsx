@@ -206,7 +206,7 @@ const PaymentDetails: React.FC = () => {
                       </div>
                       <div className="method-info">
                         <h2>Cryptocurrency Payment</h2>
-                        <p>Pay with Bitcoin, Ethereum, or other cryptocurrencies</p>
+                        <p>Pay with {paymentData.payment_info.currency} on {paymentData.payment_info.network} network</p>
                       </div>
                     </div>
 
@@ -214,22 +214,41 @@ const PaymentDetails: React.FC = () => {
                       <div className="crypto-wallet-section">
                         <label>Wallet Address</label>
                         <div className="wallet-address-input">
-                          <input 
-                            type="text" 
-                            value="Cryptocurrency payment details will be provided here" 
-                            readOnly 
+                          <input
+                            type="text"
+                            value={paymentData.payment_info.wallet_address || 'N/A'}
+                            readOnly
                             className="wallet-input"
                           />
-                          <button className="copy-btn">
-                            📋
+                          <button
+                            className="copy-btn"
+                            onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'wallet')}
+                          >
+                            {copied === 'wallet' ? '✓' : '📋'}
                           </button>
+                        </div>
+                      </div>
+
+                      <div className="crypto-info-grid">
+                        <div className="crypto-detail-card">
+                          <label>Network</label>
+                          <div className="detail-input">
+                            {paymentData.payment_info.network || 'N/A'}
+                          </div>
+                        </div>
+
+                        <div className="crypto-detail-card">
+                          <label>Currency</label>
+                          <div className="detail-input">
+                            {paymentData.payment_info.currency || 'N/A'}
+                          </div>
                         </div>
                       </div>
 
                       <div className="crypto-amount-section">
                         <div className="amount-card">
-                          <span className="amount-label">Amount to Pay</span>
-                          <span className="amount-value">₦{paymentData.payment_info.total_amount?.toLocaleString()}</span>
+                          <span className="amount-label">Expected Amount</span>
+                          <span className="amount-value">{paymentData.payment_info.expected_amount?.toFixed(6)} {paymentData.payment_info.currency}</span>
                         </div>
                       </div>
 
