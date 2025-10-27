@@ -3,12 +3,15 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import ShoppingBag from './icons/ShoppingBag';
 import Gamepad2 from './icons/Gamepad2';
 import ShoppingCart from './icons/ShoppingCart';
+import { Copy, Check, AlertTriangle, Lightbulb, Lock, User, Info } from 'lucide-react';
+import { useToast } from '../hooks/useToast';
 import './PaymentDetails.css';
 
 
 const PaymentDetails: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { showSuccess } = useToast();
 
   // Get data from Checkout component state
   const orderData = location.state?.orderData;
@@ -49,6 +52,7 @@ const PaymentDetails: React.FC = () => {
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopied(label);
+    showSuccess('Copied!', `${label} copied to clipboard`);
     setTimeout(() => setCopied(null), 2000);
   };
 
@@ -102,7 +106,7 @@ const PaymentDetails: React.FC = () => {
               </div>
             ) : error ? (
               <div className="error-state">
-                <div className="error-icon">⚠️</div>
+                <div className="error-icon"><AlertTriangle /></div>
                 <h3>Payment Error</h3>
                 <p>{error}</p>
               </div>
@@ -146,9 +150,9 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
-                            onClick={() => handleCopy(paymentData.order.dedicated_account_number, 'account')}
+                            onClick={() => handleCopy(paymentData.order.dedicated_account_number, 'Account Number')}
                           >
-                            {copied === 'account' ? '✓' : '📋'}
+                            {copied === 'account' ? <Check /> : <Copy />}
                           </button>
                         </div>
                       </div>
@@ -177,7 +181,7 @@ const PaymentDetails: React.FC = () => {
 
                     <div className="payment-instructions">
                       <div className="instructions-header">
-                        <span className="instruction-icon">💡</span>
+                        <span className="instruction-icon"><Lightbulb /></span>
                         <h4>Payment Instructions</h4>
                       </div>
                       <div className="instructions-list">
@@ -222,9 +226,9 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
-                            onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'wallet')}
+                            onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'Wallet Address')}
                           >
-                            {copied === 'wallet' ? '✓' : '📋'}
+                            {copied === 'wallet' ? <Check /> : <Copy />}
                           </button>
                         </div>
                       </div>
@@ -254,7 +258,7 @@ const PaymentDetails: React.FC = () => {
 
                       <div className="crypto-instructions">
                         <div className="instructions-header">
-                          <span className="instruction-icon">🔐</span>
+                          <span className="instruction-icon"><Lock /></span>
                           <h4>Payment Instructions</h4>
                         </div>
                         <div className="instructions-list">
@@ -304,7 +308,7 @@ const PaymentDetails: React.FC = () => {
                 {paymentData.account_info && (
                   <div className="account-info-card">
                     <div className="account-header">
-                      <div className="account-icon">👤</div>
+                      <div className="account-icon"><User /></div>
                       <div className="account-title">
                         <h3>Your Account</h3>
                         <p>Account credentials for order tracking</p>
@@ -329,16 +333,16 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
-                            onClick={() => handleCopy(paymentData.account_info.generated_password, 'password')}
+                            onClick={() => handleCopy(paymentData.account_info.generated_password, 'Password')}
                           >
-                            {copied === 'password' ? '✓' : '📋'}
+                            {copied === 'password' ? <Check /> : <Copy />}
                           </button>
                         </div>
                       </div>
                     </div>
 
                     <div className="account-message">
-                      <div className="message-icon">ℹ️</div>
+                      <div className="message-icon"><Info /></div>
                       <p>{paymentData.account_info.message}</p>
                     </div>
                   </div>
@@ -400,7 +404,7 @@ const PaymentDetails: React.FC = () => {
 
           {error && (
             <div className="error-toast">
-              <div className="error-icon">⚠️</div>
+              <div className="error-icon"><AlertTriangle /></div>
               <span>{error}</span>
             </div>
           )}
