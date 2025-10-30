@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400&display=swap');
 
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 body {
   margin: 0;
   font-family: 'Outfit', sans-serif;
@@ -10,10 +15,14 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: white !important;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 html, #root {
   background-color: white !important;
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 code {

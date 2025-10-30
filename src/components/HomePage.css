@@ -4,18 +4,23 @@
 .home-page {
   min-height: 100vh;
   background: #ffffff;
-  padding: 0 5%;
+  padding-top: 160px; /* Increased from 140px to account for navbar height */
+  padding-left: 5%;
+  padding-right: 5%;
+  padding-bottom: 0;
+  z-index: 1;
 }
 
 /* Hero Section - Slideshow Banner */
 .home-page .hero-section {
   position: relative;
   width: 100%;
-  height: 700px; /* Increased height to eliminate white spaces */
-  margin: 32px 0 48px;
+  height: 700px;
+  margin: 20px 0 48px; /* Reduced top margin from 80px to 20px */
   border-radius: 16px;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  z-index: 1;
 }
 
 .home-page .hero-slideshow {
@@ -53,7 +58,7 @@
 .home-page .slide-image {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* Back to contain to show full images */
+  object-fit: contain;
   object-position: center;
   background: #f8f9fa;
 }
@@ -381,6 +386,14 @@
 }
 
 @media (max-width: 768px) {
+  .home-page {
+    padding-top: 140px; /* Adjusted for mobile navbar height */
+  }
+
+  .home-page .hero-section {
+    margin-top: 16px; /* Reduced top margin for mobile */
+  }
+
   .home-page .categories-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 16px;
@@ -478,7 +491,7 @@
 /* Products Grid */
 .home-page .products-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(250px, 1fr));
   gap: 20px;
   margin-top: 32px;
 }
@@ -549,7 +562,7 @@
     margin-top: 24px;
     padding: 0 12px;
     max-width: 100%;
-  justify-content: center;
+    justify-content: center;
   }
 }
 
@@ -566,14 +579,14 @@
   /* Make ProductCard components more compact on mobile */
   .home-page .products-grid .product-card-component .brands-product-card {
     max-width: none;
-  width: 100%;
+    width: 100%;
     padding: 10px;
     margin: 0;
     box-sizing: border-box;
   }
   
   .home-page .products-grid .product-card-component .brands-product-name {
-  font-size: 12px;
+    font-size: 12px;
     margin-bottom: 3px;
     line-height: 1.2;
   }
@@ -589,7 +602,7 @@
   }
   
   .home-page .products-grid .product-card-component .brands-current-price {
-  font-size: 13px;
+    font-size: 13px;
     margin-bottom: 2px;
   }
   
@@ -628,7 +641,7 @@
 /* Responsive styles for slideshow */
 @media (max-width: 768px) {
   .home-page .hero-section {
-    height: 450px; /* Increased proportionally */
+    height: 450px;
     margin: 16px 0 32px;
   }
   
@@ -661,7 +674,7 @@
 
 @media (max-width: 480px) {
   .home-page .hero-section {
-    height: 350px; /* Increased proportionally */
+    height: 350px;
     margin: 12px 0 24px;
   }
   

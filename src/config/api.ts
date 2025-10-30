@@ -96,14 +96,25 @@ export const apiRequest = async <T>(
     const response = await fetch(url, defaultOptions);
 
     console.log('📡 Response status:', response.status, response.statusText);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (e) {
+      responseData = null
     }
 
-    const data = await response.json();
-    console.log('📦 Response data:', data);
-    return data;
+    if (!response.ok) {
+      const error = new Error(`HTTP error! status: ${response.status}`) as any;
+      error.response = {
+        status: response.status,
+        data: responseData
+      };
+      throw error;
+    }
+
+    
+    console.log('📦 Response data:', responseData);
+    return responseData;
   } catch (error) {
     console.error(`❌ API request failed for ${url}:`, error);
     throw error;
@@ -137,13 +148,25 @@ export const publicApiRequest = async <T>(
 
     console.log('📡 Response status:', response.status, response.statusText);
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (e) {
+      responseData = null
     }
 
-    const data = await response.json();
-    console.log('📦 Response data:', data);
-    return data;
+    if (!response.ok) {
+      const error = new Error(`HTTP error! status: ${response.status}`) as any;
+      error.response = {
+        status: response.status,
+        data: responseData
+      };
+      throw error;
+    }
+
+    
+    console.log('📦 Response data:', responseData);
+    return responseData;
   } catch (error) {
     console.error(`❌ Public API request failed for ${url}:`, error);
     throw error;
@@ -157,11 +180,25 @@ export const conditionalApiRequest = async <T>(
 ): Promise<T> => {
   const token = localStorage.getItem('authToken');
 
-  if (token) {
-    // Use authenticated request if token exists
-    return apiRequest<T>(endpoint, options);
-  } else {
-    // Use public request if no token
+  // If no token, always use public
+  if (!token) {
     return publicApiRequest<T>(endpoint, options);
+  }
+
+  // With token: try authenticated first, and if the server rejects with 401
+  // (common when an endpoint is public-only or ignores token auth),
+  // automatically retry once without Authorization headers.
+  try {
+    return await apiRequest<T>(endpoint, options);
+  } catch (error: any) {
+    const status = error?.response?.status;
+    const method = (options.method || 'GET').toString().toUpperCase();
+    const isSafeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
+
+    if (status === 401 && isSafeMethod) {
+      console.warn('🔁 Auth request returned 401 on a public/safe endpoint. Retrying without auth...');
+      return await publicApiRequest<T>(endpoint, options);
+    }
+    throw error;
   }
 };

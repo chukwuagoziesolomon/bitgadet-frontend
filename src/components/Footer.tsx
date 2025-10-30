@@ -1,93 +1,144 @@
-import React from 'react';
-import Facebook from './icons/Facebook';
-import Instagram from './icons/Instagram';
-import Twitter from './icons/Twitter';
-import Linkedin from './icons/Linkedin';
-import Youtube from './icons/Youtube';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Facebook, Instagram, Twitter, Linkedin, Youtube } from 'lucide-react';
 import './Footer.css';
-import logo from '../assets/logo.png';
 
 const Footer: React.FC = () => {
+  const [email, setEmail] = useState('');
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Add newsletter subscription logic here
+    console.log('Subscribing email:', email);
+    setEmail('');
+  };
+
   return (
     <footer className="footer">
-      {/* Newsletter Section */}
-      <div className="newsletter-section">
-        <div className="newsletter-container">
-          <h2 className="newsletter-title">Stay Updated with BitGadgetz</h2>
-          <p className="newsletter-description">
-            Subscribe to our newsletter for the latest tech news, exclusive deals, and special offers.
-          </p>
-          <form className="newsletter-form">
-            <input
-              type="email"
-              placeholder="Enter your email address"
-              className="newsletter-input"
-              required
-            />
-            <button type="submit" className="newsletter-button">
-              Subscribe
-            </button>
-          </form>
-        </div>
-      </div>
-
-      {/* Main Footer Content */}
       <div className="footer-container">
-        {/* Company Info */}
-        <div className="footer-section">
-          <div className="footer-logo-container">
-            <img src="/logo.png" alt="BitGadgetz Logo" className="footer-logo" />
-          </div>
+        {/* Brand Section */}
+        <div className="footer-section footer-brand">
+          <Link to="/" className="footer-logo">
+            <img src="/logo.png" alt="BitGadgetz" />
+          </Link>
           <p className="footer-description">
             BitGadgetz is a modern eCommerce platform that sells gadgets and accessories with crypto and Naira payment options.
           </p>
+          <div className="footer-socials">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <Facebook size={20} />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <Instagram size={20} />
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+              <X size={20} />
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <Linkedin size={20} />
+            </a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <Youtube size={20} />
+            </a>
+          </div>
         </div>
 
         {/* Quick Links */}
         <div className="footer-section">
-          <h4 className="footer-heading">Quick Links</h4>
+          <h3 className="footer-heading">Quick Links</h3>
           <ul className="footer-links">
-            <li><a href="/about">About Us</a></li>
-            <li><a href="/terms">Terms & Conditions</a></li>
+            <li><Link to="/home">Home</Link></li>
+            <li><Link to="/about">About Us</Link></li>
+            <li><Link to="/contact">Contact</Link></li>
+            <li><Link to="/faqs">FAQs</Link></li>
+            <li><Link to="/phone-tracking">Phone Tracking</Link></li>
+            <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+            <li><Link to="/terms-conditions">Terms & Conditions</Link></li>
           </ul>
         </div>
 
-        {/* Stay Connected */}
+        {/* Categories */}
         <div className="footer-section">
-          <h4 className="footer-heading">Stay Connected</h4>
-          <div className="contact-info">
-            <ul className="footer-links">
-              <li><a href="mailto:support@Bitgadgetz.store">Email: support@Bitgadgetz.store</a></li>
-              <li><a href="https://wa.me/2349061728949">WhatsApp: +234 906 172 8949</a></li>
-              <li><a href="https://wa.me/2349138666111">WhatsApp: +2349138666111</a></li>
-            </ul>
+          <h3 className="footer-heading">Categories</h3>
+          <ul className="footer-links">
+            <li><Link to="/smartphones">Smartphones</Link></li>
+            <li><Link to="/laptops">Laptops</Link></li>
+            <li><Link to="/smartwatches">Smartwatches</Link></li>
+            <li><Link to="/accessories">Accessories</Link></li>
+            <li><Link to="/audio">Audio</Link></li>
+            <li><Link to="/gaming">Gaming</Link></li>
+          </ul>
+        </div>
+
+        {/* Stay Connected - Mobile Only */}
+        <div className="footer-section footer-stay-connected">
+          <h3 className="footer-heading">Stay connected</h3>
+          <div className="stay-connected-info">
+            <p>Email: info@bitgadgetz.com</p>
+            <p>Phone: +234 123 000 0000</p>
+            <p>WhatsApp: +234 123 000 0000</p>
           </div>
-          <div className="social-icons">
-            <a href="https://facebook.com" aria-label="Facebook">
-              <Facebook size={20} color="#ffffff" />
+          <div className="footer-socials footer-socials-mobile">
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <Facebook size={18} />
             </a>
-            <a href="https://www.instagram.com/bitgadgetz_tech" aria-label="Instagram">
-              <Instagram size={20} color="#ffffff" />
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <Instagram size={18} />
             </a>
-            <a href="https://x.com/bitgadgetz" aria-label="Twitter">
-              <Twitter size={20} color="#ffffff" />
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+              <X size={18} />
             </a>
-            <a href="https://linkedin.com" aria-label="LinkedIn">
-              <Linkedin size={20} color="#ffffff" />
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+              <Linkedin size={18} />
             </a>
-            <a href="https://youtube.com" aria-label="YouTube">
-              <Youtube size={20} color="#ffffff" />
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <Youtube size={18} />
             </a>
+          </div>
+        </div>
+
+        {/* Newsletter & Contact */}
+        <div className="footer-section footer-newsletter">
+          <h3 className="footer-heading">Newsletter</h3>
+          <p className="newsletter-text">
+            Subscribe to our newsletter for the latest products and exclusive offers.
+          </p>
+          <form onSubmit={handleSubscribe} className="newsletter-form">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="newsletter-input"
+            />
+            <button type="submit" className="newsletter-btn">
+              Subscribe
+            </button>
+          </form>
+
+          <div className="footer-contact">
+            <h4 className="contact-heading">Contact Us</h4>
+            <p>Email: info@bitgadgetz.com</p>
+            <p>Phone: +234 123 000 0000</p>
+            <p>WhatsApp: +234 123 000 0000</p>
           </div>
         </div>
       </div>
 
-      {/* Copyright */}
+      {/* Footer Bottom */}
       <div className="footer-bottom">
-        <p>&copy; {new Date().getFullYear()} BitGadgetz. All rights reserved.</p>
+        <p>© 2025 BitGadgetz. All rights reserved.</p>
       </div>
     </footer>
   );
 };
+
+// X (Twitter) icon component
+const X: React.FC<{ size?: number }> = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="currentColor"/>
+  </svg>
+);
 
 export default Footer;

@@ -520,12 +520,12 @@ const ProductDetails: React.FC = () => {
             </div>
 
             <div className="action-buttons">
-              <button className="view-cart-btn">
+              <Link to="/cart" className="view-cart-btn">
                 View Cart
-              </button>
-              <button className="checkout-btn">
+              </Link>
+              <Link to="/checkout" className="checkout-btn">
                 Checkout
-              </button>
+              </Link>
             </div>
 
             <div className="product-services">

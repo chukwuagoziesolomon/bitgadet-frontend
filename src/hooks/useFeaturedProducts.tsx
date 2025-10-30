@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { publicApiRequest, API_CONFIG } from '../config/api';
+import { conditionalApiRequest, API_CONFIG } from '../config/api';
 
 export interface Product {
   id: number;
@@ -40,7 +40,7 @@ export const useFeaturedProducts = () => {
     const fetchFeaturedProducts = async () => {
       try {
         setLoading(true);
-        const data = await publicApiRequest<{ products: Product[] }>(API_CONFIG.ENDPOINTS.PRODUCTS_FEATURED_COLLECTION);
+        const data = await conditionalApiRequest<{ products: Product[] }>(API_CONFIG.ENDPOINTS.PRODUCTS_FEATURED_COLLECTION);
         setProducts(data.products || []);
         setError(null);
       } catch (err) {

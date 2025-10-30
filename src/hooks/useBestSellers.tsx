@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { publicApiRequest, API_CONFIG } from '../config/api';
+import { conditionalApiRequest, API_CONFIG } from '../config/api';
 import { Product } from './useFeaturedProducts';
 
 export const useBestSellers = () => {
@@ -11,7 +11,7 @@ export const useBestSellers = () => {
     const fetchBestSellers = async () => {
       try {
         setLoading(true);
-        const data = await publicApiRequest<{ products: Product[] }>(API_CONFIG.ENDPOINTS.PRODUCTS_BEST_SELLERS_COLLECTION);
+        const data = await conditionalApiRequest<{ products: Product[] }>(API_CONFIG.ENDPOINTS.PRODUCTS_BEST_SELLERS_COLLECTION);
         setProducts(data.products || []);
         setError(null);
       } catch (err) {

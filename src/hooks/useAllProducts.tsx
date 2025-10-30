@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { publicApiRequest } from '../config/api';
+import { conditionalApiRequest } from '../config/api';
 import { Product } from './useFeaturedProducts';
 
 interface AllProductsResponse {
@@ -49,7 +49,7 @@ export const useAllProducts = (options: UseAllProductsOptions = {}) => {
         if (options.ordering) params.append('ordering', options.ordering);
 
         const endpoint = `/api/products/?${params.toString()}`;
-        const data: AllProductsResponse = await publicApiRequest(endpoint);
+        const data: AllProductsResponse = await conditionalApiRequest(endpoint);
 
         setProducts(data.results || []);
         setTotalCount(data.count || 0);
