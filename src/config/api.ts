@@ -56,6 +56,11 @@ export const API_CONFIG = {
     WISHLIST_ALL: '/api/wishlist/all/',
     AUTH_PROFILE_SETTINGS: '/api/auth/profile-settings/',
     AUTH_PASSWORD_REQUIREMENTS: '/api/auth/profile-settings/?info=password-requirements',
+    // New User Profile Management Endpoints
+    USER_PROFILE: '/api/user/profile/',
+    USER_PROFILE_UPDATE: '/api/user/profile/update/',
+    USER_CHANGE_PASSWORD: '/api/user/change-password/',
+    USER_DELETE_ACCOUNT: '/api/user/delete-account/',
   },
   TIMEOUT: 10000, // 10 seconds
 };

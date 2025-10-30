@@ -1464,8 +1464,12 @@
   margin: 0.5rem 0;
 }
 
-.view-cart-btn {
-  flex: 1;
+.action-buttons.single {
+  justify-content: center;
+}
+
+.add-to-cart-btn {
+  min-width: 220px;
   padding: 1rem 2rem;
   background: #00C896;
   color: white;
@@ -1477,28 +1481,14 @@
   transition: all 0.2s ease;
 }
 
-.view-cart-btn:hover {
+.add-to-cart-btn:hover:not(:disabled) {
   background: #00b085;
   transform: translateY(-1px);
 }
 
-.checkout-btn {
-  flex: 1;
-  padding: 1rem 2rem;
-  background: white;
-  color: #00C896;
-  border: 2px solid #00C896;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.checkout-btn:hover {
-  background: #00C896;
-  color: white;
-  transform: translateY(-1px);
+.add-to-cart-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
 }
 
 /* Product Services */
@@ -1598,9 +1588,8 @@
     flex-direction: column;
   }
 
-  .view-cart-btn,
-  .checkout-btn {
-    padding: 0.875rem 1.5rem;
+  .add-to-cart-btn {
+    width: 100%;
   }
 
   .product-services {

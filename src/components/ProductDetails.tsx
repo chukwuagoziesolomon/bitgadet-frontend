@@ -14,7 +14,7 @@ import {
   CheckCircle,
   X
 } from 'lucide-react';
-import { publicApiRequest } from '../config/api';
+import { publicApiRequest, conditionalApiRequest } from '../config/api';
 import './ProductDetails.css';
 
 interface Category {
@@ -125,6 +125,8 @@ const ProductDetails: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addedToCart, setAddedToCart] = useState(false);
   // Review form state
   const [reviewName, setReviewName] = useState('');
   const [reviewEmail, setReviewEmail] = useState('');
@@ -280,9 +282,23 @@ const ProductDetails: React.FC = () => {
     return `₦${amount.toLocaleString()}`;
   };
 
-  const handleAddToCart = () => {
-    // Add to cart logic
-    console.log('Added to cart:', { product: product?.id, quantity });
+  const handleAddToCart = async () => {
+    if (!product) return;
+    try {
+      setIsAddingToCart(true);
+      setAddedToCart(false);
+      await conditionalApiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: product.id, quantity }),
+      });
+      setAddedToCart(true);
+      // Reset the added state after a short delay
+      setTimeout(() => setAddedToCart(false), 2000);
+    } catch (e) {
+      console.error('Failed to add to cart', e);
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const handleWhatsAppEnquiry = () => {
@@ -654,13 +670,15 @@ const ProductDetails: React.FC = () => {
               </div>
             </div>
 
-            <div className="action-buttons">
-              <Link to="/cart" className="view-cart-btn">
-                View Cart
-              </Link>
-              <Link to="/checkout" className="checkout-btn">
-                Checkout
-              </Link>
+            <div className="action-buttons single">
+              <button
+                type="button"
+                className="add-to-cart-btn"
+                onClick={handleAddToCart}
+                disabled={!product.is_in_stock || isAddingToCart}
+              >
+                {isAddingToCart ? 'Adding…' : addedToCart ? 'Added to Cart' : 'Add to Cart'}
+              </button>
             </div>
 
             <div className="product-services">
