@@ -16,11 +16,27 @@ const AllProductsPage: React.FC = () => {
   const [sortBy, setSortBy] = useState('');
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [cart, setCart] = useState<Record<number, number>>({});
-  const [productFilter, setProductFilter] = useState<'all' | 'toasters' | 'exclude-specific'>('all');
-  // Add specific product IDs to exclude here (e.g., the toaster model from the image)
-  const [excludedProductIds, setExcludedProductIds] = useState<number[]>([
-    // Example: 123, 456  // Replace with actual product IDs to exclude
-  ]);
+  const [productFilter, setProductFilter] = useState<'all' | 'toaster'>('all');
+
+  // Calculate min_rating from selectedRatings
+  const getMinRating = () => {
+    if (selectedRatings.length === 0) return undefined;
+    const ratings = selectedRatings.map(r => parseInt(r.split('+')[0]));
+    return Math.min(...ratings);
+  };
+
+  // Map sortBy to API sort_by values
+  const getSortByValue = () => {
+    switch (sortBy) {
+      case 'name': return 'name_asc';
+      case '-name': return 'name_desc';
+      case 'current_price': return 'price_low';
+      case '-current_price': return 'price_high';
+      case '-created_at': return 'newest';
+      case 'created_at': return 'oldest';
+      default: return 'default';
+    }
+  };
 
   // Use the new hook with all filtering options
   const {
@@ -32,12 +48,14 @@ const AllProductsPage: React.FC = () => {
     hasPreviousPage
   } = useAllProducts({
     page: currentPage,
-    limit: 20,
     search: searchQuery || undefined,
-    category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
+    categories: selectedCategories.length > 0 ? selectedCategories.join(',') : undefined,
     min_price: priceRange.min ? parseFloat(priceRange.min) : undefined,
     max_price: priceRange.max ? parseFloat(priceRange.max) : undefined,
-    ordering: sortBy || undefined
+    in_stock: inStockOnly || undefined,
+    min_rating: getMinRating(),
+    sort_by: getSortByValue(),
+    product_filter: productFilter
   });
 
   useEffect(() => {
@@ -109,33 +127,16 @@ const AllProductsPage: React.FC = () => {
     setSearchQuery('');
     setCurrentPage(1);
     setProductFilter('all');
-    setExcludedProductIds([]);
   };
 
-  // Filter products based on current filter settings
+  // Since filtering is now done on the backend, just return products directly
   const getFilteredProducts = () => {
-    let filteredProducts = products;
-
-    // Apply toaster filter
-    if (productFilter === 'toasters') {
-      filteredProducts = filteredProducts.filter(product =>
-        product.name.toLowerCase().includes('toaster')
-      );
-    }
-
-    // Apply product exclusions
-    if (excludedProductIds.length > 0) {
-      filteredProducts = filteredProducts.filter(product =>
-        !excludedProductIds.includes(product.id)
-      );
-    }
-
-    return filteredProducts;
+    return products;
   };
 
   // Get filter props for ProductCard
   const getProductCardProps = (product: any) => {
-    const baseProps = {
+    return {
       key: product.id,
       id: product.id,
       slug: product.slug,
@@ -154,17 +155,6 @@ const AllProductsPage: React.FC = () => {
       isInWishlist: wishlist.includes(product.id),
       onToggleWishlist: handleToggleWishlist,
     };
-
-    // Add filtering props based on current filter state
-    if (productFilter === 'toasters') {
-      return {
-        ...baseProps,
-        category: 'toasters',
-        excludeProductIds: excludedProductIds,
-      };
-    }
-
-    return baseProps;
   };
 
   const handleAddToCart = async (productId: number) => {
@@ -352,8 +342,8 @@ const AllProductsPage: React.FC = () => {
                 <input
                   type="radio"
                   name="productFilter"
-                  value="toasters"
-                  checked={productFilter === 'toasters'}
+                  value="toaster"
+                  checked={productFilter === 'toaster'}
                   onChange={(e) => setProductFilter(e.target.value as any)}
                 />
                 <span>Toaster Products Only</span>
@@ -526,10 +516,10 @@ const AllProductsPage: React.FC = () => {
                     <Search size={64} className="empty-icon" />
                   </div>
                   <h3 className="empty-title">
-                    {productFilter === 'toasters' ? 'No toaster products found' : 'No products found'}
+                    {productFilter === 'toaster' ? 'No toaster products found' : 'No products found'}
                   </h3>
                   <p className="empty-description">
-                    {productFilter === 'toasters'
+                    {productFilter === 'toaster'
                       ? 'No toaster products match your criteria. Try adjusting your filters.'
                       : 'We couldn\'t find any products matching your criteria. Try adjusting your search terms or filters.'
                     }
@@ -545,7 +535,6 @@ const AllProductsPage: React.FC = () => {
                       setSortBy('');
                       setCurrentPage(1);
                       setProductFilter('all');
-                      setExcludedProductIds([]);
                     }}
                   >
                     Clear All Filters

@@ -26,6 +26,7 @@ import OrderHistory from './components/OrderHistory';
 import Wishlist from './components/Wishlist';
 import TermsAndConditions from './components/TermsAndConditions';
 import CouponSuccess from './components/CouponSuccess';
+import SearchResultsPage from './components/SearchResultsPage';
 import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import ToastDemo from './components/ToastDemo';
@@ -210,6 +211,15 @@ const AppContent: React.FC = () => {
               <Navbar />
               <main>
                 <ProductDetails />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/search" element={
+            <>
+              <Navbar />
+              <main>
+                <SearchResultsPage />
               </main>
               <Footer />
             </>

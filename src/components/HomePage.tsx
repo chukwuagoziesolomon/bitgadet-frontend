@@ -413,32 +413,34 @@ const HomePage: React.FC = () => {
       {/* Our Products Section */}
       <section className="products-section">
         <div className="container">
-        <div className="section-header">
-            <h2>Our Products</h2>
+          <div className="products-header-row">
+            <div className="section-header">
+              <h2>Our Products</h2>
+            </div>
+            <div className="product-tabs">
+              <button
+                className={`tab-btn ${activeTab === 'featured' ? 'active' : ''}`}
+                onClick={() => setActiveTab('featured')}
+              >
+                <Star size={18} />
+                Featured
+              </button>
+              <button
+                className={`tab-btn ${activeTab === 'bestsellers' ? 'active' : ''}`}
+                onClick={() => setActiveTab('bestsellers')}
+              >
+                <Award size={18} />
+                Best Sellers
+              </button>
+              <button
+                className={`tab-btn ${activeTab === 'new' ? 'active' : ''}`}
+                onClick={() => setActiveTab('new')}
+              >
+                <Sparkles size={18} />
+                New Arrivals
+              </button>
+            </div>
           </div>
-          <div className="product-tabs">
-            <button
-              className={`tab-btn ${activeTab === 'featured' ? 'active' : ''}`}
-              onClick={() => setActiveTab('featured')}
-            >
-              <Star size={18} />
-              Featured
-            </button>
-            <button
-              className={`tab-btn ${activeTab === 'bestsellers' ? 'active' : ''}`}
-              onClick={() => setActiveTab('bestsellers')}
-            >
-              <Award size={18} />
-              Best Sellers
-            </button>
-            <button
-              className={`tab-btn ${activeTab === 'new' ? 'active' : ''}`}
-              onClick={() => setActiveTab('new')}
-            >
-              <Sparkles size={18} />
-              New Arrivals
-            </button>
-        </div>
 
           {/* Products Grid */}
           <div className="products-grid">

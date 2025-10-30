@@ -81,10 +81,18 @@ interface ProductDetails {
 
 interface Review {
   id: number;
-  user: string;
+  product: number;
+  customer_name: string;
+  customer_email: string;
   rating: number;
-  comment: string;
+  rating_display?: string;
+  title: string;
+  review_text: string;
+  is_verified_purchase: boolean;
+  is_featured?: boolean;
+  helpful_votes: number;
   created_at: string;
+  updated_at: string;
 }
 
 interface Recommendation {
@@ -117,6 +125,15 @@ const ProductDetails: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Review form state
+  const [reviewName, setReviewName] = useState('');
+  const [reviewEmail, setReviewEmail] = useState('');
+  const [reviewRating, setReviewRating] = useState<number>(0);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewText, setReviewText] = useState('');
+  const [reviewVerified, setReviewVerified] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewErrors, setReviewErrors] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -195,6 +212,68 @@ const ProductDetails: React.FC = () => {
       }
     }
     return stars;
+  };
+
+  // Map admin-provided color strings to visual colors. Supports common names and hex.
+  const mapColorToCss = (value: string): string => {
+    if (!value) return '#e5e7eb';
+    const normalized = value.trim().toLowerCase();
+    const dictionary: Record<string, string> = {
+      'black': '#000000',
+      'space black': '#0b0b0c',
+      'midnight': '#101418',
+      'starlight': '#f8efd7',
+      'white': '#ffffff',
+      'silver': '#c0c0c0',
+      'graphite': '#484848',
+      'grey': '#808080',
+      'gray': '#808080',
+      'blue': '#1f6feb',
+      'sierra blue': '#a5c8ff',
+      'deep purple': '#5b2e8f',
+      'purple': '#7c3aed',
+      'red': '#ef4444',
+      'product red': '#cc0000',
+      'green': '#10b981',
+      'forest green': '#065f46',
+      'gold': '#d4af37',
+      'rose gold': '#b76e79',
+      'pink': '#ec4899',
+      'yellow': '#f59e0b',
+      'orange': '#f97316',
+      'teal': '#14b8a6',
+      'cyan': '#06b6d4',
+      'brown': '#8b5e3c',
+    };
+
+    if (dictionary[normalized]) return dictionary[normalized];
+
+    // Accept hex colors provided by admin
+    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(normalized)) return normalized;
+
+    // Fallback: attempt to use as CSS color name; if invalid, default grey
+    const d = document.createElement('div');
+    d.style.color = normalized;
+    if (d.style.color) return normalized;
+    return '#e5e7eb';
+  };
+
+  const renderInteractiveStars = (current: number, onSelect: (value: number) => void) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <button
+          type="button"
+          key={i}
+          className={`star-btn ${i <= current ? 'filled' : ''}`}
+          onClick={() => onSelect(i)}
+          aria-label={`${i} star${i > 1 ? 's' : ''}`}
+        >
+          <Star size={20} className={`star ${i <= current ? 'filled' : ''}`} />
+        </button>
+      );
+    }
+    return <div className="interactive-stars">{stars}</div>;
   };
 
   const formatNaira = (amount: number) => {
@@ -288,6 +367,61 @@ const ProductDetails: React.FC = () => {
     setCurrentImageIndex((prevIndex) => 
       prevIndex === 0 ? product.images.length - 1 : prevIndex - 1
     );
+  };
+
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!slug) return;
+    setSubmittingReview(true);
+    setReviewErrors({});
+
+    try {
+      const payload = {
+        product_slug: slug,
+        customer_name: reviewName.trim(),
+        customer_email: reviewEmail.trim(),
+        rating: reviewRating,
+        title: reviewTitle.trim(),
+        review_text: reviewText.trim(),
+        is_verified_purchase: reviewVerified,
+      } as any;
+
+      await publicApiRequest<any>(`/api/products/reviews/submit/`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      // Refresh reviews and product stats after successful submission
+      try {
+        const [updatedProduct, updatedReviews] = await Promise.all([
+          publicApiRequest<ProductDetails>(`/api/products/${slug}/`),
+          publicApiRequest<Review[]>(`/api/products/${slug}/reviews/`),
+        ]);
+        setProduct(updatedProduct);
+        setReviews(updatedReviews);
+      } catch (refreshErr) {
+        console.warn('Review submitted but failed to refresh product/reviews:', refreshErr);
+      }
+
+      // Reset the form
+      setReviewName('');
+      setReviewEmail('');
+      setReviewRating(0);
+      setReviewTitle('');
+      setReviewText('');
+      setReviewVerified(false);
+      // Switch to Reviews tab if not already
+      setActiveTab('review');
+    } catch (err: any) {
+      const respData = err?.response?.data;
+      if (respData?.errors && typeof respData.errors === 'object') {
+        setReviewErrors(respData.errors as Record<string, string[]>);
+      } else {
+        setReviewErrors({ general: ['Failed to submit review. Please try again.'] });
+      }
+    } finally {
+      setSubmittingReview(false);
+    }
   };
 
   const goToImage = (index: number) => {
@@ -455,8 +589,9 @@ const ProductDetails: React.FC = () => {
                         className={`color-option ${selectedColor === color ? 'selected' : ''}`}
                         onClick={() => setSelectedColor(color)}
                         title={color}
+                        style={{ background: mapColorToCss(color) }}
                       >
-                        {color}
+                        {/* swatch only */}
                       </button>
                     ))}
                   </div>
@@ -558,7 +693,7 @@ const ProductDetails: React.FC = () => {
       {/* Product Details Tabs */}
       <div className="product-tabs-section">
         <div className="product-tabs-container">
-          <div className="product-tabs">
+          <div className="product-tabs product-tabs-details">
             <button 
               className={`tab-btn ${activeTab === 'description' ? 'active' : ''}`}
               onClick={() => setActiveTab('description')}
@@ -576,6 +711,13 @@ const ProductDetails: React.FC = () => {
               onClick={() => setActiveTab('review')}
             >
               Review
+            </button>
+            <div className="tabs-spacer" />
+            <button
+              className="write-review-cta"
+              onClick={() => setActiveTab('review')}
+            >
+              Write a review
             </button>
           </div>
 
@@ -656,10 +798,10 @@ const ProductDetails: React.FC = () => {
                         <div className="review-header">
                           <div className="reviewer-info">
                             <div className="reviewer-avatar">
-                              {review.user.charAt(0).toUpperCase()}
+                              {review.customer_name.charAt(0).toUpperCase()}
                             </div>
                             <div className="reviewer-details">
-                              <span className="reviewer-name">{review.user}</span>
+                              <span className="reviewer-name">{review.customer_name}</span>
                               <div className="review-rating">
                                 {renderStars(review.rating)}
                               </div>
@@ -669,14 +811,117 @@ const ProductDetails: React.FC = () => {
                             {new Date(review.created_at).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="review-text">{review.comment}</p>
+                        <p className="review-title"><strong>{review.title}</strong></p>
+                        <p className="review-text">{review.review_text}</p>
                       </div>
                     ))
                   ) : (
                     <div className="no-reviews">
-                      <p>No reviews yet. Be the first to review this product!</p>
+                      <p>No reviews yet. Be the first to share your experience.</p>
                     </div>
                   )}
+                </div>
+
+                {/* Review Submission Form */}
+                <div className="review-form-container">
+                  <h3>Write a review</h3>
+                  {reviewErrors.general && (
+                    <div className="form-error">{reviewErrors.general[0]}</div>
+                  )}
+                  <form className="review-form" onSubmit={submitReview}>
+                    <div className="form-row">
+                      <div className="form-field">
+                        <label htmlFor="review-name">Your Name</label>
+                        <input
+                          id="review-name"
+                          type="text"
+                          value={reviewName}
+                          onChange={(e) => setReviewName(e.target.value)}
+                          placeholder="John Doe"
+                          required
+                        />
+                        {reviewErrors.customer_name && (
+                          <div className="field-error">{reviewErrors.customer_name[0]}</div>
+                        )}
+                      </div>
+                      <div className="form-field">
+                        <label htmlFor="review-email">Email</label>
+                        <input
+                          id="review-email"
+                          type="email"
+                          value={reviewEmail}
+                          onChange={(e) => setReviewEmail(e.target.value)}
+                          placeholder="john@example.com"
+                          required
+                        />
+                        {reviewErrors.customer_email && (
+                          <div className="field-error">{reviewErrors.customer_email[0]}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-field">
+                        <label>Rating</label>
+                        {renderInteractiveStars(reviewRating, setReviewRating)}
+                        {reviewErrors.rating && (
+                          <div className="field-error">{reviewErrors.rating[0]}</div>
+                        )}
+                      </div>
+                      <div className="form-field">
+                        <label htmlFor="review-title">Title</label>
+                        <input
+                          id="review-title"
+                          type="text"
+                          value={reviewTitle}
+                          onChange={(e) => setReviewTitle(e.target.value)}
+                          placeholder="Great product!"
+                          required
+                        />
+                        {reviewErrors.title && (
+                          <div className="field-error">{reviewErrors.title[0]}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <div className="form-field full">
+                        <label htmlFor="review-text">Your Review</label>
+                        <textarea
+                          id="review-text"
+                          rows={4}
+                          value={reviewText}
+                          onChange={(e) => setReviewText(e.target.value)}
+                          placeholder="Share your experience with this product"
+                          required
+                        />
+                        {reviewErrors.review_text && (
+                          <div className="field-error">{reviewErrors.review_text[0]}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="form-row">
+                      <label className="checkbox">
+                        <input
+                          type="checkbox"
+                          checked={reviewVerified}
+                          onChange={(e) => setReviewVerified(e.target.checked)}
+                        />
+                        <span>I purchased this item</span>
+                      </label>
+                    </div>
+
+                    <div className="form-actions">
+                      <button
+                        type="submit"
+                        className="submit-review-btn"
+                        disabled={submittingReview}
+                      >
+                        {submittingReview ? 'Submitting...' : 'Submit Review'}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}

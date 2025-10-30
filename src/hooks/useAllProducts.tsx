@@ -11,14 +11,14 @@ interface AllProductsResponse {
 
 interface UseAllProductsOptions {
   page?: number;
-  limit?: number;
   search?: string;
-  category?: string;
-  brand?: string;
+  categories?: string;
   min_price?: number;
   max_price?: number;
-  is_featured?: boolean;
-  ordering?: string;
+  in_stock?: boolean;
+  min_rating?: number;
+  sort_by?: string;
+  product_filter?: 'all' | 'toaster';
 }
 
 export const useAllProducts = (options: UseAllProductsOptions = {}) => {
@@ -39,16 +39,16 @@ export const useAllProducts = (options: UseAllProductsOptions = {}) => {
         const params = new URLSearchParams();
 
         if (options.page) params.append('page', options.page.toString());
-        if (options.limit) params.append('limit', options.limit.toString());
         if (options.search) params.append('search', options.search);
-        if (options.category) params.append('category', options.category);
-        if (options.brand) params.append('brand', options.brand);
+        if (options.categories) params.append('categories', options.categories);
         if (options.min_price !== undefined) params.append('min_price', options.min_price.toString());
         if (options.max_price !== undefined) params.append('max_price', options.max_price.toString());
-        if (options.is_featured !== undefined) params.append('is_featured', options.is_featured.toString());
-        if (options.ordering) params.append('ordering', options.ordering);
+        if (options.in_stock !== undefined) params.append('in_stock', options.in_stock.toString());
+        if (options.min_rating !== undefined) params.append('min_rating', options.min_rating.toString());
+        if (options.sort_by) params.append('sort_by', options.sort_by);
+        if (options.product_filter) params.append('product_filter', options.product_filter);
 
-        const endpoint = `/api/products/?${params.toString()}`;
+        const endpoint = `/api/products/filter/?${params.toString()}`;
         const data: AllProductsResponse = await conditionalApiRequest(endpoint);
 
         setProducts(data.results || []);
@@ -71,14 +71,14 @@ export const useAllProducts = (options: UseAllProductsOptions = {}) => {
     fetchProducts();
   }, [
     options.page,
-    options.limit,
     options.search,
-    options.category,
-    options.brand,
+    options.categories,
     options.min_price,
     options.max_price,
-    options.is_featured,
-    options.ordering
+    options.in_stock,
+    options.min_rating,
+    options.sort_by,
+    options.product_filter
   ]);
 
   return {
