@@ -3,14 +3,16 @@ import { CheckCircle, Smartphone, MessageCircle, Search, Sparkles } from 'lucide
 import { useNavigate, useLocation } from 'react-router-dom';
 import './SuccessPage.css';
 
-const icons = {
-  swap: <Smartphone size={72} color="#00C896" />, // or custom icon
+type ContextType = 'swap' | 'tracking' | 'contact' | 'default';
+
+const icons: Record<ContextType, JSX.Element> = {
+  swap: <Smartphone size={72} color="#00C896" />,
   tracking: <Search size={72} color="#2766e6" />,
   contact: <MessageCircle size={72} color="#2766e6" />,
-  default: <CheckCircle size={72} color="#00C896" />, // fallback
+  default: <CheckCircle size={72} color="#00C896" />,
 };
 
-function getIcon(contextType) {
+function getIcon(contextType: ContextType): JSX.Element {
   return icons[contextType] || icons.default;
 }
 
@@ -18,7 +20,17 @@ const SuccessPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // Accept props from route state or fallback
-  const { title, message, userName, userContact, contextType = 'default', ctaText = 'Back to Home', secondaryText, onSecondaryAction, nextSteps } = location.state || {};
+  const { title, message, userName, userContact, contextType = 'default', ctaText = 'Back to Home', secondaryText, onSecondaryAction, nextSteps } = (location.state || {}) as {
+    title?: string;
+    message?: string;
+    userName?: string;
+    userContact?: string;
+    contextType?: ContextType;
+    ctaText?: string;
+    secondaryText?: string;
+    onSecondaryAction?: () => void;
+    nextSteps?: string[];
+  };
 
   const fullTitle = title || 'Success!';
   const desc = message ||
@@ -43,7 +55,7 @@ const SuccessPage = () => {
     <div className="successpage-hero">
       <div className="successpage-content animate-fadeUp">
         <div className="successpage-icon-wrapper">
-          {getIcon(contextType)}
+          {getIcon(contextType as ContextType)}
           <span className="icon-sparkle">
             <Sparkles size={40} color="#fbbf24" />
           </span>
