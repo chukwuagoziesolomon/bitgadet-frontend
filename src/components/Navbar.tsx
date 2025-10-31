@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, ChevronDown, Menu, X, Phone, Heart } from 'lucide-react';
+import { ShoppingCart, User, ChevronDown, Menu, X, Phone, Heart, BarChart3, FileText, HelpCircle, LogOut } from 'lucide-react';
 import { conditionalApiRequest } from '../config/api';
 import './Navbar.css';
 
@@ -25,9 +25,16 @@ const Navbar: React.FC = () => {
   // State management
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [isServicesOpen, setIsServicesOpen] = useState(false);
-  const [isBrandsOpen, setIsBrandsOpen] = useState(false);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isHamburgerDropdownOpen, setIsHamburgerDropdownOpen] = useState(false);
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+
+  // Check if user is authenticated
+  const storedUser = localStorage.getItem('user');
+  const isAuthenticated = !!storedUser;
+
+  // Define authenticated pages
+  const authenticatedPages = ['/dashboard', '/profile-settings', '/order-history', '/wishlist', '/contact-support'];
+  const isOnAuthenticatedPage = authenticatedPages.includes(location.pathname);
 
   // Search functionality
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,7 +45,7 @@ const Navbar: React.FC = () => {
   // Refs
   const categoriesRef = useRef<HTMLDivElement>(null);
   const servicesRef = useRef<HTMLDivElement>(null);
-  const brandsRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -113,8 +120,8 @@ const Navbar: React.FC = () => {
       if (servicesRef.current && !servicesRef.current.contains(event.target as Node)) {
         setIsServicesOpen(false);
       }
-      if (brandsRef.current && !brandsRef.current.contains(event.target as Node)) {
-        setIsBrandsOpen(false);
+      if (hamburgerRef.current && !hamburgerRef.current.contains(event.target as Node)) {
+        setIsHamburgerDropdownOpen(false);
       }
       if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
         setIsMoreOpen(false);
@@ -338,7 +345,7 @@ const Navbar: React.FC = () => {
               <ShoppingCart size={22} />
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
             </Link>
-            <Link to="/profile-settings" className="nav-icon">
+            <Link to="/login" className="nav-icon">
               <User size={22} />
             </Link>
           </div>
@@ -349,7 +356,7 @@ const Navbar: React.FC = () => {
               <ShoppingCart size={22} />
               {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
             </Link>
-            <Link to="/profile-settings" className="nav-icon">
+            <Link to="/login" className="nav-icon">
               <User size={22} />
             </Link>
           </div>
@@ -359,33 +366,91 @@ const Navbar: React.FC = () => {
       {/* Bottom Navigation Bar */}
       <div className="navbar-bottom">
         <div className="navbar-container">
-          {/* Left Side: Categories Dropdown (Desktop) */}
-          <div className="navbar-left navbar-left-desktop">
-            <div className="categories-dropdown" ref={categoriesRef}>
+          {/* Left Side: Hamburger Menu (Always visible) */}
+          <div className="navbar-left">
+            <div className="hamburger-dropdown" ref={hamburgerRef}>
               <button
-                className="categories-btn"
-                onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                className="hamburger-btn"
+                onClick={() => setIsHamburgerDropdownOpen(!isHamburgerDropdownOpen)}
               >
-                <span>All Categories</span>
-                <ChevronDown size={16} className={isCategoriesOpen ? 'rotated' : ''} />
+                <Menu size={20} />
+                {isMobile && <span>Categories</span>}
               </button>
-              {isCategoriesOpen && (
-                <div className="categories-menu">
-                  <Link to="/all-products" onClick={() => setIsCategoriesOpen(false)}>All Products</Link>
-                  <Link to="/smartphones" onClick={() => setIsCategoriesOpen(false)}>Smartphones</Link>
-                  <Link to="/laptops" onClick={() => setIsCategoriesOpen(false)}>Laptops</Link>
-                  <Link to="/gaming" onClick={() => setIsCategoriesOpen(false)}>Gaming</Link>
-                  <Link to="/accessories" onClick={() => setIsCategoriesOpen(false)}>Accessories</Link>
+              {isHamburgerDropdownOpen && (
+                <div className="hamburger-menu">
+                  {isAuthenticated && isOnAuthenticatedPage ? (
+                    <>
+                      <button
+                        className="hamburger-menu-item"
+                        onClick={() => {
+                          navigate('/dashboard');
+                          setIsHamburgerDropdownOpen(false);
+                        }}
+                      >
+                        <BarChart3 size={20} />
+                        <span>Dashboard</span>
+                      </button>
+                      <button
+                        className="hamburger-menu-item"
+                        onClick={() => {
+                          navigate('/profile-settings');
+                          setIsHamburgerDropdownOpen(false);
+                        }}
+                      >
+                        <User size={20} />
+                        <span>Profile Settings</span>
+                      </button>
+                      <button
+                        className="hamburger-menu-item"
+                        onClick={() => {
+                          navigate('/order-history');
+                          setIsHamburgerDropdownOpen(false);
+                        }}
+                      >
+                        <FileText size={20} />
+                        <span>Order History</span>
+                      </button>
+                      <button
+                        className="hamburger-menu-item"
+                        onClick={() => {
+                          navigate('/wishlist');
+                          setIsHamburgerDropdownOpen(false);
+                        }}
+                      >
+                        <Heart size={20} />
+                        <span>Wishlist</span>
+                      </button>
+                      <button
+                        className="hamburger-menu-item"
+                        onClick={() => {
+                          navigate('/contact-support');
+                          setIsHamburgerDropdownOpen(false);
+                        }}
+                      >
+                        <HelpCircle size={20} />
+                        <span>Support</span>
+                      </button>
+                      <button
+                        className="hamburger-menu-item logout-item"
+                        onClick={() => {
+                          localStorage.removeItem('user');
+                          navigate('/login');
+                          setIsHamburgerDropdownOpen(false);
+                        }}
+                      >
+                        <LogOut size={20} />
+                        <span>Sign Out</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link to="/all-products" onClick={() => setIsHamburgerDropdownOpen(false)}>All Products</Link>
+                      <Link to="/categories" onClick={() => setIsHamburgerDropdownOpen(false)}>Categories</Link>
+                    </>
+                  )}
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Left Side: Hamburger + Categories (Mobile) */}
-          <div className="navbar-left navbar-left-mobile">
-            <button className="hamburger-btn" onClick={() => setIsDrawerOpen(true)}>
-              <Menu size={20} />
-            </button>
           </div>
 
           {/* Right Side: Navigation Links (Desktop) */}
@@ -425,22 +490,9 @@ const Navbar: React.FC = () => {
             <Link to="/home" className={`nav-link ${isActive('/home') ? 'active' : ''}`}>
               Home
             </Link>
-            {/* Brands Dropdown */}
-            <div className="brands-dropdown" ref={brandsRef}>
-              <button
-                className="brands-btn"
-                onClick={() => setIsBrandsOpen(!isBrandsOpen)}
-              >
-                <span>Services</span>
-                <ChevronDown size={16} className={isBrandsOpen ? 'rotated' : ''} />
-              </button>
-              {isBrandsOpen && (
-                <div className="brands-menu">
-                  <Link to="/phone-tracking" onClick={() => setIsBrandsOpen(false)}>Phone Tracking</Link>
-                  <Link to="/phone-swapping" onClick={() => setIsBrandsOpen(false)}>Phone Swapping</Link>
-                </div>
-              )}
-            </div>
+            <Link to="/brands" className={`nav-link ${isActive('/brands') ? 'active' : ''}`}>
+              Brands
+            </Link>
             {/* More Dropdown */}
             <div className="more-dropdown" ref={moreRef}>
               <button
@@ -452,8 +504,10 @@ const Navbar: React.FC = () => {
               </button>
               {isMoreOpen && (
                 <div className="more-menu">
+                  <Link to="/contact" onClick={() => setIsMoreOpen(false)}>Contact Us</Link>
+                  <Link to="/phone-tracking" onClick={() => setIsMoreOpen(false)}>Phone Tracking</Link>
+                  <Link to="/phone-swapping" onClick={() => setIsMoreOpen(false)}>Phone Swapping</Link>
                   <Link to="/about" onClick={() => setIsMoreOpen(false)}>About Us</Link>
-                  <Link to="/contact" onClick={() => setIsMoreOpen(false)}>Contact</Link>
                 </div>
               )}
             </div>
@@ -461,25 +515,6 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Right-side Drawer (Hamburger Menu) */}
-      {isDrawerOpen && (
-        <div className="mobile-menu-drawer-backdrop" onClick={() => setIsDrawerOpen(false)}>
-          <div className="mobile-menu-drawer" onClick={e => e.stopPropagation()}>
-            <div className="drawer-header">
-              <span>Menu</span>
-              <button onClick={() => setIsDrawerOpen(false)}><X size={24} /></button>
-            </div>
-            <div className="drawer-content">
-              <Link to="/all-products" onClick={() => setIsDrawerOpen(false)}>All Products</Link>
-              <Link to="/smartphones" onClick={() => setIsDrawerOpen(false)}>Smartphones</Link>
-              <Link to="/laptops" onClick={() => setIsDrawerOpen(false)}>Laptops</Link>
-              <Link to="/gaming" onClick={() => setIsDrawerOpen(false)}>Gaming</Link>
-              <Link to="/accessories" onClick={() => setIsDrawerOpen(false)}>Accessories</Link>
-              <Link to="/all-categories" onClick={() => setIsDrawerOpen(false)}>All Categories</Link>
-            </div>
-          </div>
-        </div>
-      )}
     </nav>
   );
 };

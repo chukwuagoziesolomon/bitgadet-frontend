@@ -154,6 +154,8 @@ const AllProductsPage: React.FC = () => {
       isInCart: cart[product.id] > 0,
       isInWishlist: wishlist.includes(product.id),
       onToggleWishlist: handleToggleWishlist,
+      product_condition: product.product_condition,
+      condition_display: product.condition_display,
     };
   };
 

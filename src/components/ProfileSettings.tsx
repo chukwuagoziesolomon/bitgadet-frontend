@@ -59,6 +59,7 @@ const ProfileSettings: React.FC = () => {
     state: '',
     country: '',
     date_of_birth: '',
+    agree_to_terms: false,
     date_joined: ''
   });
   const [passwordData, setPasswordData] = useState({
@@ -101,22 +102,48 @@ const ProfileSettings: React.FC = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_PROFILE);
-        // Handle nested user and profile object in response
-        const userData = response.user || {};
-        const profileData = response.profile || {};
-        
+        const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_PROFILE_SETTINGS);
+
+        // Check if shipping fields are empty and need fallback from checkout
+        let phone_number = response.phone_number || '';
+        let address = response.address || '';
+        let city = response.city || '';
+        let state = response.state || '';
+        let country = response.country || '';
+
+        // If key shipping fields are empty, look up most recent checkout order
+        if (!phone_number || !address || !city || !state) {
+          try {
+            // Assuming there's an endpoint to get recent orders, or we can use existing order history
+            const ordersResponse = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_RECENT_ORDERS);
+            if (ordersResponse && ordersResponse.length > 0) {
+              const latestOrder = ordersResponse[0];
+              if (latestOrder.shipping_address) {
+                if (!phone_number) phone_number = latestOrder.phone_number || '';
+                if (!address) address = latestOrder.shipping_address.street_address || '';
+                if (!city) city = latestOrder.shipping_address.city || '';
+                if (!state) state = latestOrder.shipping_address.state || '';
+                if (!country) country = latestOrder.shipping_address.country || '';
+              }
+            }
+          } catch (checkoutError) {
+            console.warn('Could not fetch checkout data for fallback:', checkoutError);
+            // Continue without checkout fallback
+          }
+        }
+
         setProfileData({
-          first_name: userData.first_name || '',
-          last_name: userData.last_name || '',
-          email: userData.email || '',
-          phone_number: profileData.phone_number || '',
-          address: profileData.address || '',
-          city: profileData.city || '',
-          state: profileData.state || '',
-          country: profileData.country || '',
-          date_of_birth: profileData.date_of_birth || '',
-          date_joined: userData.date_joined || ''
+          first_name: response.first_name || '',
+          last_name: response.last_name || '',
+          email: response.email || '',
+          phone_number: phone_number,
+          address: address,
+          city: city,
+          state: state,
+          country: country,
+          date_of_birth: response.date_of_birth || null,
+          agree_to_terms: response.agree_to_terms || false,
+          date_joined: response.date_joined || ''
         });
       } catch (error: any) {
         console.error('Failed to fetch profile:', error);
@@ -196,10 +223,11 @@ const ProfileSettings: React.FC = () => {
           city: profileData.city,
           state: profileData.state,
           country: profileData.country,
-          date_of_birth: profileData.date_of_birth
+          date_of_birth: profileData.date_of_birth,
+          agree_to_terms: profileData.agree_to_terms
         }),
       });
-      
+
       // Update localStorage user data
       const storedUser = localStorage.getItem('user');
       if (storedUser) {
@@ -209,7 +237,7 @@ const ProfileSettings: React.FC = () => {
         user.email = profileData.email;
         localStorage.setItem('user', JSON.stringify(user));
       }
-      
+
       showSuccess('Profile updated', 'Your profile has been updated successfully.');
     } catch (error: any) {
       console.error('Failed to update profile:', error);
@@ -471,6 +499,24 @@ const ProfileSettings: React.FC = () => {
                       className="form-input"
                       disabled={saving}
                     />
+                  </div>
+                  <div className="form-group">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="agree_to_terms"
+                        name="agree_to_terms"
+                        checked={profileData.agree_to_terms}
+                        onChange={(e) => setProfileData(prev => ({
+                          ...prev,
+                          agree_to_terms: e.target.checked
+                        }))}
+                        className="checkbox-input"
+                        disabled={saving}
+                      />
+                      <span className="checkbox-custom"></span>
+                      I agree to the terms and conditions
+                    </label>
                   </div>
                   {profileData.date_joined && (
                     <div className="form-group">

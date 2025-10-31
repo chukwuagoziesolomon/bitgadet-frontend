@@ -399,8 +399,8 @@
   overflow-x: visible;
 }
 
-/* Left Side: Desktop */
-.navbar-left-desktop {
+/* Left Side: Hamburger Menu (Always visible) */
+.navbar-left {
   display: flex;
   align-items: center;
   gap: 24px;
@@ -408,13 +408,11 @@
   min-width: 0;
 }
 
-/* Left Side: Mobile */
-.navbar-left-mobile {
-  display: none;
+/* Hamburger Dropdown */
+.hamburger-dropdown {
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-  min-width: 0;
 }
 
 /* Hamburger Button */
@@ -422,7 +420,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   background: none;
   border: none;
   color: white;
@@ -442,6 +440,60 @@
 .hamburger-btn svg {
   width: 20px;
   height: 20px;
+}
+
+/* Hamburger Menu Dropdown */
+.hamburger-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 200px;
+  z-index: 1001;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.hamburger-menu a,
+.hamburger-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f0f0f0;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.hamburger-menu a:last-child,
+.hamburger-menu-item:last-child {
+  border-bottom: none;
+}
+
+.hamburger-menu a:hover,
+.hamburger-menu-item:hover {
+  background: #f9f9f9;
+  color: #00C896;
+  padding-left: 20px;
+}
+
+.hamburger-menu-item.logout-item {
+  color: #ff4444;
+}
+
+.hamburger-menu-item.logout-item:hover {
+  background: #ffeaea;
+  color: #cc0000;
 }
 
 /* Right Side: Desktop Navigation Links */
@@ -907,14 +959,7 @@
     padding: 0 16px;
   }
 
-  /* Hide desktop nav components, show mobile */
-  .navbar-left-desktop {
-    display: none;
-  }
-
-  .navbar-left-mobile {
-    display: flex;
-  }
+  /* Hamburger menu always visible */
 
   .nav-links-desktop {
     display: none;
@@ -935,6 +980,10 @@
     font-size: 14px;
     padding: 14px 0;
     white-space: nowrap;
+  }
+
+  .hamburger-btn span {
+    display: inline;
   }
 }
 
@@ -969,6 +1018,10 @@
     font-size: 13px;
     padding: 12px 0;
     white-space: nowrap;
+  }
+
+  .hamburger-btn span {
+    display: inline;
   }
 
   .search-container-mobile {

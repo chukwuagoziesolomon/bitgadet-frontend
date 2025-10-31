@@ -58,6 +58,7 @@ export const API_CONFIG = {
     AUTH_PASSWORD_REQUIREMENTS: '/api/auth/profile-settings/?info=password-requirements',
     // New User Profile Management Endpoints
     USER_PROFILE: '/api/user/profile/',
+    USER_PROFILE_SETTINGS: '/api/user/profile/settings/',
     USER_PROFILE_UPDATE: '/api/user/profile/update/',
     USER_CHANGE_PASSWORD: '/api/user/change-password/',
     USER_DELETE_ACCOUNT: '/api/user/delete-account/',

@@ -29,6 +29,8 @@ export interface Product {
   is_available: boolean;
   is_new: boolean;
   is_bestseller: boolean;
+  product_condition?: string;
+  condition_display?: string;
 }
 
 export const useFeaturedProducts = () => {

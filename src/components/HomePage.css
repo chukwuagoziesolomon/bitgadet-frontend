@@ -4,8 +4,6 @@
 .home-page {
   min-height: 100vh;
   background: #ffffff; /* Increased from 140px to account for navbar height */
-  padding-left: 5%;
-  padding-right: 5%;
   padding-bottom: 0;
   z-index: 1;
 }
@@ -15,9 +13,9 @@
   position: relative;
   width: 100%;
   height: 700px;
-  margin: 20px 0 48px; /* Reduced top margin from 80px to 20px */
+  margin: 0 0 32px; /* No top margin, smaller bottom margin */
   border-radius: 16px;
-  overflow: visible;
+  overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   z-index: 1;
 }
@@ -57,7 +55,7 @@
 .home-page .slide-image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   background: #f8f9fa;
 }
@@ -641,30 +639,31 @@
 @media (max-width: 768px) {
   .home-page .hero-section {
     height: 450px;
-    margin: 16px 0 32px;
+    margin: 16px 16px 32px 16px;
+    border-radius: 12px;
   }
-  
+
   .home-page .slide-overlay {
     padding: 20px;
   }
-  
+
   .home-page .slide-content h1 {
     font-size: 2.2rem;
   }
-  
+
   .home-page .slide-content p {
     font-size: 1rem;
   }
-  
+
   .home-page .cta-button {
     padding: 12px 24px;
     font-size: 1rem;
   }
-  
+
   .home-page .slide-indicators {
     bottom: 15px;
   }
-  
+
   .home-page .indicator {
     width: 10px;
     height: 10px;
@@ -674,23 +673,24 @@
 @media (max-width: 480px) {
   .home-page .hero-section {
     height: 350px;
-    margin: 12px 0 24px;
+    margin: 12px 12px 24px 12px;
+    border-radius: 8px;
   }
-  
+
   .home-page .slide-overlay {
     padding: 15px;
   }
-  
+
   .home-page .slide-content h1 {
     font-size: 1.8rem;
     margin-bottom: 10px;
   }
-  
+
   .home-page .slide-content p {
     font-size: 0.9rem;
     margin-bottom: 15px;
   }
-  
+
   .home-page .cta-button {
     padding: 10px 20px;
     font-size: 0.9rem;
