@@ -271,12 +271,12 @@ const HomePage: React.FC = () => {
                     key={slide.id || index}
                     className={`slide ${index === currentSlide ? 'active' : ''}`}
                   >
-                    <img src={slide?.image || '/logo.png'} alt={slide?.product_name || slide?.title || 'Banner'} className="slide-image" />
+                    <img src={slide?.image || '/logo.png'} alt={slide?.product_name || slide?.title || 'Banner'} className="slide-image" onClick={() => navigate(slide?.product_url || '/products')} style={{ cursor: 'pointer' }} />
                     <div className="slide-overlay">
                       <div className="slide-content">
                         <h1>{slide?.title || slide?.button_text || 'Shop Now'}</h1>
                         {slide?.subtitle && <p>{slide.subtitle}</p>}
-                        <button className="cta-button" onClick={() => handleHeroCTAClick(index)}>{slide?.button_text || slide?.title || 'Shop Now'}</button>
+                        <button className="cta-button" onClick={() => handleAddToCart(slide?.product_id)}>Add to Cart</button>
                       </div>
                     </div>
                   </div>
