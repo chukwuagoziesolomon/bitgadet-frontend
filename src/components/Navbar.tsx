@@ -451,6 +451,11 @@ const Navbar: React.FC = () => {
                 </div>
               )}
             </div>
+            {!isMobile && (
+              <Link to="/categories" className={`nav-link ${isActive('/categories') ? 'active' : ''}`}>
+                Categories
+              </Link>
+            )}
           </div>
 
           {/* Right Side: Navigation Links (Desktop) */}
