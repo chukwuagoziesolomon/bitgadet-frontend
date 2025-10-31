@@ -6,6 +6,7 @@ import HomePage from './components/HomePage';
 import CategoryPage from './components/CategoryPage';
 import CategoriesPage from './components/CategoriesPage';
 import BrandsPage from './components/BrandsPage';
+import BrandPage from './components/BrandPage';
 import ProductsPage from './components/ProductsPage';
 import AllProductsPage from './components/AllProductsPage';
 import ServicePage from './components/ServicePage';
@@ -78,6 +79,15 @@ const AppContent: React.FC = () => {
               <Navbar />
               <main>
                 <BrandsPage />
+              </main>
+              <Footer />
+            </>
+          } />
+          <Route path="/brands/:brandName" element={
+            <>
+              <Navbar />
+              <main>
+                <BrandPage />
               </main>
               <Footer />
             </>

@@ -30,7 +30,7 @@ const ContactPage: React.FC = () => {
 
     try {
       const payload = {
-        name: formData.fullName,
+        full_name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
         subject: formData.subject,

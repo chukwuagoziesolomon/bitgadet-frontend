@@ -478,7 +478,7 @@ const Navbar: React.FC = () => {
               {isServicesOpen && (
                 <div className="services-menu">
                   <Link to="/phone-tracking" onClick={() => setIsServicesOpen(false)}>Phone Tracking</Link>
-                  <Link to="/phone-swapping" onClick={() => setIsServicesOpen(false)}>Phone Swapping</Link>
+                  <Link to="/phone-swap" onClick={() => setIsServicesOpen(false)}>Phone Swapping</Link>
                 </div>
               )}
             </div>
@@ -511,7 +511,7 @@ const Navbar: React.FC = () => {
                 <div className="more-menu">
                   <Link to="/contact" onClick={() => setIsMoreOpen(false)}>Contact Us</Link>
                   <Link to="/phone-tracking" onClick={() => setIsMoreOpen(false)}>Phone Tracking</Link>
-                  <Link to="/phone-swapping" onClick={() => setIsMoreOpen(false)}>Phone Swapping</Link>
+                  <Link to="/phone-swap" onClick={() => setIsMoreOpen(false)}>Phone Swapping</Link>
                   <Link to="/about" onClick={() => setIsMoreOpen(false)}>About Us</Link>
                 </div>
               )}

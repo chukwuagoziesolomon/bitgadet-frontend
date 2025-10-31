@@ -13,9 +13,10 @@ const PhoneTrackingPage: React.FC = () => {
     deviceModel: '',
     lastKnownLocation: '',
     servicePlan: 'basic',
-    communicationPreference: 'phone',
+    communicationPreference: 'active_number',
     whatsappNumber: '',
     currentPhoneNumber: '',
+    customerEmail: '',
     agreeToTerms: false
   });
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -45,9 +46,11 @@ const PhoneTrackingPage: React.FC = () => {
         imei_number: formData.imeiNumber,
         device_model: formData.deviceModel,
         last_known_location: formData.lastKnownLocation,
+        additional_information: '',
         service_plan: formData.servicePlan,
         communication_preference: formData.communicationPreference,
-        customer_phone: formData.communicationPreference === 'phone' ? formData.currentPhoneNumber : formData.whatsappNumber,
+        customer_email: formData.communicationPreference === 'email' ? formData.customerEmail : '',
+        customer_active_number: formData.communicationPreference === 'active_number' ? formData.currentPhoneNumber : '',
         agree_to_terms: formData.agreeToTerms
       };
 
@@ -65,9 +68,10 @@ const PhoneTrackingPage: React.FC = () => {
           deviceModel: '',
           lastKnownLocation: '',
           servicePlan: 'basic',
-          communicationPreference: 'phone',
+          communicationPreference: 'active_number',
           whatsappNumber: '',
           currentPhoneNumber: '',
+          customerEmail: '',
           agreeToTerms: false
         });
       }
@@ -223,38 +227,38 @@ const PhoneTrackingPage: React.FC = () => {
                       onChange={handleInputChange}
                       required
                     >
-                      <option value="phone">Phone</option>
-                      <option value="whatsapp">WhatsApp</option>
+                      <option value="email">Email</option>
+                      <option value="active_number">Active Number</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Conditional fields based on communication preference */}
-                {formData.communicationPreference === 'whatsapp' && (
+                {formData.communicationPreference === 'email' && (
                   <div className="form-group">
-                    <label htmlFor="whatsappNumber">WhatsApp Number *</label>
+                    <label htmlFor="customerEmail">Customer Email *</label>
                     <input
-                      type="tel"
-                      id="whatsappNumber"
-                      name="whatsappNumber"
-                      value={formData.whatsappNumber}
+                      type="email"
+                      id="customerEmail"
+                      name="customerEmail"
+                      value={formData.customerEmail}
                       onChange={handleInputChange}
-                      placeholder="Enter your WhatsApp number"
+                      placeholder="Enter your email address"
                       required
                     />
                   </div>
                 )}
 
-                {formData.communicationPreference === 'phone' && (
+                {formData.communicationPreference === 'active_number' && (
                   <div className="form-group">
-                    <label htmlFor="currentPhoneNumber">Current Phone Number *</label>
+                    <label htmlFor="currentPhoneNumber">Active Phone Number *</label>
                     <input
                       type="tel"
                       id="currentPhoneNumber"
                       name="currentPhoneNumber"
                       value={formData.currentPhoneNumber}
                       onChange={handleInputChange}
-                      placeholder="Enter your current phone number for calls"
+                      placeholder="Enter your active phone number"
                       required
                     />
                   </div>
@@ -469,7 +473,7 @@ const PhoneTrackingPage: React.FC = () => {
               <p className="modal-message">
                 Thank you! Your phone tracking request has been submitted successfully.
                 Our team will begin the investigation process and contact you via {formData.communicationPreference}
-                at <strong>{formData.communicationPreference === 'phone' ? formData.currentPhoneNumber : formData.whatsappNumber}</strong> within 24 hours.
+                at <strong>{formData.communicationPreference === 'email' ? formData.customerEmail : formData.currentPhoneNumber}</strong> within 24 hours.
               </p>
 
               <div className="modal-actions">

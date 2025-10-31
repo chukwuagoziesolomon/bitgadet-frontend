@@ -156,11 +156,13 @@ const PhoneSwapPage: React.FC = () => {
         screen_condition: deviceCondition.excellent ? 'excellent' :
                          deviceCondition.good ? 'good' :
                          deviceCondition.fair ? 'fair' :
-                         deviceCondition.poor ? 'poor' : 'good',
-        battery_condition: 'good', // Default since we don't have specific battery condition
+                         deviceCondition.poor ? 'poor' : 'excellent',
+        battery_condition: deviceCondition.batteryIssues ? 'poor' : 'good',
         physical_condition: physicalCondition.goodOtherwise ? 'excellent' :
                            physicalCondition.hasScratches ? 'good' :
-                           physicalCondition.hasDents ? 'fair' : 'good',
+                           physicalCondition.hasDents ? 'fair' :
+                           physicalCondition.brokenScreen ? 'poor' :
+                           physicalCondition.liquidDamage ? 'poor' : 'excellent',
         // Accessories
         original_box: includedAccessories.originalBox,
         charger: includedAccessories.charger,
@@ -170,7 +172,7 @@ const PhoneSwapPage: React.FC = () => {
         cable: includedAccessories.cable,
         // Additional info
         additional_notes: additionalInfo.additionalNotes,
-        functional_issues: physicalCondition.functionalIssues ? 'Has functional issues' : '',
+        functional_issues: physicalCondition.functionalIssues || physicalCondition.wontTurnOn ? 'Has functional issues' : '',
         terms_accepted: additionalInfo.agreeToTerms
       };
 
@@ -835,7 +837,7 @@ const PhoneSwapPage: React.FC = () => {
                   </>
                 )}
                 <br /><br />
-                Our team will review your request and contact you within 24 hours to schedule a device inspection.
+                Our team will review your request and contact you via <strong>WhatsApp</strong> at <strong>{contactInfo.phoneNumber}</strong> within 24 hours to schedule a device inspection and proceed with the next steps.
               </p>
 
               <div className="modal-actions">

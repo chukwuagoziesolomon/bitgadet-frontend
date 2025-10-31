@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
 import { API_CONFIG, publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
@@ -19,6 +20,7 @@ interface Brand {
 
 const BrandsPage: React.FC = () => {
   const { showError } = useToast();
+  const navigate = useNavigate();
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,8 +50,7 @@ const BrandsPage: React.FC = () => {
   }, [showError]);
 
   const handleViewProducts = (brandName: string) => {
-    console.log(`Viewing products for ${brandName}`);
-    // Add navigation logic here
+    navigate(`/brands/${encodeURIComponent(brandName)}`);
   };
 
   // Loading state
@@ -102,7 +103,6 @@ const BrandsPage: React.FC = () => {
       <div className="brands-page">
         <div className="brands-container">
           <div className="brands-header">
-            <ShoppingBag size={48} className="brands-icon" />
             <h1>Our Brands</h1>
             <p>Discover products from top technology brands</p>
           </div>
