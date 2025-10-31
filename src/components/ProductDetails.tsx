@@ -747,7 +747,8 @@ const ProductDetails: React.FC = () => {
             )}
 
             {activeTab === 'specification' && (
-              <div className="specification-content">
+              <div className="specification-content classy-spec-section">
+                {/* KEY SPEC GRID */}
                 <div className="spec-grid">
                   {product.display_specs && (
                     <div className="spec-item">
@@ -767,12 +768,6 @@ const ProductDetails: React.FC = () => {
                       <span className="spec-value">{product.camera_specs}</span>
                     </div>
                   )}
-                  {product.storage_specs && (
-                    <div className="spec-item">
-                      <span className="spec-label">Storage:</span>
-                      <span className="spec-value">{product.storage_specs}</span>
-                    </div>
-                  )}
                   {product.battery_specs && (
                     <div className="spec-item">
                       <span className="spec-label">Battery:</span>
@@ -781,7 +776,7 @@ const ProductDetails: React.FC = () => {
                   )}
                   {product.operating_system && (
                     <div className="spec-item">
-                      <span className="spec-label">Operating System:</span>
+                      <span className="spec-label">OS:</span>
                       <span className="spec-value">{product.operating_system}</span>
                     </div>
                   )}
@@ -791,7 +786,80 @@ const ProductDetails: React.FC = () => {
                       <span className="spec-value">{product.weight}</span>
                     </div>
                   )}
+                  {/* COLORS */}
+                  {product.colors && product.colors.length > 0 && (
+                    <div className="spec-item">
+                      <span className="spec-label">Colors:</span>
+                      <span className="spec-value">
+                        {product.colors.map((color, i) => (
+                          <span key={i} className="color-dot" style={{ background: color, display: 'inline-block', borderRadius: '50%', width: '16px', height: '16px', marginRight: '6px', border: '1.5px solid #eee' }} title={color} />
+                        ))}
+                        <span style={{ marginLeft: 12, color: '#6b7280', fontSize: '0.95em' }}>
+                          {product.colors.join(', ')}
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                  {/* STORAGE */}
+                  {product.storage_options && product.storage_options.length > 0 && (
+                    <div className="spec-item">
+                      <span className="spec-label">Storage:</span>
+                      <span className="spec-value">{product.storage_options.join(', ')}</span>
+                    </div>
+                  )}
+                  {/* RAM */}
+                  {product.ram_options && product.ram_options.length > 0 && (
+                    <div className="spec-item">
+                      <span className="spec-label">RAM:</span>
+                      <span className="spec-value">{product.ram_options.join(', ')}</span>
+                    </div>
+                  )}
+                  {/* SKU, Model, Brand */}
+                  {product.sku && (
+                    <div className="spec-item">
+                      <span className="spec-label">SKU:</span>
+                      <span className="spec-value">{product.sku}</span>
+                    </div>
+                  )}
+                  {product.brand && (
+                    <div className="spec-item">
+                      <span className="spec-label">Brand:</span>
+                      <span className="spec-value">{product.brand}</span>
+                    </div>
+                  )}
+                  {product.model && (
+                    <div className="spec-item">
+                      <span className="spec-label">Model:</span>
+                      <span className="spec-value">{product.model}</span>
+                    </div>
+                  )}
                 </div>
+                {/* BEAUTIFUL SPECIFICATIONS RICH CONTENT */}
+                {product.specifications && (
+                  <div className="rich-spec-text" style={{margin: '2.5rem 0 1.5rem', background: '#f9fafb', borderRadius: 14, padding: '1.4rem 2rem', boxShadow: '0 2px 12px rgba(56,86,122,.07)'}}>
+                    {product.specifications.split(/\r?\n/).map((line, idx) => (
+                      line.trim() !== '' ? (
+                        <div key={idx} style={{marginBottom: '1.1em', lineHeight: '1.7', fontSize: '1.04rem', color: '#374151'}}>
+                          {line}
+                        </div>
+                      ) : null
+                    ))}
+                  </div>
+                )}
+                {/* FEATURES ULTRA-LIST */}
+                {product.features && product.features.length > 0 && (
+                  <div className="features" style={{marginTop: 30}}>
+                    <h3 style={{fontWeight:'700', color:'#1a202c', marginBottom: 14}}>Top Features</h3>
+                    <ul style={{padding:0, margin:0, listStyle:'none'}}>
+                      {product.features.map((feature, fidx) => (
+                        <li key={fidx} style={{display: 'flex', alignItems:'center', gap: '0.85rem', background: '#f7fafa', borderRadius: 7, padding: '0.78em 1.35em', color:'#374151', fontSize:'1rem', marginBottom: 10, boxShadow: '0 1px 4px rgba(0,0,0,.02)'}}>
+                          <CheckCircle size={19} color='#10b981' />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             )}
 
