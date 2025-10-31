@@ -5,14 +5,14 @@ import './SuccessPage.css';
 
 type ContextType = 'swap' | 'tracking' | 'contact' | 'default';
 
-const icons: Record<ContextType, JSX.Element> = {
+const icons: Record<ContextType, React.ReactElement> = {
   swap: <Smartphone size={72} color="#00C896" />,
   tracking: <Search size={72} color="#2766e6" />,
   contact: <MessageCircle size={72} color="#2766e6" />,
   default: <CheckCircle size={72} color="#00C896" />,
 };
 
-function getIcon(contextType: ContextType): JSX.Element {
+function getIcon(contextType: ContextType): React.ReactElement {
   return icons[contextType] || icons.default;
 }
 
