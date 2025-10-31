@@ -366,92 +366,94 @@ const Navbar: React.FC = () => {
       {/* Bottom Navigation Bar */}
       <div className="navbar-bottom">
         <div className="navbar-container">
-          {/* Left Side: Hamburger Menu (Always visible) */}
+          {/* Left Side: Hamburger Menu (Conditional on desktop) */}
           <div className="navbar-left">
-            <div className="hamburger-dropdown" ref={hamburgerRef}>
-              <button
-                className="hamburger-btn"
-                onClick={() => setIsHamburgerDropdownOpen(!isHamburgerDropdownOpen)}
-              >
-                <Menu size={20} />
-                {isMobile && <span>Categories</span>}
-              </button>
-              {isHamburgerDropdownOpen && (
-                <div className="hamburger-menu">
-                  {isAuthenticated && isOnAuthenticatedPage ? (
-                    <>
-                      <button
-                        className="hamburger-menu-item"
-                        onClick={() => {
-                          navigate('/dashboard');
-                          setIsHamburgerDropdownOpen(false);
-                        }}
-                      >
-                        <BarChart3 size={20} />
-                        <span>Dashboard</span>
-                      </button>
-                      <button
-                        className="hamburger-menu-item"
-                        onClick={() => {
-                          navigate('/profile-settings');
-                          setIsHamburgerDropdownOpen(false);
-                        }}
-                      >
-                        <User size={20} />
-                        <span>Profile Settings</span>
-                      </button>
-                      <button
-                        className="hamburger-menu-item"
-                        onClick={() => {
-                          navigate('/order-history');
-                          setIsHamburgerDropdownOpen(false);
-                        }}
-                      >
-                        <FileText size={20} />
-                        <span>Order History</span>
-                      </button>
-                      <button
-                        className="hamburger-menu-item"
-                        onClick={() => {
-                          navigate('/wishlist');
-                          setIsHamburgerDropdownOpen(false);
-                        }}
-                      >
-                        <Heart size={20} />
-                        <span>Wishlist</span>
-                      </button>
-                      <button
-                        className="hamburger-menu-item"
-                        onClick={() => {
-                          navigate('/contact-support');
-                          setIsHamburgerDropdownOpen(false);
-                        }}
-                      >
-                        <HelpCircle size={20} />
-                        <span>Support</span>
-                      </button>
-                      <button
-                        className="hamburger-menu-item logout-item"
-                        onClick={() => {
-                          localStorage.removeItem('user');
-                          navigate('/login');
-                          setIsHamburgerDropdownOpen(false);
-                        }}
-                      >
-                        <LogOut size={20} />
-                        <span>Sign Out</span>
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <Link to="/all-products" onClick={() => setIsHamburgerDropdownOpen(false)}>All Products</Link>
-                      <Link to="/categories" onClick={() => setIsHamburgerDropdownOpen(false)}>Categories</Link>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-            {!isMobile && (
+            {(!isMobile || !isAuthenticated || !isOnAuthenticatedPage) && (
+              <div className="hamburger-dropdown" ref={hamburgerRef}>
+                <button
+                  className="hamburger-btn"
+                  onClick={() => setIsHamburgerDropdownOpen(!isHamburgerDropdownOpen)}
+                >
+                  <Menu size={20} />
+                  {isMobile && <span>Categories</span>}
+                </button>
+                {isHamburgerDropdownOpen && (
+                  <div className="hamburger-menu">
+                    {isAuthenticated && isOnAuthenticatedPage ? (
+                      <>
+                        <button
+                          className="hamburger-menu-item"
+                          onClick={() => {
+                            navigate('/dashboard');
+                            setIsHamburgerDropdownOpen(false);
+                          }}
+                        >
+                          <BarChart3 size={20} />
+                          <span>Dashboard</span>
+                        </button>
+                        <button
+                          className="hamburger-menu-item"
+                          onClick={() => {
+                            navigate('/profile-settings');
+                            setIsHamburgerDropdownOpen(false);
+                          }}
+                        >
+                          <User size={20} />
+                          <span>Profile Settings</span>
+                        </button>
+                        <button
+                          className="hamburger-menu-item"
+                          onClick={() => {
+                            navigate('/order-history');
+                            setIsHamburgerDropdownOpen(false);
+                          }}
+                        >
+                          <FileText size={20} />
+                          <span>Order History</span>
+                        </button>
+                        <button
+                          className="hamburger-menu-item"
+                          onClick={() => {
+                            navigate('/wishlist');
+                            setIsHamburgerDropdownOpen(false);
+                          }}
+                        >
+                          <Heart size={20} />
+                          <span>Wishlist</span>
+                        </button>
+                        <button
+                          className="hamburger-menu-item"
+                          onClick={() => {
+                            navigate('/contact-support');
+                            setIsHamburgerDropdownOpen(false);
+                          }}
+                        >
+                          <HelpCircle size={20} />
+                          <span>Support</span>
+                        </button>
+                        <button
+                          className="hamburger-menu-item logout-item"
+                          onClick={() => {
+                            localStorage.removeItem('user');
+                            navigate('/login');
+                            setIsHamburgerDropdownOpen(false);
+                          }}
+                        >
+                          <LogOut size={20} />
+                          <span>Sign Out</span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/all-products" onClick={() => setIsHamburgerDropdownOpen(false)}>All Products</Link>
+                        <Link to="/categories" onClick={() => setIsHamburgerDropdownOpen(false)}>Categories</Link>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            {!isMobile && (!isAuthenticated || !isOnAuthenticatedPage) && (
               <Link to="/categories" className={`nav-link ${isActive('/categories') ? 'active' : ''}`}>
                 Categories
               </Link>

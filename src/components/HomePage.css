@@ -384,11 +384,11 @@
 
 @media (max-width: 768px) {
   .home-page {
-    padding-top: 140px; /* Adjusted for mobile navbar height */
+    padding-top: 100px; /* Reduced for better mobile spacing */
   }
 
   .home-page .hero-section {
-    margin-top: 16px; /* Reduced top margin for mobile */
+    margin-top: 8px; /* Further reduced top margin for mobile */
   }
 
   .home-page .categories-grid {
