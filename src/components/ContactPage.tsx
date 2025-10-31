@@ -3,9 +3,11 @@ import { Phone, Mail, MessageCircle, Clock, CheckCircle, X } from 'lucide-react'
 import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './ContactPage.css';
+import { useNavigate } from 'react-router-dom';
 
 const ContactPage: React.FC = () => {
   const { showError, showSuccess } = useToast();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -13,7 +15,6 @@ const ContactPage: React.FC = () => {
     subject: '',
     message: ''
   });
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -43,8 +44,20 @@ const ContactPage: React.FC = () => {
       });
 
       if (response) {
-        setShowSuccessModal(true);
-        showSuccess('Success', 'Your message has been sent successfully!');
+        navigate('/success', {
+          state: {
+            title: 'Message Sent Successfully!',
+            message: `Thank you${formData.fullName ? `, ${formData.fullName}` : ''} for reaching out to us. Our team will review your message and get back to you at ${formData.email || formData.phone}.`,
+            userName: formData.fullName,
+            userContact: formData.email || formData.phone,
+            contextType: 'contact',
+            nextSteps: [
+              'Our support team will review your query.',
+              `You’ll be contacted via ${formData.email || formData.phone} within 24 hours.`,
+            ],
+            ctaText: 'Back to Home',
+          }
+        });
         setFormData({
           fullName: '',
           email: '',
@@ -241,48 +254,6 @@ const ContactPage: React.FC = () => {
           Chat on WhatsApp
         </button>
       </section>
-
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="success-modal-overlay" onClick={() => setShowSuccessModal(false)}>
-          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="modal-close-btn"
-              onClick={() => setShowSuccessModal(false)}
-            >
-              <X size={24} />
-            </button>
-
-            <div className="modal-content">
-              <div className="success-icon">
-                <CheckCircle size={64} />
-              </div>
-
-              <h2 className="modal-title">Message Sent Successfully!</h2>
-
-              <p className="modal-message">
-                Thank you for reaching out to us. Our team will review your message and get back to you
-                at <strong>{formData.email}</strong> within 24 hours.
-              </p>
-
-              <div className="modal-actions">
-                <button
-                  className="modal-primary-btn"
-                  onClick={() => setShowSuccessModal(false)}
-                >
-                  Continue Browsing
-                </button>
-                <button
-                  className="modal-secondary-btn"
-                  onClick={() => setShowSuccessModal(false)}
-                >
-                  Send Another Message
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

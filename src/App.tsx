@@ -32,6 +32,7 @@ import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import ToastDemo from './components/ToastDemo';
 import { ToastProvider, useToast } from './hooks/useToast';
+import SuccessPage from './components/SuccessPage';
 import './App.css';
 
 const AppContent: React.FC = () => {
@@ -243,6 +244,7 @@ const AppContent: React.FC = () => {
               <Footer />
             </>
           } />
+          <Route path="/success" element={<SuccessPage />} />
         </Routes>
         <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
       </div>

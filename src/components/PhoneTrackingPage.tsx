@@ -3,8 +3,10 @@ import { AlertTriangle, Check, X, CheckCircle } from 'lucide-react';
 import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './PhoneTrackingPage.css';
+import { useNavigate } from 'react-router-dom';
 
 const PhoneTrackingPage: React.FC = () => {
+  const navigate = useNavigate();
   const { showError } = useToast();
 
   const [formData, setFormData] = useState({
@@ -60,7 +62,20 @@ const PhoneTrackingPage: React.FC = () => {
       });
 
       if (response) {
-        setShowSuccessModal(true);
+        navigate('/success', {
+          state: {
+            title: 'Tracking Request Submitted!',
+            message: `Thank you! Your phone tracking request has been submitted.`,
+            userName: '',
+            userContact: formData.communicationPreference === 'email' ? formData.customerEmail : formData.currentPhoneNumber,
+            contextType: 'tracking',
+            nextSteps: [
+              'Our team will begin the investigation process.',
+              `You’ll be contacted at ${formData.communicationPreference === 'email' ? formData.customerEmail : formData.currentPhoneNumber}.`,
+            ],
+            ctaText: 'Back to Home',
+          }
+        });
         // Reset form
         setFormData({
           phoneNumber: '',
@@ -453,47 +468,7 @@ const PhoneTrackingPage: React.FC = () => {
       </section>
 
       {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="success-modal-overlay" onClick={() => setShowSuccessModal(false)}>
-          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="modal-close-btn"
-              onClick={() => setShowSuccessModal(false)}
-            >
-              <X size={24} />
-            </button>
-
-            <div className="modal-content">
-              <div className="success-icon">
-                <CheckCircle size={64} />
-              </div>
-
-              <h2 className="modal-title">Tracking Request Submitted!</h2>
-
-              <p className="modal-message">
-                Thank you! Your phone tracking request has been submitted successfully.
-                Our team will begin the investigation process and contact you via {formData.communicationPreference}
-                at <strong>{formData.communicationPreference === 'email' ? formData.customerEmail : formData.currentPhoneNumber}</strong> within 24 hours.
-              </p>
-
-              <div className="modal-actions">
-                <button
-                  className="modal-primary-btn"
-                  onClick={() => setShowSuccessModal(false)}
-                >
-                  Continue Browsing
-                </button>
-                <button
-                  className="modal-secondary-btn"
-                  onClick={() => setShowSuccessModal(false)}
-                >
-                  Submit Another Request
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Removed conditional rendering for showSuccessModal */}
     </div>
   );
 };

@@ -3,9 +3,11 @@ import { CheckCircle, X } from 'lucide-react';
 import { API_CONFIG, publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './PhoneSwapPage.css';
+import { useNavigate } from 'react-router-dom';
 
 const PhoneSwapPage: React.FC = () => {
   const { showError } = useToast();
+  const navigate = useNavigate();
 
   const [currentDeviceInfo, setCurrentDeviceInfo] = useState({
     brand: '',
@@ -185,7 +187,20 @@ const PhoneSwapPage: React.FC = () => {
 
       console.log('Phone swap request successful:', response);
       setSwapRequestData((response as any).swap_request);
-      setShowSuccessModal(true);
+      navigate('/success', {
+        state: {
+          title: 'Phone Swap Request Submitted!',
+          message: `Thank you, ${contactInfo.fullName || 'User'}! Your phone swap request has been submitted.`,
+          userName: contactInfo.fullName,
+          userContact: contactInfo.phoneNumber || contactInfo.emailAddress,
+          contextType: 'swap',
+          nextSteps: [
+            'Our team will reach out to you shortly to schedule inspection.',
+            `We will contact you via WhatsApp/phone at ${contactInfo.phoneNumber || contactInfo.emailAddress}.`,
+          ],
+          ctaText: 'Back to Home'
+        }
+      });
 
       // Reset form
       setCurrentDeviceInfo({ brand: '', model: '', storage: '', color: '', purchaseDate: '' });
@@ -806,58 +821,6 @@ const PhoneSwapPage: React.FC = () => {
           </form>
         </div>
       </section>
-
-      {/* Success Modal */}
-      {showSuccessModal && (
-        <div className="success-modal-overlay" onClick={() => setShowSuccessModal(false)}>
-          <div className="success-modal" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="modal-close-btn"
-              onClick={() => setShowSuccessModal(false)}
-            >
-              <X size={24} />
-            </button>
-
-            <div className="modal-content">
-              <div className="success-icon">
-                <CheckCircle size={64} />
-              </div>
-
-              <h2 className="modal-title">Phone Swap Request Submitted!</h2>
-
-              <p className="modal-message">
-                Thank you, <strong>{contactInfo.fullName}</strong>! Your phone swap request has been submitted successfully.
-                {swapRequestData && (
-                  <>
-                    <br /><br />
-                    <strong>Swap ID:</strong> {swapRequestData.swap_id}<br />
-                    <strong>Current Device:</strong> {swapRequestData.current_device_display}<br />
-                    <strong>Desired Device:</strong> {swapRequestData.desired_device_display}<br />
-                    <strong>Status:</strong> {swapRequestData.status_display}
-                  </>
-                )}
-                <br /><br />
-                Our team will review your request and contact you via <strong>WhatsApp</strong> at <strong>{contactInfo.phoneNumber}</strong> within 24 hours to schedule a device inspection and proceed with the next steps.
-              </p>
-
-              <div className="modal-actions">
-                <button
-                  className="modal-primary-btn"
-                  onClick={() => setShowSuccessModal(false)}
-                >
-                  Continue Browsing
-                </button>
-                <button
-                  className="modal-secondary-btn"
-                  onClick={() => setShowSuccessModal(false)}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
