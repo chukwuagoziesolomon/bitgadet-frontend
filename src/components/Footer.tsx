@@ -74,7 +74,7 @@ const Footer: React.FC = () => {
         <div className="footer-section footer-stay-connected">
           <h3 className="footer-heading">Stay connected</h3>
           <div className="stay-connected-info">
-            <p>Email: info@bitgadgetz.com</p>
+            <p>Email: support@bitgadgetz.store</p>
             <p>Phone: +2349138666111</p>
             <p>WhatsApp: +2349061728949</p>
           </div>
