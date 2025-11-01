@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
-import { conditionalApiRequest } from '../config/api';
+import { conditionalApiRequest, apiRequest } from '../config/api';
 import './ShoppingCart.css';
 
 interface CartItem {
@@ -65,7 +65,7 @@ const ShoppingCart: React.FC = () => {
   const updateQuantity = async (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     try {
-      await conditionalApiRequest<any>('/api/cart/update/', {
+      await apiRequest<any>('/api/cart/update/', {
         method: 'POST',
         body: JSON.stringify({ product_id: id, quantity: newQuantity }),
       });
@@ -77,7 +77,7 @@ const ShoppingCart: React.FC = () => {
 
   const removeItem = async (id: number) => {
     try {
-      await conditionalApiRequest<any>('/api/cart/remove/', {
+      await apiRequest<any>('/api/cart/remove/', {
         method: 'POST',
         body: JSON.stringify({ product_id: id }),
       });

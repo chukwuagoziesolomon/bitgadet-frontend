@@ -156,7 +156,7 @@ const CategoriesPage: React.FC = () => {
           <p>Explore our wide range of tech products and gadgets</p>
           <div className="hero-features">
             <span>{categories.length} Categories</span>
-            <span>{categories.reduce((total, cat) => total + cat.item_count, 0)}+ Products</span>
+            <span>{categories.reduce((total, cat) => total + cat.product_count, 0)}+ Products</span>
             <span>Fast Delivery</span>
           </div>
         </div>
