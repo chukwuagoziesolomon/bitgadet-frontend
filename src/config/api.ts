@@ -84,6 +84,11 @@ export const apiRequest = async <T>(
   console.log('🌐 Making authenticated API request to:', url);
 
   const token = localStorage.getItem('authToken');
+
+  // Validate token exists and has reasonable length
+  // Token should be the raw token value without 'Token ' prefix
+  const isTokenValid = token && token.length > 10;
+
   const isPostOrPut = options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH';
   const csrfToken = isPostOrPut ? getCsrfToken() : null;
 
@@ -91,7 +96,8 @@ export const apiRequest = async <T>(
     credentials: 'include', // Important for Django sessions - send cookies
     headers: {
       'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Token ${token}` }),
+      // Add 'Token ' prefix here when sending the header
+      ...(isTokenValid && { 'Authorization': `Token ${token}` }),
       ...(csrfToken && { 'X-CSRFToken': csrfToken }),
       ...options.headers,
     },
@@ -115,10 +121,18 @@ export const apiRequest = async <T>(
         status: response.status,
         data: responseData
       };
+
+      // Clear invalid token on 401
+      if (response.status === 401) {
+        console.warn('🔒 Received 401, clearing invalid auth token');
+        localStorage.removeItem('authToken');
+        // Optionally dispatch an event that your app can listen to
+        window.dispatchEvent(new CustomEvent('auth:token-invalid'));
+      }
+
       throw error;
     }
 
-    
     console.log('📦 Response data:', responseData);
     return responseData;
   } catch (error) {
@@ -170,7 +184,6 @@ export const publicApiRequest = async <T>(
       throw error;
     }
 
-    
     console.log('📦 Response data:', responseData);
     return responseData;
   } catch (error) {
