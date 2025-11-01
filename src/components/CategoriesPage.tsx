@@ -29,8 +29,8 @@ const CategoriesPage: React.FC = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const data = await publicApiRequest<Category[]>('/api/categories/');
-        const categoriesArray = Array.isArray(data) ? data : [];
+        const data = await publicApiRequest<any>('/api/categories/');
+        const categoriesArray = Array.isArray(data.results) ? data.results : [];
         setCategories(categoriesArray);
         setError(null);
       } catch (err: any) {
@@ -52,11 +52,11 @@ const CategoriesPage: React.FC = () => {
       try {
         setLoading(true);
         if (searchTerm.trim().length === 0) {
-          const data = await publicApiRequest<Category[]>('/api/categories/');
-          setCategories(Array.isArray(data) ? data : []);
+          const data = await publicApiRequest<any>('/api/categories/');
+          setCategories(Array.isArray(data.results) ? data.results : []);
         } else {
-          const data = await publicApiRequest<Category[]>(`/api/search/categories/?search=${encodeURIComponent(searchTerm)}`);
-          setCategories(Array.isArray(data) ? data : []);
+          const data = await publicApiRequest<any>(`/api/search/categories/?search=${encodeURIComponent(searchTerm)}`);
+          setCategories(Array.isArray(data.results) ? data.results : []);
         }
         setError(null);
       } catch (err) {
