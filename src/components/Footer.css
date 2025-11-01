@@ -65,7 +65,7 @@
   display: none;
 }
 
-/* Hide Stay Connected section on desktop */
+/* Hide Stay Connected section on desktop - show only on mobile */
 .footer-stay-connected {
   display: none;
 }
@@ -166,10 +166,11 @@
   box-shadow: 0 4px 12px rgba(29, 211, 176, 0.3);
 }
 
-/* Contact Info */
+/* Contact Info - show only on desktop */
 .footer-contact {
   padding-top: 1.2rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: block;
 }
 
 .contact-heading {
@@ -255,7 +256,7 @@
     grid-column: span 1;
   }
 
-  /* Show Stay Connected on mobile */
+  /* Show Stay Connected on mobile only */
   .footer-stay-connected {
     display: flex !important;
     flex-direction: column;
@@ -324,9 +325,9 @@
     font-size: 0.85rem;
   }
 
-  /* Hide Contact section on mobile */
+  /* Hide Contact section on mobile - show only on desktop */
   .footer-contact {
-    display: none;
+    display: none !important;
   }
 
   .footer-bottom {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { publicApiRequest } from '../config/api';
+import { publicApiRequest, conditionalApiRequest } from '../config/api';
+import ProductCard from './ProductCard';
 import './CategoryPage.css';
 
 const CategoryPage: React.FC = () => {
@@ -9,6 +10,8 @@ const CategoryPage: React.FC = () => {
   const [meta, setMeta] = useState<{ id: number; name: string; display_name: string; description: string; product_count: number } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [cart, setCart] = useState<Record<number, number>>({});
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {
@@ -36,8 +39,108 @@ const CategoryPage: React.FC = () => {
         setLoading(false);
       }
     };
+
+    // Fetch wishlist and cart on mount
+    const fetchWishlistAndCart = async () => {
+      try {
+        const [wishlistRes, cartRes] = await Promise.all([
+          conditionalApiRequest<any>('/api/wishlist/'),
+          conditionalApiRequest<any>('/api/cart/')
+        ]);
+        setWishlist(wishlistRes.wishlist || []);
+        setCart(cartRes.cart || {});
+      } catch (error) {
+        // Silent failure - don't show error toast to user
+        console.error('Failed to fetch wishlist/cart:', error);
+      }
+    };
+
     fetchCategoryProducts();
+    fetchWishlistAndCart();
   }, [categoryName]);
+
+  // Get filter props for ProductCard
+  const getProductCardProps = (product: any) => {
+    return {
+      key: product.id,
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      brand: product.brand,
+      image: product.main_image,
+      price: parseFloat(product.current_price),
+      originalPrice: parseFloat(product.original_price),
+      usdtPrice: product.current_price_usdt,
+      rating: 4.5,
+      reviews: 0,
+      badges: product.is_featured ? ['featured'] : product.is_best_seller ? ['best-seller'] : product.is_new_arrival ? ['new-arrival'] : [],
+      inStock: product.is_in_stock,
+      onAddToCart: handleAddToCart,
+      isInCart: cart[product.id] > 0,
+      isInWishlist: wishlist.includes(product.id),
+      onToggleWishlist: handleToggleWishlist,
+      product_condition: product.product_condition,
+      condition_display: product.condition_display,
+    };
+  };
+
+  const handleAddToCart = async (productId: number) => {
+    const token = localStorage.getItem('authToken');
+
+    // Optimistic update
+    setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
+
+    try {
+      const res = await publicApiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      setCart(res.cart || {});
+    } catch (error) {
+      console.error('❌ Add to cart failed:', error);
+      // Revert optimistic update
+      setCart(prev => {
+        const newCart = { ...prev };
+        if (newCart[productId] > 1) {
+          newCart[productId]--;
+        } else {
+          delete newCart[productId];
+        }
+        return newCart;
+      });
+      // Only log error if user is actually logged in (has token)
+      if (token) {
+        console.error('Failed to add to cart:', error);
+      }
+      // Silent failure - ProductCard already shows success toast
+    }
+  };
+
+  // Toggle wishlist on single click
+  const handleToggleWishlist = async (productId: number, willBeInWishlist?: boolean) => {
+    const token = localStorage.getItem('authToken');
+    const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
+
+    // Optimistic update
+    setWishlist(prev => willBeInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
+
+    try {
+      const res = await publicApiRequest<any>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      });
+      setWishlist(res.wishlist || []);
+    } catch (error) {
+      console.error('❌ Wishlist update failed:', error);
+      // Revert optimistic update
+      setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
+      // Only log error if user is actually logged in (has token)
+      if (token) {
+        console.error('Failed to toggle wishlist:', error);
+      }
+      // Silent failure - ProductCard already shows appropriate toast
+    }
+  };
 
   return (
     <div className="category-page">
@@ -53,14 +156,10 @@ const CategoryPage: React.FC = () => {
         <p>No products found in this category.</p>
       )}
       <div className="category-products-grid">
-        {products.map((p) => (
-          <div key={p.id} className="category-product-card">
-            <img src={p.main_image} alt={p.name} />
-            <div className="info">
-              <h3>{p.name}</h3>
-              <p className="price">₦{parseFloat(p.current_price).toLocaleString()}</p>
-            </div>
-          </div>
+        {products.map((product) => (
+          <ProductCard
+            {...getProductCardProps(product)}
+          />
         ))}
       </div>
     </div>

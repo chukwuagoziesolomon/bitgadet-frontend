@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { publicApiRequest } from '../config/api';
+import ProductCard from './ProductCard';
 import './BrandPage.css';
 
 interface Product {
@@ -48,6 +49,8 @@ const BrandPage: React.FC = () => {
   const [brandData, setBrandData] = useState<BrandData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [wishlist, setWishlist] = useState<number[]>([]);
+  const [cart, setCart] = useState<Record<number, number>>({});
 
   useEffect(() => {
     const fetchBrandProducts = async () => {
@@ -65,8 +68,70 @@ const BrandPage: React.FC = () => {
         setLoading(false);
       }
     };
+
+    const fetchWishlistAndCart = async () => {
+      try {
+        const wishlistRes = await publicApiRequest<any>('/api/wishlist/');
+        setWishlist(wishlistRes.wishlist || []);
+      } catch (error) {
+        console.error('Failed to fetch wishlist:', error);
+      }
+
+      try {
+        const cartRes = await publicApiRequest<any>('/api/cart/');
+        setCart(cartRes.cart || {});
+      } catch (error) {
+        console.error('Failed to fetch cart:', error);
+      }
+    };
+
     fetchBrandProducts();
+    fetchWishlistAndCart();
   }, [brandName]);
+
+  const handleAddToCart = async (productId: number) => {
+    // Optimistic update
+    setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
+
+    try {
+      const res = await publicApiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId, quantity: 1 }),
+      });
+      setCart(res.cart || {});
+    } catch (error) {
+      console.error('❌ Add to cart failed:', error);
+      // Revert optimistic update
+      setCart(prev => {
+        const newCart = { ...prev };
+        if (newCart[productId] > 1) {
+          newCart[productId]--;
+        } else {
+          delete newCart[productId];
+        }
+        return newCart;
+      });
+    }
+  };
+
+  const handleToggleWishlist = async (productId: number, willBeInWishlist?: boolean) => {
+    const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
+
+    // Optimistic update
+    setWishlist(prev => willBeInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
+
+    try {
+      const res = await publicApiRequest<any>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({ product_id: productId }),
+      });
+      setWishlist(res.wishlist || []);
+    } catch (error) {
+      console.error('❌ Wishlist update failed:', error);
+      // Revert optimistic update
+      setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
+    }
+  };
 
   if (loading) {
     return (
@@ -126,25 +191,32 @@ const BrandPage: React.FC = () => {
 
       <div className="brand-products-grid">
         {brandData.products.map((product) => (
-          <div key={product.id} className="brand-product-card">
-            <img src={product.main_image} alt={product.name} className="product-image" />
-            <div className="product-info">
-              <h3>{product.name}</h3>
-              <p className="short-description">{product.short_description}</p>
-              <div className="price-section">
-                <span className="current-price">₦{product.current_price}</span>
-                {product.original_price && (
-                  <span className="original-price">₦{product.original_price}</span>
-                )}
-              </div>
-              <div className="product-badges">
-                {product.is_new_arrival && <span className="badge new">New</span>}
-                {product.is_best_seller && <span className="badge bestseller">Bestseller</span>}
-                {product.is_on_sale && <span className="badge sale">Sale</span>}
-              </div>
-              <p className="stock-status">{product.stock_status}</p>
-            </div>
-          </div>
+          <ProductCard
+            key={product.id}
+            id={product.id}
+            slug={product.slug}
+            name={product.name}
+            brand={product.brand}
+            price={parseFloat(product.current_price)}
+            originalPrice={product.original_price ? parseFloat(product.original_price) : undefined}
+            usdtPrice={product.current_price} // Assuming same as current_price for now
+            rating={4.5} // Default rating
+            reviews={0} // Default reviews
+            image={product.main_image}
+            inStock={product.is_in_stock}
+            onAddToCart={handleAddToCart}
+            isInCart={cart[product.id] > 0}
+            isInWishlist={wishlist.includes(product.id)}
+            onToggleWishlist={handleToggleWishlist}
+            product_condition={product.product_condition}
+            condition_display={product.condition_display}
+            is_featured={product.is_featured}
+            is_on_sale={product.is_on_sale}
+            discount_percentage={product.discount_percentage}
+            is_new_arrival={product.is_new_arrival}
+            is_best_seller={product.is_best_seller}
+            stock_quantity={product.stock_quantity}
+          />
         ))}
       </div>
     </div>
