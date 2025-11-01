@@ -4,7 +4,7 @@ import { Bell, ShoppingBag, Trash2, Heart } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
-import { conditionalApiRequest, API_CONFIG } from '../config/api';
+import { conditionalApiRequest, publicApiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './Wishlist.css';
 
@@ -75,7 +75,7 @@ const Wishlist: React.FC = () => {
 
   const handleRemoveFromWishlist = async (productId: number) => {
     try {
-      await conditionalApiRequest<any>('/api/wishlist/remove/', {
+      await publicApiRequest<any>('/api/wishlist/remove/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId }),
       });
@@ -91,7 +91,7 @@ const Wishlist: React.FC = () => {
 
   const handleAddToCart = async (productId: number) => {
     try {
-      await conditionalApiRequest<any>('/api/cart/add/', {
+      await publicApiRequest<any>('/api/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });

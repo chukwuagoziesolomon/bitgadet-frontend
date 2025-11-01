@@ -164,7 +164,7 @@ const HomePage: React.FC = () => {
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
 
     try {
-      const res = await conditionalApiRequest<any>('/api/cart/add/', {
+      const res = await publicApiRequest<any>('/api/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
@@ -199,7 +199,7 @@ const HomePage: React.FC = () => {
     setWishlist(prev => willBeInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
 
     try {
-      const res = await conditionalApiRequest<any>(endpoint, {
+      const res = await publicApiRequest<any>(endpoint, {
         method: 'POST',
         body: JSON.stringify({ product_id: productId }),
       });

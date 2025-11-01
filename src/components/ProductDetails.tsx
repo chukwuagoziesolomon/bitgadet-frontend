@@ -287,7 +287,7 @@ const ProductDetails: React.FC = () => {
     try {
       setIsAddingToCart(true);
       setAddedToCart(false);
-      await conditionalApiRequest<any>('/api/cart/add/', {
+      await publicApiRequest<any>('/api/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: product.id, quantity }),
       });
