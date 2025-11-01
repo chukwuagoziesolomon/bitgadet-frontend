@@ -28,10 +28,10 @@ const Footer: React.FC = () => {
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
               <Facebook size={20} />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <a href="https://www.instagram.com/bitgadgetz_tech" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <Instagram size={20} />
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+            <a href="https://x.com/bitgadgetz" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
               <X size={20} />
             </a>
             <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
@@ -75,17 +75,17 @@ const Footer: React.FC = () => {
           <h3 className="footer-heading">Stay connected</h3>
           <div className="stay-connected-info">
             <p>Email: info@bitgadgetz.com</p>
-            <p>Phone: +234 123 000 0000</p>
-            <p>WhatsApp: +234 123 000 0000</p>
+            <p>Phone: +2349138666111</p>
+            <p>WhatsApp: +2349061728949</p>
           </div>
           <div className="footer-socials footer-socials-mobile">
             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
               <Facebook size={18} />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <a href="https://www.instagram.com/bitgadgetz_tech" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
               <Instagram size={18} />
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+            <a href="https://x.com/bitgadgetz" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
               <X size={18} />
             </a>
             <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
@@ -119,9 +119,9 @@ const Footer: React.FC = () => {
 
           <div className="footer-contact">
             <h4 className="contact-heading">Contact Us</h4>
-            <p>Email: info@bitgadgetz.com</p>
-            <p>Phone: +234 123 000 0000</p>
-            <p>WhatsApp: +234 123 000 0000</p>
+            <p>Email: support@bitgadgetz.store</p>
+            <p>Phone: +2349138666111</p>
+            <p>WhatsApp:+2349061728949 </p>
           </div>
         </div>
       </div>

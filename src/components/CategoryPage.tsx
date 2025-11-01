@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { publicApiRequest, API_CONFIG } from '../config/api';
+import { publicApiRequest } from '../config/api';
 import './CategoryPage.css';
 
 const CategoryPage: React.FC = () => {
   const { categoryName } = useParams<{ categoryName: string }>();
   const [products, setProducts] = useState<any[]>([]);
-  const [summary, setSummary] = useState<{ category?: string; total_items?: number; trend?: string } | null>(null);
+  const [meta, setMeta] = useState<{ id: number; name: string; display_name: string; description: string; product_count: number } | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,16 +15,23 @@ const CategoryPage: React.FC = () => {
       if (!categoryName) return;
       try {
         setLoading(true);
-        const endpoint = `/api/categories/${encodeURIComponent(categoryName)}/products/`;
+        // Use single-category endpoint which includes products array
+        const endpoint = `/api/categories/${encodeURIComponent(categoryName)}/`;
         const data = await publicApiRequest<any>(endpoint);
         const items = Array.isArray(data?.products) ? data.products : [];
         setProducts(items);
-        setSummary({ category: data?.category, total_items: data?.total_items, trend: data?.trend });
+        setMeta({
+          id: data?.id,
+          name: data?.name,
+          display_name: data?.display_name,
+          description: data?.description,
+          product_count: data?.product_count ?? items.length,
+        });
         setError(null);
       } catch (err: any) {
         setError('Failed to load products');
         setProducts([]);
-        setSummary(null);
+        setMeta(null);
       } finally {
         setLoading(false);
       }
@@ -34,10 +41,10 @@ const CategoryPage: React.FC = () => {
 
   return (
     <div className="category-page">
-      <h1>Category: {categoryName}</h1>
-      {summary && (
+      <h1>Category: {meta?.display_name || categoryName}</h1>
+      {meta && (
         <div className="category-summary">
-          <span>{summary.category}</span> · <span>{summary.total_items ?? 0} items</span> · <span>trend: {summary.trend}</span>
+          <span>{meta.description}</span> · <span>{meta.product_count} items</span>
         </div>
       )}
       {loading && <p>Loading products...</p>}
@@ -51,7 +58,7 @@ const CategoryPage: React.FC = () => {
             <img src={p.main_image} alt={p.name} />
             <div className="info">
               <h3>{p.name}</h3>
-              <p className="price">₦{p.price}</p>
+              <p className="price">₦{parseFloat(p.current_price).toLocaleString()}</p>
             </div>
           </div>
         ))}

@@ -1,29 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Grid3X3, List } from 'lucide-react';
-import { API_CONFIG, publicApiRequest } from '../config/api';
+import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { Link } from 'react-router-dom';
 import './CategoriesPage.css';
 
 interface Category {
   id: number;
-  category_name: string;
+  name: string;
   display_name: string;
   description: string;
-  image_url: string;
-  item_count: number;
-  item_count_display: string;
-  trend_level: string;
-  trend_description: string;
-  trend_color: string;
-  has_items: boolean;
-  shop_url: string;
-  api_shop_url: string;
+  image: string;
+  is_active: boolean;
+  product_count: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 const CategoriesPage: React.FC = () => {
   const { showError } = useToast();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -31,17 +29,14 @@ const CategoriesPage: React.FC = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const data = await publicApiRequest<{ categories: Category[] } | Category[]>('/api/shop/categories/');
-
-        // Handle both direct array response and object with categories array
-        const categoriesArray = Array.isArray(data) ? data : (data as any).categories || [];
+        const data = await publicApiRequest<Category[]>('/api/categories/');
+        const categoriesArray = Array.isArray(data) ? data : [];
         setCategories(categoriesArray);
         setError(null);
       } catch (err: any) {
         console.error('Failed to fetch categories:', err);
         setError('Failed to load categories. Please try again later.');
         showError('Error', 'Failed to load categories. Please try again later.');
-        // Ensure categories is always an array
         setCategories([]);
       } finally {
         setLoading(false);
@@ -50,6 +45,28 @@ const CategoriesPage: React.FC = () => {
 
     fetchCategories();
   }, [showError]);
+
+  // Search categories
+  useEffect(() => {
+    const handle = setTimeout(async () => {
+      try {
+        setLoading(true);
+        if (searchTerm.trim().length === 0) {
+          const data = await publicApiRequest<Category[]>('/api/categories/');
+          setCategories(Array.isArray(data) ? data : []);
+        } else {
+          const data = await publicApiRequest<Category[]>(`/api/search/categories/?search=${encodeURIComponent(searchTerm)}`);
+          setCategories(Array.isArray(data) ? data : []);
+        }
+        setError(null);
+      } catch (err) {
+        setError('Search failed.');
+      } finally {
+        setLoading(false);
+      }
+    }, 350);
+    return () => clearTimeout(handle);
+  }, [searchTerm]);
 
   // Loading state
   if (loading) {
@@ -156,6 +173,8 @@ const CategoriesPage: React.FC = () => {
                 type="text"
                 placeholder="Search categories..."
                 className="search-input"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
@@ -183,29 +202,25 @@ const CategoriesPage: React.FC = () => {
         {/* Categories Grid */}
         <div className={`categories-grid ${viewMode}`}>
           {categories.map((category) => (
-            <div key={category.id} className="category-card">
+            <Link key={category.id} to={`/categories/${category.name}`} className="category-card">
               <div className="category-image">
                 <img
-                  src={category.image_url}
+                  src={category.image}
                   alt={category.display_name}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = 'https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+                    target.src = 'https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=No+Image';
                   }}
                 />
                 <div className="product-count-badge">
-                  {category.item_count_display}
+                  {category.product_count} products
                 </div>
               </div>
               <div className="category-info">
                 <h3 className="category-name">{category.display_name}</h3>
                 <p className="category-description">{category.description}</p>
-                <div className="trend-indicator" style={{ backgroundColor: category.trend_color }}>
-                  <span className="trend-level">{category.trend_level}</span>
-                  <span className="trend-description">{category.trend_description}</span>
-                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

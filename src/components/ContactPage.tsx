@@ -113,11 +113,11 @@ const ContactPage: React.FC = () => {
               <div className="card-content">
                 <h3>Phone</h3>
                 <p className="phone-numbers">
-                  +234 812 345 6789<br />
-                  +234 901 234 5678
+                +2349138666111<br />
+                +2349061728949
                 </p>
                 <p className="card-description">Call us for immediate assistance</p>
-                <a href="tel:+2348123456789" className="contact-link">Contact Now →</a>
+                <a href="tel:+2349061728949" className="contact-link">Contact Now →</a>
               </div>
             </div>
 
@@ -129,11 +129,11 @@ const ContactPage: React.FC = () => {
               <div className="card-content">
                 <h3>Email</h3>
                 <p className="email-addresses">
-                  support@bitgadgetz.com<br />
-                  sales@bitgadgetz.com
+                support@bitgadgetz.store<br />
+            
                 </p>
                 <p className="card-description">Send us an email anytime</p>
-                <a href="mailto:support@bitgadgetz.com" className="contact-link">Contact Now →</a>
+                <a href="mailto:support@bitgadgetz.store" className="contact-link">Contact Now →</a>
               </div>
             </div>
 
@@ -146,7 +146,7 @@ const ContactPage: React.FC = () => {
                 <h3>WhatsApp</h3>
                 <p className="whatsapp-number">+234 812 345 6789</p>
                 <p className="card-description">Chat with us on WhatsApp</p>
-                <a href="https://wa.me/2348123456789" className="contact-link">Contact Now →</a>
+                <a href="https://wa.me/2349138666111" className="contact-link">Contact Now →</a>
               </div>
             </div>
 

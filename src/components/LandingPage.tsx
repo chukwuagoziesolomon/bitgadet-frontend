@@ -36,25 +36,25 @@ const LandingPage: React.FC = () => {
     {
       id: 1,
       title: "Express Delivery",
-      description: "We have thousands of ATMs located across the U.S. wh",
+      description: "Fast and reliable delivery across Nigeria.",
       icon: "/truck.png"
     },
     {
       id: 2,
       title: "Pay in Crypto",
-      description: "We have thousands of ATMs located across the U.S. wh",
+      description: "Securely pay with Bitcoin, Ethereum, and more",
       icon: "/truck.png"
     },
     {
       id: 3,
       title: "Fuss free return",
-      description: "We have thousands of ATMs located across the U.S. wh",
+      description: "Easy returns, no stress.",
       icon: "/truck.png"
     },
     {
       id: 4,
       title: "24/7 Support",
-      description: "We have thousands of ATMs located across the U.S. wh",
+      description: "We are here to help anytime",
       icon: "/truck.png"
     }
   ];
