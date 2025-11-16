@@ -7,6 +7,16 @@ import { Copy, Check, AlertTriangle, Lightbulb, Lock, User, Info } from 'lucide-
 import { useToast } from '../hooks/useToast';
 import './PaymentDetails.css';
 
+// Helper function to normalize base URL (convert HTTPS to HTTP for localhost)
+const normalizeBaseUrl = (url: string): string => {
+  if (!url) return url;
+  // Convert https://127.0.0.1 or https://localhost to http://
+  if (url.startsWith('https://127.0.0.1') || url.startsWith('https://localhost')) {
+    return url.replace('https://', 'http://');
+  }
+  return url;
+};
+
 
 const PaymentDetails: React.FC = () => {
   const location = useLocation();
@@ -49,9 +59,12 @@ const PaymentDetails: React.FC = () => {
     }
   }, [paymentData]);
 
-  const handleCopy = (text: string, label: string) => {
+  const handleCopy = (text: string, label: string, key?: string) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
-    setCopied(label);
+    // use a short key to control which icon shows the check
+    if (key) setCopied(key);
+    else setCopied(label);
     showSuccess('Copied!', `${label} copied to clipboard`);
     setTimeout(() => setCopied(null), 2000);
   };
@@ -64,8 +77,9 @@ const PaymentDetails: React.FC = () => {
     setError(null);
     setConfirming(true);
     try {
-      const apiUrl = process.env.REACT_APP_API_URL || '';
-      const response = await fetch(`${apiUrl}/api/checkout/confirm-payment/${paymentData.payment_info.order_id}/`, {
+      const apiUrl = normalizeBaseUrl(process.env.REACT_APP_API_URL || '');
+      const url = apiUrl ? `${apiUrl}/api/checkout/confirm-payment/${paymentData.payment_info.order_id}/` : `/api/checkout/confirm-payment/${paymentData.payment_info.order_id}/`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: paymentData.order.email }),
@@ -150,7 +164,7 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
-                            onClick={() => handleCopy(paymentData.order.dedicated_account_number, 'Account Number')}
+                            onClick={() => handleCopy(paymentData.order.dedicated_account_number, 'Account Number', 'account')}
                           >
                             {copied === 'account' ? <Check /> : <Copy />}
                           </button>
@@ -226,7 +240,7 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
-                            onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'Wallet Address')}
+                            onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
                           >
                             {copied === 'wallet' ? <Check /> : <Copy />}
                           </button>
@@ -333,7 +347,7 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
-                            onClick={() => handleCopy(paymentData.account_info.generated_password, 'Password')}
+                            onClick={() => handleCopy(paymentData.account_info.generated_password, 'Password', 'password')}
                           >
                             {copied === 'password' ? <Check /> : <Copy />}
                           </button>

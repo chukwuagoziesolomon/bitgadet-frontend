@@ -1,51 +1,73 @@
 import React, { useEffect, useState } from 'react';
-import { X, CheckCircle, Truck, Clock, MapPin, Package } from 'lucide-react';
+import { X, CheckCircle, Truck, Clock, MapPin, Package, Loader2 } from 'lucide-react';
+import { conditionalApiRequest } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './OrderTrackingModal.css';
 
 interface OrderTrackingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: {
-    id: string;
-    productName: string;
-    image: string;
-    status: string;
-    statusColor: string;
-    date: string;
-    price: number;
-  } | null;
+  orderId: string | null;
 }
 
-const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose, order }) => {
+const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose, orderId }) => {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [trackingData, setTrackingData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { showError } = useToast();
 
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
       document.body.style.overflow = 'hidden';
+
+      // Fetch tracking data when modal opens
+      if (orderId) {
+        fetchTrackingData(orderId);
+      }
     } else {
       setIsAnimating(false);
+      setTrackingData(null);
+      setError(null);
       document.body.style.overflow = 'unset';
     }
 
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen]);
+  }, [isOpen, orderId]);
 
-  if (!isOpen || !order) return null;
+  const fetchTrackingData = async (id: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await conditionalApiRequest<any>(`/api/checkout/${id}/status/`);
+      setTrackingData(response);
+    } catch (err: any) {
+      console.error('Failed to fetch tracking data:', err);
+      setError(err.message || 'Failed to load tracking information');
+      showError('Failed to load tracking data', err.message || 'Please try again later');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen || !orderId) return null;
 
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case 'delivered':
         return <CheckCircle size={48} color="#00C896" />;
+      case 'paid':
       case 'processing':
         return <Package size={48} color="#f59e0b" />;
-      case 'en-route':
-      case 'en route':
+      case 'shipped':
+      case 'in_transit':
         return <Truck size={48} color="#3b82f6" />;
       default:
-        return <Truck size={48} color="#3b82f6" />;
+        return <Clock size={48} color="#6b7280" />;
     }
   };
 
@@ -53,64 +75,26 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
     switch (status.toLowerCase()) {
       case 'delivered':
         return '#00C896';
+      case 'paid':
       case 'processing':
         return '#f59e0b';
-      default:
+      case 'shipped':
+      case 'in_transit':
         return '#3b82f6';
-    }
-  };
-
-  const getStatusMessage = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'delivered':
-        return {
-          title: 'Order Delivered Successfully!',
-          message: 'Your order has been delivered to your doorstep. Enjoy your new gadget!',
-          steps: [
-            { icon: Package, label: 'Order Placed', completed: true, time: '2 days ago' },
-            { icon: Clock, label: 'Processing', completed: true, time: '1 day ago' },
-            { icon: Truck, label: 'Out for Delivery', completed: true, time: '6 hours ago' },
-            { icon: CheckCircle, label: 'Delivered', completed: true, time: 'Just now' }
-          ]
-        };
-      case 'processing':
-        return {
-          title: 'Order is Being Processed',
-          message: 'Your order is currently being prepared and will be shipped soon.',
-          steps: [
-            { icon: Package, label: 'Order Placed', completed: true, time: '1 day ago' },
-            { icon: Clock, label: 'Processing', completed: true, time: 'Now' },
-            { icon: Truck, label: 'Out for Delivery', completed: false, time: 'Soon' },
-            { icon: CheckCircle, label: 'Delivered', completed: false, time: '2-3 days' }
-          ]
-        };
-      case 'en-route':
-      case 'en route':
-        return {
-          title: 'Order is On the Way!',
-          message: 'Your order is out for delivery and will arrive soon.',
-          steps: [
-            { icon: Package, label: 'Order Placed', completed: true, time: '3 days ago' },
-            { icon: Clock, label: 'Processing', completed: true, time: '2 days ago' },
-            { icon: Truck, label: 'Out for Delivery', completed: true, time: 'Now' },
-            { icon: CheckCircle, label: 'Delivered', completed: false, time: 'Today' }
-          ]
-        };
       default:
-        return {
-          title: 'Order is On the Way!',
-          message: 'Your order is out for delivery and will arrive soon.',
-          steps: [
-            { icon: Package, label: 'Order Placed', completed: true, time: '3 days ago' },
-            { icon: Clock, label: 'Processing', completed: true, time: '2 days ago' },
-            { icon: Truck, label: 'Out for Delivery', completed: true, time: 'Now' },
-            { icon: CheckCircle, label: 'Delivered', completed: false, time: 'Today' }
-          ]
-        };
+        return '#6b7280';
     }
   };
 
-  const statusInfo = getStatusMessage(order.status);
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const formatNaira = (amount: number) => {
     return `₦${amount.toLocaleString()}`;
@@ -125,67 +109,187 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
 
         <div className="modal-header">
           <div className="order-info">
-            <img src={order.image} alt={order.productName} className="order-image" />
             <div className="order-details">
-              <h3 className="order-id">Order #{order.id}</h3>
-              <p className="product-name">{order.productName}</p>
-              <p className="order-date">Ordered on {order.date}</p>
-              <p className="order-price">{formatNaira(order.price)}</p>
+              <h3 className="order-id">Order #{trackingData?.order_summary?.order_id || orderId}</h3>
+              {trackingData && (
+                <>
+                  <p className="order-date">Ordered on {formatDate(trackingData.order_summary?.order_date || new Date().toISOString())}</p>
+                  <p className="order-status">Status: {trackingData.order_summary?.status_display}</p>
+                </>
+              )}
             </div>
           </div>
         </div>
 
         <div className="modal-body">
-          <div className="status-section">
-            <div className="status-icon">
-              {getStatusIcon(order.status)}
+          {loading ? (
+            <div className="loading-section">
+              <Loader2 size={48} className="loading-spinner" />
+              <p>Loading tracking information...</p>
             </div>
-            <h2 className="status-title" style={{ color: getStatusColor(order.status) }}>
-              {statusInfo.title}
-            </h2>
-            <p className="status-message">{statusInfo.message}</p>
-          </div>
+          ) : error ? (
+            <div className="error-section">
+              <p className="error-message">{error}</p>
+              <button className="retry-btn" onClick={() => orderId && fetchTrackingData(orderId)}>
+                Try Again
+              </button>
+            </div>
+          ) : trackingData ? (
+            <>
+              <div className="status-section">
+                <div className="status-icon">
+                  {getStatusIcon(trackingData.order_summary?.status)}
+                </div>
+                <h2 className="status-title" style={{ color: getStatusColor(trackingData.order_summary?.status) }}>
+                  {trackingData.order_summary?.status_display}
+                </h2>
+              </div>
 
-          <div className="tracking-timeline">
-            <h3>Order Timeline</h3>
-            <div className="timeline">
-              {statusInfo.steps.map((step, index) => (
-                <div key={index} className={`timeline-item ${step.completed ? 'completed' : 'pending'}`}>
-                  <div className="timeline-icon">
-                    <step.icon size={20} />
-                  </div>
-                  <div className="timeline-content">
-                    <h4>{step.label}</h4>
-                    <p>{step.time}</p>
+              {/* Products Section */}
+              {trackingData.products && trackingData.products.length > 0 && (
+                <div className="products-section">
+                  <h3>Order Items</h3>
+                  <div className="products-list">
+                    {trackingData.products.map((product: any, index: number) => (
+                      <div key={index} className="product-item">
+                        {product.image && (
+                          <img src={product.image} alt={product.name} className="product-thumbnail" />
+                        )}
+                        <div className="product-info">
+                          <p className="product-name">{product.name}</p>
+                          <p className="product-quantity">Qty: {product.quantity}</p>
+                          <p className="product-price">{formatNaira(product.price)}</p>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              )}
 
-          <div className="delivery-info">
-            <div className="info-card">
-              <MapPin size={20} />
-              <div>
-                <h4>Delivery Address</h4>
-                <p>123 Tech Street, Lagos, Nigeria</p>
-              </div>
-            </div>
-            <div className="info-card">
-              <Truck size={20} />
-              <div>
-                <h4>Estimated Delivery</h4>
-                <p>{order.status === 'Delivered' ? 'Delivered' : '2-3 business days'}</p>
-              </div>
-            </div>
-          </div>
+              {/* Order Summary Section */}
+              {trackingData.order_summary && (
+                <div className="order-summary-section">
+                  <h3>Order Summary</h3>
+                  <div className="summary-item">
+                    <span>Total Amount:</span>
+                    <span className="summary-value">{formatNaira(trackingData.order_summary.total_amount)}</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Payment Status Section */}
+              {trackingData.payment_status && (
+                <div className="payment-section">
+                  <h3>Payment Information</h3>
+                  <div className="payment-details">
+                    <div className="payment-item">
+                      <strong>Status:</strong> 
+                      <span style={{ 
+                        color: trackingData.payment_status.status === 'paid' ? '#00C896' : '#f59e0b',
+                        textTransform: 'capitalize'
+                      }}>
+                        {trackingData.payment_status.status}
+                      </span>
+                    </div>
+                    {trackingData.payment_status.payment_reference && (
+                      <div className="payment-item">
+                        <strong>Reference:</strong> {trackingData.payment_status.payment_reference}
+                      </div>
+                    )}
+                    {trackingData.order_summary?.payment_method && (
+                      <div className="payment-item">
+                        <strong>Method:</strong> 
+                        <span style={{ textTransform: 'capitalize' }}>
+                          {trackingData.order_summary.payment_method.replace('_', ' ')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Tracking Information Section */}
+              {trackingData.payment_status?.tracking_info && (
+                <div className="tracking-info">
+                  <h3>Shipping Information</h3>
+                  <div className="tracking-details">
+                    {trackingData.payment_status.tracking_info.tracking_number && (
+                      <div className="tracking-item">
+                        <strong>Tracking Number:</strong> {trackingData.payment_status.tracking_info.tracking_number}
+                      </div>
+                    )}
+                    {trackingData.payment_status.tracking_info.carrier_name && (
+                      <div className="tracking-item">
+                        <strong>Carrier:</strong> {trackingData.payment_status.tracking_info.carrier_name}
+                      </div>
+                    )}
+                    {trackingData.payment_status.tracking_info.estimated_delivery && (
+                      <div className="tracking-item">
+                        <strong>Estimated Delivery:</strong> {formatDate(trackingData.payment_status.tracking_info.estimated_delivery)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {trackingData.payment_status?.tracking_info?.tracking_notes && (
+                <div className="tracking-timeline">
+                  <h3>Tracking Updates</h3>
+                  <div className="tracking-notes">
+                    {trackingData.payment_status.tracking_info.tracking_notes.split('\n').map((note: string, index: number) => (
+                      <div key={index} className="tracking-note">
+                        {note}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Delivery Address Section */}
+              {trackingData.delivery_info && (
+                <div className="delivery-info">
+                  {trackingData.delivery_info.shipping_address && (
+                    <div className="info-card">
+                      <MapPin size={20} />
+                      <div>
+                        <h4>Delivery Address</h4>
+                        <div className="address-text">
+                          {trackingData.delivery_info.shipping_address.street_address && (
+                            <p>{trackingData.delivery_info.shipping_address.street_address}</p>
+                          )}
+                          {trackingData.delivery_info.shipping_address.city && (
+                            <p>
+                              {trackingData.delivery_info.shipping_address.city}
+                              {trackingData.delivery_info.shipping_address.state && `, ${trackingData.delivery_info.shipping_address.state}`}
+                            </p>
+                          )}
+                          {trackingData.delivery_info.shipping_address.country && (
+                            <p>{trackingData.delivery_info.shipping_address.country}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {trackingData.delivery_info.tracking_available && (
+                    <div className="info-card">
+                      <Package size={20} />
+                      <div>
+                        <h4>Tracking Available</h4>
+                        <p>Yes</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : null}
         </div>
 
         <div className="modal-footer">
           <button className="btn-secondary" onClick={onClose}>
             Close
           </button>
-          {order.status !== 'Delivered' && (
+          {trackingData && trackingData.order_summary?.status !== 'delivered' && (
             <button className="btn-primary">
               Contact Support
             </button>

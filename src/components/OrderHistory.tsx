@@ -76,17 +76,7 @@ const OrderHistory: React.FC = () => {
  };
 
  const handleTrackOrder = (order: any) => {
-   // Transform API order data to match modal expectations
-   const transformedOrder = {
-     id: order.order_id,
-     productName: order.products?.[0]?.name || 'Product',
-     image: order.products?.[0]?.image || '/placeholder.png',
-     status: order.status,
-     statusColor: order.status, // Use status as statusColor for now
-     date: order.date,
-     price: order.total_amount
-   };
-   setSelectedOrder(transformedOrder);
+   setSelectedOrder(order.order_id);
    setTrackingModalOpen(true);
  };
 
@@ -197,7 +187,7 @@ const OrderHistory: React.FC = () => {
      <OrderTrackingModal
        isOpen={trackingModalOpen}
        onClose={closeTrackingModal}
-       order={selectedOrder}
+       orderId={selectedOrder}
      />
    </div>
  );

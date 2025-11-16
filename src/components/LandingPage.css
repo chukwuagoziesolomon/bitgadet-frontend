@@ -1217,14 +1217,14 @@ body {
   padding: 0;
   background: white;
   margin: 2rem 0;
+  text-align: center;
 }
 
 .deal-banner-container {
-  display: flex;
+  display: inline-block;
   width: 100%;
   max-width: 1325px; /* Maximum width for desktop */
   height: 378px;
-  margin: 0 auto;
   border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -1440,6 +1440,7 @@ body {
   .deal-banner {
     margin: 1rem 0;
     padding: 0 1rem;
+    text-align: center;
   }
 
   .deal-banner-container {
@@ -1530,6 +1531,7 @@ body {
   .deal-banner {
     margin: 1rem 0;
     padding: 0 1rem;
+    text-align: center;
   }
 
   .deal-banner-container {
@@ -1646,6 +1648,7 @@ body {
   .deal-banner {
     margin: 0.5rem 0;
     padding: 0 0.5rem;
+    text-align: center;
   }
 
   .deal-banner-left {

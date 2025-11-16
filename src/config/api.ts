@@ -66,10 +66,22 @@ export const API_CONFIG = {
   TIMEOUT: 10000, // 10 seconds
 };
 
+// Helper function to normalize base URL (convert HTTPS to HTTP for localhost)
+const normalizeBaseUrl = (url: string): string => {
+  if (!url) return url;
+  // Convert https://127.0.0.1 or https://localhost to http://
+  if (url.startsWith('https://127.0.0.1') || url.startsWith('https://localhost')) {
+    return url.replace('https://', 'http://');
+  }
+  return url;
+};
+
 // Helper function to build full API URLs
 export const buildApiUrl = (endpoint: string): string => {
+  // Normalize base URL to use HTTP for localhost
+  let baseUrl = normalizeBaseUrl(API_CONFIG.BASE_URL);
   // Remove trailing slash from base URL and leading slash from endpoint to avoid double slashes
-  const baseUrl = API_CONFIG.BASE_URL.endsWith('/') ? API_CONFIG.BASE_URL.slice(0, -1) : API_CONFIG.BASE_URL;
+  baseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   return `${baseUrl}${cleanEndpoint}`;
 };
@@ -79,7 +91,13 @@ export const apiRequest = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  const url = buildApiUrl(endpoint);
+  // Use direct backend URL instead of proxy for proper cookie handling
+  let baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  // Remove trailing slash from base URL
+  baseUrl = baseUrl.replace(/\/$/, '');
+  // Ensure endpoint starts with slash
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${baseUrl}${cleanEndpoint}`;
 
   console.log('🌐 Making authenticated API request to:', url);
 
@@ -146,7 +164,13 @@ export const publicApiRequest = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  const url = buildApiUrl(endpoint);
+  // Use direct backend URL instead of proxy for proper cookie handling
+  let baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  // Remove trailing slash from base URL
+  baseUrl = baseUrl.replace(/\/$/, '');
+  // Ensure endpoint starts with slash
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${baseUrl}${cleanEndpoint}`;
 
   console.log('🌐 Making public API request to:', url);
 

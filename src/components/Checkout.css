@@ -276,8 +276,48 @@ input[type="tel"]::placeholder {
   cursor: pointer;
   transition: background 0.2s;
 }
-.apply-btn:hover {
+.apply-btn:hover:not(:disabled) {
   background: #009e7a;
+}
+
+.apply-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.apply-btn.remove {
+  background: #ef4444;
+}
+
+.apply-btn.remove:hover {
+  background: #dc2626;
+}
+
+/* Applied Coupon Styles */
+.applied-coupon {
+  margin-bottom: 18px;
+}
+
+.coupon-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #d1fae5;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  color: #065f46;
+}
+
+.coupon-check {
+  color: #10b981;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.coupon-text {
+  font-weight: 500;
 }
 .summary-details {
   margin-bottom: 18px;
@@ -598,9 +638,27 @@ input[type="tel"]::placeholder {
     min-width: 0;
   }
   .info-badges-row {
-    flex-direction: column;
+    flex-direction: row;
     gap: 10px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
+  
+  .info-badge {
+    flex: 0 0 calc(33.333% - 7px);
+    min-width: calc(33.333% - 7px);
+    padding: 12px 10px;
+  }
+
+  .info-badge-title {
+    font-size: 0.9rem;
+    margin-bottom: 2px;
+  }
+
+  .info-badge-desc {
+    font-size: 0.8rem;
+  }
+
   .modal-box {
     padding: 18px 6px 16px 6px;
     min-width: 0;
@@ -613,4 +671,50 @@ input[type="tel"]::placeholder {
     padding: 12px 6px;
     min-width: 0;
   }
+}
+
+/* WhatsApp Help Section */
+.whatsapp-help-section {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 20px;
+  text-align: center;
+}
+
+.whatsapp-help-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0c4a6e;
+  margin-bottom: 6px;
+}
+
+.whatsapp-help-text {
+  color: #374151;
+  font-size: 0.95rem;
+  margin-bottom: 16px;
+}
+
+.whatsapp-help-btn {
+  background: #25d366;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.whatsapp-help-btn:hover {
+  background: #128c7e;
+}
+
+.whatsapp-help-btn svg {
+  flex-shrink: 0;
 }

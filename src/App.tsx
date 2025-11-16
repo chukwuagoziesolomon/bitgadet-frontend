@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
 import HomePage from './components/HomePage';
@@ -7,7 +7,6 @@ import CategoryPage from './components/CategoryPage';
 import CategoriesPage from './components/CategoriesPage';
 import BrandsPage from './components/BrandsPage';
 import BrandPage from './components/BrandPage';
-import ProductsPage from './components/ProductsPage';
 import AllProductsPage from './components/AllProductsPage';
 import ServicePage from './components/ServicePage';
 import ContactPage from './components/ContactPage';
@@ -93,15 +92,7 @@ const AppContent: React.FC = () => {
               <Footer />
             </>
           } />
-          <Route path="/products" element={
-            <>
-              <Navbar />
-              <main>
-                <ProductsPage />
-              </main>
-              <Footer />
-            </>
-          } />
+          <Route path="/products" element={<Navigate to="/all-products" replace />} />
           <Route path="/all-products" element={
             <>
               <Navbar />

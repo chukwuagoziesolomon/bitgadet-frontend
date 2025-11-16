@@ -1,7 +1,12 @@
 /* ProductCard Component - Scoped Styles */
 /* All styles are scoped to .product-card-component to prevent conflicts with other components */
 
+/* Fix overflow and ensure text wraps properly */
 .product-card-component .brands-product-card {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  min-width: 0;
   background: white;
   border-radius: 12px;
   padding: 12px 10px 16px 10px !important; /* much less vertical padding */
@@ -11,10 +16,12 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  max-width: 220px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
   min-height: unset;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .product-card-component .brands-product-card:hover {
@@ -367,7 +374,9 @@
 @media (max-width: 768px) {
   .product-card-component .brands-product-card {
     max-width: 100%;
+    width: 100%;
     margin: 0;
+    box-sizing: border-box;
   }
 
   /* Reduce image container space on tablets */
@@ -410,7 +419,9 @@
   .product-card-component .brands-product-card {
     padding: 8px; /* Further reduced padding */
     max-width: 100%;
+    width: 100%;
     margin: 0;
+    box-sizing: border-box;
   }
 
   /* Reduce image container space on mobile */

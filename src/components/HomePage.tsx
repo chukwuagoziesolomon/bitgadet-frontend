@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Smartphone, Laptop, Gamepad2, Watch, Headphones, TrendingUp, TrendingDown, Star, Award, Sparkles, Package } from 'lucide-react';
+import { Smartphone, Laptop, Gamepad2, Watch, Headphones, TrendingUp, TrendingDown, Star, Award, Sparkles, Package, Clock } from 'lucide-react';
 import ProductCard from './ProductCard';
 import './HomePage.css';
 import { apiRequest, publicApiRequest, conditionalApiRequest, API_CONFIG } from '../config/api';
@@ -18,6 +18,12 @@ const HomePage: React.FC = () => {
   const [categoryMeta, setCategoryMeta] = useState<Record<string, { total_items: number; trend?: string }>>({});
   const [wishlist, setWishlist] = useState<number[]>([]); // NEW
   const [cart, setCart] = useState<Record<number, number>>({}); // NEW
+
+  // Deal of the Day states
+  const [deal, setDeal] = useState<any>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [dealLoading, setDealLoading] = useState<boolean>(true);
+  const [dealError, setDealError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { showError } = useToast();
 
@@ -46,6 +52,43 @@ const HomePage: React.FC = () => {
     };
     fetchBanners();
   }, []);
+
+  // Fetch deal of the day
+  useEffect(() => {
+    const fetchDeal = async () => {
+      try {
+        setDealLoading(true);
+        const data = await publicApiRequest<any>('/api/deals/current/');
+        if (data.success && data.deal) {
+          setDeal(data.deal);
+          const remaining = new Date(data.deal.end_time).getTime() - Date.now();
+          setTimeLeft(Math.max(0, Math.floor(remaining / 1000)));
+          setDealError(null);
+        } else {
+          setDeal(null);
+          setTimeLeft(0);
+          setDealError(data.message || 'No active deal');
+        }
+      } catch (error: any) {
+        setDealError('Failed to load deal');
+        setDeal(null);
+        setTimeLeft(0);
+      } finally {
+        setDealLoading(false);
+      }
+    };
+    fetchDeal();
+  }, []);
+
+  // Countdown timer
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const interval = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timeLeft]);
 
   // Auto-advance slideshow every 5 seconds
   useEffect(() => {
@@ -222,7 +265,14 @@ const HomePage: React.FC = () => {
       return;
     }
     // If no specific URL, navigate to products page
-    navigate('/products');
+    navigate('/all-products');
+  };
+
+  const formatTime = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -276,7 +326,7 @@ const HomePage: React.FC = () => {
                       <div className="slide-content">
                         <h1>{slide?.title || slide?.button_text || 'Shop Now'}</h1>
                         {slide?.subtitle && <p>{slide.subtitle}</p>}
-                        <button className="cta-button" onClick={() => handleAddToCart(slide?.product_id)}>Add to Cart</button>
+                        <button className="cta-button" onClick={() => handleHeroCTAClick(index)}>Shop Now</button>
                       </div>
                     </div>
                   </div>
@@ -297,6 +347,40 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Deal of the Day Section */}
+      {deal && !dealLoading && (
+        <section className="deal-section">
+          <div className="container">
+            <div className="deal-card">
+              <div className="deal-image">
+                <img src={deal.deal_image || deal.product_image} alt={deal.title} />
+                <div className="deal-badge">Deal of the Day</div>
+              </div>
+              <div className="deal-content">
+                <h2>{deal.title}</h2>
+                <p>{deal.subtitle}</p>
+                <div className="deal-prices">
+                  <span className="deal-price">₦{parseFloat(deal.deal_price).toLocaleString()}</span>
+                  <span className="original-price">₦{parseFloat(deal.original_price).toLocaleString()}</span>
+                  <span className="discount">{deal.discount_percentage}% off</span>
+                </div>
+                <div className="deal-countdown">
+                  <Clock size={20} />
+                  <span>{formatTime(timeLeft)}</span>
+                </div>
+                <div className="deal-availability">
+                  <div className="availability-bar">
+                    <div className="availability-fill" style={{width: `${deal.availability_percentage}%`}}></div>
+                  </div>
+                  <span>{deal.sold_quantity}/{deal.max_quantity} sold</span>
+                </div>
+                <button className="deal-btn" onClick={() => deal.product_url ? navigate(deal.product_url) : navigate(`/products/${deal.product_slug}`)}>Shop Now</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Categories Section */}
       <section className="categories-section">
@@ -412,7 +496,7 @@ const HomePage: React.FC = () => {
 
       {/* Our Products Section */}
       <section className="products-section">
-        <div className="container">
+        <div> {/* Remove className="container" here so products-section is full width */}
           <div className="products-header-row">
             <div className="section-header">
               <h2>Our Products</h2>
@@ -441,7 +525,6 @@ const HomePage: React.FC = () => {
               </button>
             </div>
           </div>
-
           {/* Products Grid */}
           <div className="products-grid">
             {getCurrentLoading() ? (

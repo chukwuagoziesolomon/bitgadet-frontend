@@ -1,16 +1,40 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Linkedin, Youtube } from 'lucide-react';
+import { publicApiRequest } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './Footer.css';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { showSuccess, showError } = useToast();
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Add newsletter subscription logic here
-    console.log('Subscribing email:', email);
-    setEmail('');
+
+    if (!email.trim()) {
+      showError('Error', 'Please enter a valid email address');
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await publicApiRequest<any>('/api/waitlist/join/', {
+        method: 'POST',
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      showSuccess('Success!', response.message || 'Successfully joined the waitlist!');
+      setEmail('');
+    } catch (error: any) {
+      console.error('Waitlist subscription failed:', error);
+      const errorMessage = error.message || 'Failed to join waitlist. Please try again.';
+      showError('Subscription Failed', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -50,9 +74,9 @@ const Footer: React.FC = () => {
             <li><Link to="/home">Home</Link></li>
             <li><Link to="/about">About Us</Link></li>
             <li><Link to="/contact">Contact</Link></li>
-            <li><Link to="/faqs">FAQs</Link></li>
+
             <li><Link to="/phone-tracking">Phone Tracking</Link></li>
-            <li><Link to="/privacy-policy">Privacy Policy</Link></li>
+  
             <li><Link to="/terms-conditions">Terms & Conditions</Link></li>
           </ul>
         </div>
@@ -112,8 +136,8 @@ const Footer: React.FC = () => {
               required
               className="newsletter-input"
             />
-            <button type="submit" className="newsletter-btn">
-              Subscribe
+            <button type="submit" className="newsletter-btn" disabled={isLoading}>
+              {isLoading ? 'Subscribing...' : 'Subscribe'}
             </button>
           </form>
 

@@ -397,7 +397,7 @@ const Dashboard: React.FC = () => {
       <OrderTrackingModal
         isOpen={trackingModalOpen}
         onClose={closeTrackingModal}
-        order={selectedOrder}
+        orderId={selectedOrder?.id || null}
       />
     </div>
   );

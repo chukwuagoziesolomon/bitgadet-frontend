@@ -32,6 +32,12 @@ const PhoneTrackingPage: React.FC = () => {
     }));
   };
 
+  const handleWhatsAppSupport = () => {
+    const message = `Hello, I need help with phone tracking services.`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=2349138666111&text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -404,7 +410,7 @@ const PhoneTrackingPage: React.FC = () => {
               <div className="help-section">
                 <h3>Need Help?</h3>
                 <p>Our tracking specialists are available 24/7 to assist you with urgent cases.</p>
-                <button className="whatsapp-btn">WhatsApp Support</button>
+                <button className="whatsapp-btn" onClick={handleWhatsAppSupport}>WhatsApp Support</button>
               </div>
             </div>
           </div>

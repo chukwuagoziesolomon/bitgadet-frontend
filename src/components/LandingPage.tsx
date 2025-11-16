@@ -4,6 +4,7 @@ import { Smartphone, MapPin, RefreshCw, Target, Eye, Headphones, Shield, Truck, 
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { publicApiRequest, API_CONFIG } from '../config/api';
+import { useToast } from '../hooks/useToast';
 import './LandingPage.css';
 
 interface DealResponse {
@@ -15,14 +16,16 @@ interface DealResponse {
 }
 
 const LandingPage: React.FC = () => {
+  const { showSuccess, showError } = useToast();
+
   // State for animation switches
   const [topSwitched, setTopSwitched] = useState(false);
   const [sidesSwitched, setSidesSwitched] = useState(false);
   const [bottomSwitched, setBottomSwitched] = useState(false);
-  
+
   // State for customer reviews rotation
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
-  
+
   // State for responsive service cards
   const [visibleServiceCards, setVisibleServiceCards] = useState(1);
 
@@ -30,6 +33,9 @@ const LandingPage: React.FC = () => {
   const [deal, setDeal] = useState<any>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [formattedTime, setFormattedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
+
+  // State for add to cart loading
+  const [addingToCart, setAddingToCart] = useState(false);
   
   // Service cards data
   const serviceCards = [
@@ -173,6 +179,8 @@ const LandingPage: React.FC = () => {
     fetchDeal();
   }, []);
 
+  
+
   // Countdown timer
   useEffect(() => {
     if (timeRemaining > 0) {
@@ -197,6 +205,25 @@ const LandingPage: React.FC = () => {
     const seconds = timeRemaining % 60;
     setFormattedTime({ hours, minutes, seconds });
   }, [timeRemaining]);
+
+  // Handle add to cart for deal banner
+  const handleAddToCart = async () => {
+    if (!deal?.product?.id) return;
+
+    setAddingToCart(true);
+    try {
+      await publicApiRequest<any>('/api/cart/add/', {
+        method: 'POST',
+        body: JSON.stringify({ product_id: deal.product.id })
+      });
+      showSuccess('Added to cart', `${deal.product.name} has been added to your cart!`);
+    } catch (error: any) {
+      console.error('Failed to add to cart:', error);
+      showError('Failed to add to cart', error.message || 'Please try again.');
+    } finally {
+      setAddingToCart(false);
+    }
+  };
 
   return (
     <div className="landing-page">
@@ -499,7 +526,25 @@ const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                <button className="deal-buy-now-btn">Buy Now</button>
+                { (deal.external_url || deal.product?.external_url) ? (
+                  <a
+                    className="deal-buy-now-btn shop-now-btn"
+                    href={(deal.external_url || deal.product?.external_url) as string}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Shop Now
+                  </a>
+                ) : (
+                  <button
+                    className="deal-buy-now-btn"
+                    onClick={handleAddToCart}
+                    disabled={addingToCart}
+                  >
+                    {addingToCart ? 'Adding...' : 'Buy Now'}
+                  </button>
+                )}
+              
               </div>
             </div>
           </div>
@@ -516,16 +561,16 @@ const LandingPage: React.FC = () => {
             <div className="customer-profile">
               <div className="customer-avatar">
                 <img src={customerReviews[currentReviewIndex].avatar} alt={customerReviews[currentReviewIndex].name} />
-        </div>
+              </div>
               <div className="customer-info">
                 <h4>{customerReviews[currentReviewIndex].name}</h4>
                 <div className="rating">
                   {Array.from({ length: customerReviews[currentReviewIndex].rating }, (_, i) => (
                     <span key={i} className="star">★</span>
                   ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
             <div className="testimonial-content">
               <p>"{customerReviews[currentReviewIndex].review}"</p>
@@ -569,14 +614,14 @@ const LandingPage: React.FC = () => {
             <div className="stat-card">
               <div className="stat-number">24/7</div>
               <div className="stat-label">Customer Support</div>
-              </div>
             </div>
+          </div>
 
           <div className="trust-badges">
             <div className="trust-badge">
               <span className="checkmark">✓</span>
               <span>Verified Reviews</span>
-              </div>
+            </div>
 
             <div className="trust-badge">
               <span className="checkmark">✓</span>

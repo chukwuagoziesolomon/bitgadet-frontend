@@ -13,7 +13,7 @@
   position: relative;
   width: 100%;
   height: 700px;
-  margin: 0 0 32px; /* No top margin, smaller bottom margin */
+  margin: 0 auto 32px auto; /* Centered horizontally */
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
@@ -36,6 +36,9 @@
   width: 100%;
   height: 100%;
   position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .home-page .slide {
@@ -44,6 +47,9 @@
   left: 0;
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   opacity: 0;
   transition: opacity 1s ease-in-out;
 }
@@ -55,7 +61,7 @@
 .home-page .slide-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Show full image instead of cropping */
   object-position: center;
   background: #f8f9fa;
 }
@@ -305,9 +311,11 @@
 
 /* Our Products Section */
 .home-page .products-section {
-  padding: 48px 20px;
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 48px 20px;
+  box-sizing: border-box;
 }
 
 .home-page .section-header {
@@ -384,11 +392,12 @@
 
 @media (max-width: 768px) {
   .home-page {
-    padding-top: 100px; /* Reduced for better mobile spacing */
+    padding-top: 0; /* Remove extra spacing above banner on mobile */
   }
-
   .home-page .hero-section {
-    margin-top: 8px; /* Further reduced top margin for mobile */
+    height: 450px;
+    margin: 8px auto 32px auto; /* Symmetric horizontal margin */
+    border-radius: 12px;
   }
 
   .home-page .categories-grid {
@@ -491,6 +500,8 @@
   grid-template-columns: repeat(5, minmax(250px, 1fr));
   gap: 20px;
   margin-top: 32px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Empty States */
@@ -553,13 +564,26 @@
 }
 
 @media (max-width: 768px) {
+  .home-page {
+    width: 100vw;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+  .home-page .products-section {
+    width: 100vw;
+    max-width: 100vw;
+    padding: 24px 4px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
   .home-page .products-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-top: 24px;
-    padding: 0 12px;
-    max-width: 100%;
-    justify-content: center;
+    padding: 0 2px;
+    width: 100vw;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
   }
 }
 
@@ -673,7 +697,7 @@
 @media (max-width: 480px) {
   .home-page .hero-section {
     height: 350px;
-    margin: 12px 12px 24px 12px;
+    margin: 12px auto 24px auto; /* Symmetric horizontal margin */
     border-radius: 8px;
   }
 

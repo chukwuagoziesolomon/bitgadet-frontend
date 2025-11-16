@@ -123,9 +123,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
       generatedBadges.push(condition_display);
     }
 
-    // Coupon badge
+    // Coupon badge - prioritize this over other badges for coupons
     if (is_coupon) {
-      generatedBadges.push('Gift Coupon');
+      generatedBadges.unshift('🎁 Gift Coupon'); // Add gift emoji and prioritize
+      return generatedBadges; // Return early for coupons to avoid other badges
     }
 
     return generatedBadges;
@@ -249,7 +250,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleWhatsAppEnquiry = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const message = `Hello, I'd like to enquire about ${name} (ID: ${id}) by ${brand}.`;
+    const message = `Hello, I'd like to enquire about ${name} by ${brand}.`;
     const whatsappUrl = `https://api.whatsapp.com/send?phone=2349138666111&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };

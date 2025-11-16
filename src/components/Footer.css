@@ -134,7 +134,7 @@
   padding: 0.7rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background-color: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+  color: #000000;
   border-radius: 6px;
   font-size: 0.875rem;
   outline: none;
@@ -142,7 +142,7 @@
 }
 
 .newsletter-input::placeholder {
-  color: #6b8299;
+  color: #666666;
 }
 
 .newsletter-input:focus {
@@ -318,6 +318,7 @@
   .newsletter-input {
     padding: 0.6rem 0.85rem;
     font-size: 0.8rem;
+    color: #000000;
   }
 
   .newsletter-btn {

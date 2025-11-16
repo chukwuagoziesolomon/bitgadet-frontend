@@ -254,6 +254,22 @@ const ProfileSettings: React.FC = () => {
   };
 
   const handleChangePassword = async () => {
+    // Frontend validation
+    if (!passwordData.current_password) {
+      showError('Validation Error', 'Current password is required.');
+      return;
+    }
+
+    if (!passwordData.new_password) {
+      showError('Validation Error', 'New password is required.');
+      return;
+    }
+
+    if (passwordData.new_password.length < 8) {
+      showError('Validation Error', 'New password must be at least 8 characters long.');
+      return;
+    }
+
     if (passwordData.new_password !== passwordData.confirm_password) {
       showError('Password mismatch', 'New password and confirmation do not match.');
       return;
@@ -368,13 +384,6 @@ const ProfileSettings: React.FC = () => {
                 disabled={saving || loading}
               >
                 {saving ? 'Saving...' : 'Save Profile'}
-              </button>
-              <button
-                className="change-password-button"
-                onClick={handleChangePassword}
-                disabled={changingPassword}
-              >
-                {changingPassword ? 'Changing...' : 'Change Password'}
               </button>
             </div>
           </div>
@@ -609,6 +618,18 @@ const ProfileSettings: React.FC = () => {
                   )}
                 </div>
               )}
+
+              {/* Change Password Button */}
+              <div className="form-group">
+                <button
+                  className="change-password-button"
+                  onClick={handleChangePassword}
+                  disabled={changingPassword}
+                  style={{ marginTop: '20px' }}
+                >
+                  {changingPassword ? 'Changing...' : 'Change Password'}
+                </button>
+              </div>
             </div>
 
             {/* Newsletter Preferences */}
