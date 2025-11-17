@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { publicApiRequest, buildApiUrl } from '../config/api';
 import styles from './OrderConfirmation.module.css';
 
 const OrderConfirmation = () => {
@@ -28,28 +29,46 @@ const OrderConfirmation = () => {
 
   // Fetch comprehensive order status/summary on mount
   useEffect(() => {
-    if (orderId) {
+    if (!orderId) return;
+
+    let isMounted = true;
+    const fetchCheckoutStatus = async () => {
       setLoading(true);
-      fetch(`/api/checkout/status/${orderId}/`)
-        .then(res => res.json())
-        .then(data => {
-          setCheckoutStatus(data);
-          
-          // Check if order contains coupon products and redirect
-          const hasCouponProducts = data.products?.some((product: any) => product.is_coupon === true) || false;
-          if (hasCouponProducts) {
-            navigate(`/coupon/success/${orderId}`, { replace: true });
-          }
-        })
-        .catch(() => setCheckoutStatus(null))
-        .finally(() => setLoading(false));
-    }
+      try {
+        const data = await publicApiRequest<any>(`/api/checkout/status/${orderId}/`);
+        if (!isMounted) return;
+
+        setCheckoutStatus(data);
+
+        const hasCouponProducts = data.products?.some((product: any) => product.is_coupon === true) || false;
+        if (hasCouponProducts) {
+          navigate(`/coupon/success/${orderId}`, { replace: true });
+        }
+      } catch (error) {
+        if (isMounted) {
+          setCheckoutStatus(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchCheckoutStatus();
+
+    return () => {
+      isMounted = false;
+    };
   }, [orderId, navigate]);
 
   const downloadReceipt = async () => {
     setDownloading(true);
     try {
-      const response = await fetch(`/api/orders/${orderId}/receipt/download/`);
+      const downloadUrl = buildApiUrl(`/api/orders/${orderId}/receipt/download/`);
+      const response = await fetch(downloadUrl, {
+        credentials: 'include',
+      });
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
@@ -60,12 +79,12 @@ const OrderConfirmation = () => {
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        } else {
+      } else {
         alert('Failed to download receipt');
-        }
-      } catch (error) {
+      }
+    } catch (error) {
       alert('Error downloading receipt');
-      } finally {
+    } finally {
       setDownloading(false);
     }
   };

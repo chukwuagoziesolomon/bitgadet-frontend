@@ -5,17 +5,8 @@ import Gamepad2 from './icons/Gamepad2';
 import ShoppingCart from './icons/ShoppingCart';
 import { Copy, Check, AlertTriangle, Lightbulb, Lock, User, Info } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
+import { publicApiRequest } from '../config/api';
 import './PaymentDetails.css';
-
-// Helper function to normalize base URL (convert HTTPS to HTTP for localhost)
-const normalizeBaseUrl = (url: string): string => {
-  if (!url) return url;
-  // Convert https://127.0.0.1 or https://localhost to http://
-  if (url.startsWith('https://127.0.0.1') || url.startsWith('https://localhost')) {
-    return url.replace('https://', 'http://');
-  }
-  return url;
-};
 
 
 const PaymentDetails: React.FC = () => {
@@ -77,14 +68,10 @@ const PaymentDetails: React.FC = () => {
     setError(null);
     setConfirming(true);
     try {
-      const apiUrl = normalizeBaseUrl(process.env.REACT_APP_API_URL || '');
-      const url = apiUrl ? `${apiUrl}/api/checkout/confirm-payment/${paymentData.payment_info.order_id}/` : `/api/checkout/confirm-payment/${paymentData.payment_info.order_id}/`;
-      const response = await fetch(url, {
+      const data = await publicApiRequest<any>(`/api/checkout/confirm-payment/${paymentData.payment_info.order_id}/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: paymentData.order.email }),
       });
-      const data = await response.json();
       navigate('/order-confirmation', { state: { orderConfirmation: data } });
     } catch (err) {
       setError('Failed to confirm payment. Please try again.');

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { publicApiRequest } from '../config/api';
 import styles from './OrderTracking.module.css';
 
 const OrderTracking = () => {
@@ -38,16 +39,11 @@ const OrderTracking = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/orders/track/${orderId}/?email=${encodeURIComponent(email)}`);
-      const data = await response.json();
-      
-      if (response.ok) {
-        setOrderData(data);
-      } else {
-        setError(data.message || 'Failed to track order. Please check your details.');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+      const data = await publicApiRequest<any>(`/api/orders/track/${orderId}/?email=${encodeURIComponent(email)}`);
+      setOrderData(data);
+    } catch (err: any) {
+      const message = err?.response?.data?.message || err?.message || 'Network error. Please try again.';
+      setError(message);
     } finally {
       setLoading(false);
     }
