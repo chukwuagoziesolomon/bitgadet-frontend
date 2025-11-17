@@ -84,7 +84,7 @@ const ContactPage: React.FC = () => {
   };
 
   const handleWhatsAppClick = () => {
-    window.open('https://wa.me/2348123456789', '_blank');
+    window.open('https://wa.me/2349138666111', '_blank');
   };
 
   return (
@@ -144,7 +144,7 @@ const ContactPage: React.FC = () => {
               </div>
               <div className="card-content">
                 <h3>WhatsApp</h3>
-                <p className="whatsapp-number">+234 812 345 6789</p>
+                <p className="whatsapp-number">+2349138666111</p>
                 <p className="card-description">Chat with us on WhatsApp</p>
                 <a href="https://wa.me/2349138666111" className="contact-link">Contact Now →</a>
               </div>

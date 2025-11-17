@@ -103,9 +103,9 @@ body {
 }
 
 /* Hero Section */
-.hero-section {
+.landing-page .hero-section {
   background: #F0FDF4 !important;
-  background-image: 
+  background-image:
     linear-gradient(rgba(0, 0, 0, 0.15) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 0, 0, 0.15) 1px, transparent 1px);
   background-size: 20px 20px;
@@ -118,7 +118,7 @@ body {
 }
 
 @media (max-width: 768px) {
-  .hero-section {
+  .landing-page .hero-section {
     padding: 0.5rem 0 0.5rem;
     min-height: auto;
     max-height: none;
@@ -134,13 +134,13 @@ body {
 
 /* iPhone SE and smaller screens */
 @media (max-width: 375px) {
-  .hero-section {
+  .landing-page .hero-section {
     padding: 0.5rem 0 0.5rem;
     min-height: auto;
     max-height: none;
     margin-bottom: 2rem;
   }
-  
+
   .hero-container {
     gap: 1rem;
   }
@@ -169,36 +169,36 @@ body {
 
 /* iPhone 14 Pro Max and larger mobile screens */
 @media (min-width: 430px) and (max-width: 768px) {
-  .hero-section {
+  .landing-page .hero-section {
     padding-top: 0.5rem;
     min-height: auto;
     max-height: none;
   }
-  
+
   .hero-container {
     gap: 1.2rem;
     padding-top: 0.3rem;
   }
-  
+
   .hero-content {
     margin-bottom: 0;
   }
-  
+
   .hero-title {
     font-size: 2.2rem;
     margin-bottom: 0.6rem;
   }
-  
+
   .hero-description {
     font-size: 1rem;
     margin-bottom: 0.6rem;
   }
-  
+
   .shop-now-btn {
     margin-bottom: 0;
     background: #00C896 !important;
   }
-  
+
   .hero-products {
     height: 200px;
     margin-top: 1.2rem;

@@ -585,6 +585,27 @@
     box-sizing: border-box;
     overflow-x: hidden;
   }
+  .home-page .products-header-row{
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+  }
+   .home-page .product-tabs {
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+    .home-page .tab-btn {
+    font-size: 13px;
+    padding: 8px 12px;
+    flex-shrink: 0;
+  }
+
+  .home-page .tab-btn.active {
+    padding: 8px 16px;
+  }
+
 }
 
 @media (max-width: 480px) {

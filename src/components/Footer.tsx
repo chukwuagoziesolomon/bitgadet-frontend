@@ -49,7 +49,7 @@ const Footer: React.FC = () => {
             BitGadgetz is a modern eCommerce platform that sells gadgets and accessories with crypto and Naira payment options.
           </p>
           <div className="footer-socials">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <a href="https://www.facebook.com/share/1T4ZBKdcf1/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
               <Facebook size={20} />
             </a>
             <a href="https://www.instagram.com/bitgadgetz_tech" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
@@ -58,10 +58,10 @@ const Footer: React.FC = () => {
             <a href="https://x.com/bitgadgetz" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
               <X size={20} />
             </a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <a href="https://www.linkedin.com/company/bitgadgetz/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
               <Linkedin size={20} />
             </a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+            <a href="https://www.youtube.com/@Bitgadgetz" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
               <Youtube size={20} />
             </a>
           </div>

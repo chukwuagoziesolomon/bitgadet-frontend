@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import ScrollToTop from './components/ScrollToTop';
 import LandingPage from './components/LandingPage';
 import HomePage from './components/HomePage';
 import CategoryPage from './components/CategoryPage';
@@ -39,6 +40,7 @@ const AppContent: React.FC = () => {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className="App">
         <Routes>
           {/* Landing page without navbar */}
