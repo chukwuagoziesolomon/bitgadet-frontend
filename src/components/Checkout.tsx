@@ -228,9 +228,54 @@ const Checkout: React.FC = () => {
       } else {
         showError('Error creating order', result.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting order:', error);
-      showError('Error submitting order', 'Please try again.');
+
+      let errorMessage = 'Error submitting order. Please try again.';
+      let errorTitle = 'Checkout Failed';
+
+      // Handle specific error types based on response
+      if (error.message) {
+        // Handle specific API error messages
+        if (error.message.includes('cart is empty')) {
+          errorMessage = 'Your cart is empty. Please add some products before proceeding to checkout.';
+          errorTitle = 'Empty Cart';
+        } else if (error.message.includes('address') || error.message.includes('shipping')) {
+          errorMessage = 'Please provide a valid shipping address.';
+          errorTitle = 'Shipping Address Error';
+        } else if (error.message.includes('payment')) {
+          errorMessage = 'There was an issue with your payment method. Please try again or contact support.';
+          errorTitle = 'Payment Error';
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error. Please check your internet connection and try again.';
+          errorTitle = 'Connection Error';
+        } else {
+          errorMessage = error.message;
+        }
+      } else if (error.errors) {
+        // Handle validation errors from API
+        if (Array.isArray(error.errors)) {
+          errorMessage = error.errors.join(', ');
+        } else {
+          errorMessage = Object.values(error.errors).flat().join(', ');
+        }
+        errorTitle = 'Validation Error';
+      } else if (error.response?.data) {
+        // Handle nested error responses
+        const responseData = error.response.data;
+        if (responseData.message) {
+          errorMessage = responseData.message;
+        } else if (responseData.errors) {
+          if (Array.isArray(responseData.errors)) {
+            errorMessage = responseData.errors.join(', ');
+          } else {
+            errorMessage = Object.values(responseData.errors).flat().join(', ');
+          }
+          errorTitle = 'Validation Error';
+        }
+      }
+
+      showError(errorTitle, errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -692,4 +737,3 @@ const Checkout: React.FC = () => {
 };
 
 export default Checkout;
-
