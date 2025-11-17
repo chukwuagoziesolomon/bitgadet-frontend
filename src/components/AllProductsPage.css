@@ -10,6 +10,7 @@
 /* Main Content */
 .all-products-page .main-content {
   display: flex;
+  flex-wrap: wrap; /* Allow items to wrap on smaller screens */
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
@@ -311,6 +312,22 @@
   margin-bottom: 1rem;
 }
 
+/* Compatibility fixes for appearance and line-clamp */
+
+/* Define standard property for appearance */
+.all-products-page select {
+  appearance: none; /* Standard property for compatibility */
+  -webkit-appearance: none; /* WebKit-specific property */
+}
+
+/* Define standard property for line-clamp */
+.all-products-page .clamped-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* WebKit-specific property */
+  line-clamp: 2; /* Standard property for compatibility */
+}
+
 /* Responsive Design */
 @media (min-width: 769px) and (max-width: 1024px) {
   .all-products-page .main-content {
@@ -385,11 +402,14 @@
   }
 
   .all-products-page .products-grid.grid {
-    grid-template-columns: repeat(2, 1fr);
+    display: grid !important;
+    grid-template-columns: repeat(2,minmax(0, 1fr))!important;
     gap: 0.75rem;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    padding:0;
+    margin:0;
   }
 
   /* Ensure proper spacing for mobile grid items */
@@ -403,6 +423,7 @@
     padding: 1rem 0.5rem;
     width: 100%;
     box-sizing: border-box;
+    overflow:hidden;
   }
 
   /* Show mobile dropdown button and panel */
@@ -419,15 +440,24 @@
 
 @media (max-width: 576px) {
   .all-products-page .products-grid.grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) important;
     gap: 0.5rem;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
     padding: 0;
     margin: 0;
+    display: grid !important;
   }
-  
+
+  /* Force product cards to fit in 2 columns */
+  .all-products-page .products-grid.grid .product-card-component {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
+  }
+
   .all-products-page .products-section {
     padding: 0.75rem 0.5rem;
     width: 100%;
@@ -449,6 +479,24 @@
     padding: 0.75rem 0.5rem;
     width: 100%;
     box-sizing: border-box;
+  }
+
+  /* Ensure text wrapping and visibility for mobile 2-column layout */
+  .all-products-page .products-grid.grid .product-card-component .brands-product-name {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow: visible;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  /* Ensure overall card content fits properly */
+  .all-products-page .products-grid.grid .product-card-component .brands-product-card {
+    height: auto;
+    overflow: visible;
   }
 }
 

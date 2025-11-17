@@ -32,8 +32,15 @@
 }
 
 .navbar-top .navbar-container {
+  display:flex;
+  align-items:center;
   justify-content: space-between;
   gap: 32px;
+}
+
+.navbar-logo{
+  flex-shrink:0;
+  margin-right:auto;
 }
 
 .navbar-logo img {
@@ -53,6 +60,7 @@
   position: relative;
   display: flex;
   justify-content: flex-end;
+  margin:0 32px;
 }
 
 .search-form {
