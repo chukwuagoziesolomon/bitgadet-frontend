@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
-import { conditionalApiRequest, apiRequest } from '../config/api';
+import { cartService } from '../services/cartService';
 import './ShoppingCart.css';
 
 interface CartItem {
@@ -29,34 +29,36 @@ const ShoppingCart: React.FC = () => {
 
   const fetchCart = async () => {
     try {
-      const cartData = await conditionalApiRequest<any>('/api/cart/');
+      const cartData = await cartService.getCart();
       const products = cartData.products || [];
 
       const transformedProducts = products.map((product: any) => ({
         id: product.id,
         name: product.name,
         slug: product.slug,
-        price: parseFloat(product.current_price) || 0,
+        price: parseFloat(product.discounted_price || product.price) || 0,
         quantity: product.quantity || 1,
-        item_total: product.quantity ? (parseFloat(product.current_price) || 0) * product.quantity : undefined,
-        brand: product.brand,
+        item_total: product.subtotal || (parseFloat(product.discounted_price || product.price) || 0) * product.quantity,
+        brand: product.brand_name || product.brand,
         image: product.main_image,
-        usdPrice: parseFloat(product.current_price_usdt) || undefined,
+        usdPrice: parseFloat(product.price_usdt) || undefined,
         discount: product.discount_percentage || undefined,
       }));
 
       setCartItems(transformedProducts);
-      setItemCount(transformedProducts.length);
-
-      try {
-        const summaryData = await conditionalApiRequest<any>('/api/cart/summary/');
-        setOrderSummary(summaryData);
-      } catch (summaryError) {
-        console.error('Failed to fetch cart summary:', summaryError);
-        setOrderSummary({});
-      }
+      setItemCount(cartData.total_items || 0);
+      setOrderSummary({
+        subtotal: cartData.total_amount || 0,
+        total: cartData.total_amount || 0,
+        total_usdt: cartData.total_amount_usdt || 0,
+        shipping: 0, // Assuming shipping is calculated elsewhere
+        tax: 0, // Assuming tax is calculated elsewhere
+      });
     } catch (error) {
       console.error('Failed to fetch cart:', error);
+      setCartItems([]);
+      setItemCount(0);
+      setOrderSummary({});
     } finally {
       setLoading(false);
     }
@@ -65,10 +67,7 @@ const ShoppingCart: React.FC = () => {
   const updateQuantity = async (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     try {
-      await conditionalApiRequest<any>('/api/cart/update/', {
-        method: 'POST',
-        body: JSON.stringify({ product_id: id, quantity: newQuantity }),
-      });
+      await cartService.updateCart(id, newQuantity);
       fetchCart();
     } catch (error) {
       console.error('Failed to update quantity:', error);
@@ -77,10 +76,7 @@ const ShoppingCart: React.FC = () => {
 
   const removeItem = async (id: number) => {
     try {
-      await conditionalApiRequest<any>('/api/cart/remove/', {
-        method: 'POST',
-        body: JSON.stringify({ product_id: id }),
-      });
+      await cartService.removeFromCart(id);
       fetchCart();
     } catch (error) {
       console.error('Failed to remove item:', error);

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { conditionalApiRequest, publicApiRequest } from '../config/api';
+import { conditionalApiRequest, apiRequest, publicApiRequest } from '../config/api';
 import ProductCard from './ProductCard';
 import { useToast } from '../hooks/useToast';
+import { cartService } from '../services/cartService';
 import './SearchResultsPage.css';
 
 interface Product {
@@ -12,6 +13,8 @@ interface Product {
   category_name: string;
   current_price: string;
   original_price: string | null;
+  current_price_usdt?: string;
+  original_price_usdt?: string;
   brand: string;
   main_image: string;
   is_on_sale: boolean;
@@ -39,21 +42,20 @@ interface Category {
 
 interface SearchResults {
   query: string;
-  results: {
-    products: {
-      count: number;
-      items: Product[];
-    };
-    categories: {
-      count: number;
-      items: Category[];
-    };
-    brands: {
-      count: number;
-      items: Brand[];
-    };
-  };
   total_results: number;
+  products: {
+    count: number;
+    results: Product[];
+  };
+  categories?: {
+    count: number;
+    results: Category[];
+  };
+  brands?: {
+    count: number;
+    results: Brand[];
+  };
+  has_results: boolean;
 }
 
 const SearchResultsPage: React.FC = () => {
@@ -64,7 +66,7 @@ const SearchResultsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [cart, setCart] = useState<Record<number, number>>({});
-  const { showError } = useToast();
+  const { showError, showSuccess } = useToast();
 
   useEffect(() => {
     if (query.trim()) {
@@ -117,20 +119,15 @@ const SearchResultsPage: React.FC = () => {
   };
 
   const handleAddToCart = async (productId: number) => {
-    const token = localStorage.getItem('authToken');
-    console.log('🛒 Attempting to add product to cart:', productId, 'User logged in:', !!token);
+    console.log('🛒 Attempting to add product to cart:', productId);
 
     // Optimistic update
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
 
     try {
-      const res = await publicApiRequest<any>('/api/cart/add/', {
-        method: 'POST',
-        body: JSON.stringify({ product_id: productId, quantity: 1 }),
-      });
-      console.log('✅ Add to cart API response:', res);
-      setCart(res.cart || {});
-      console.log('🛒 Updated cart state:', res.cart || {});
+      const result = await cartService.addToCart(productId, 1);
+      console.log('✅ Add to cart API response:', result);
+      showSuccess('Added to cart', 'Product added successfully');
     } catch (error: any) {
       console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
@@ -143,10 +140,7 @@ const SearchResultsPage: React.FC = () => {
         }
         return newCart;
       });
-      // Only show error if user is actually logged in (has token)
-      if (token) {
-        showError('Failed to add to cart', error.message || 'Please try again.');
-      }
+      showError('Failed to add to cart', error.message || 'Please try again.');
     }
   };
 
@@ -232,21 +226,21 @@ const SearchResultsPage: React.FC = () => {
         <div className="search-header">
           <h1>Search Results for "{query}"</h1>
           <div className="results-summary">
-            Found {results.total_results} results ({results.results.products.count} products, {results.results.categories.count} categories, {results.results.brands.count} brands)
+            Found {results?.total_results || 0} results ({results?.products?.count || 0} products, {results?.categories?.count || 0} categories, {results?.brands?.count || 0} brands)
           </div>
         </div>
 
         {/* Products Section */}
-        {results.results.products && results.results.products.count > 0 && (
+        {results && results.products && results.products.count > 0 && (
           <section className="results-section">
             <div className="section-header">
-              <h2>Products ({results.results.products.count})</h2>
+              <h2>Products ({results.products.count})</h2>
               <Link to={`/products?q=${encodeURIComponent(query)}`} className="view-all-link">
                 View all products
               </Link>
             </div>
             <div className="products-grid">
-              {results.results.products.items.map((product) => (
+              {results.products.results.map((product) => (
                 <ProductCard
                   key={product.id}
                   id={product.id}
@@ -256,7 +250,8 @@ const SearchResultsPage: React.FC = () => {
                   image={product.main_image}
                   price={parseFloat(product.current_price)}
                   originalPrice={product.original_price ? parseFloat(product.original_price) : null}
-                  usdtPrice={product.current_price} // Using current_price as fallback
+                  usdtPrice={product.current_price_usdt || '0 USDT'}
+                  originalUsdtPrice={product.original_price_usdt}
                   rating={4.5} // Default rating since API doesn't provide it
                   reviews={10} // Default reviews count
                   inStock={product.is_in_stock}
@@ -276,13 +271,13 @@ const SearchResultsPage: React.FC = () => {
         )}
 
         {/* Categories Section */}
-        {results.results.categories && results.results.categories.count > 0 && (
+        {results && results.categories && results.categories.count > 0 && (
           <section className="results-section">
             <div className="section-header">
-              <h2>Categories ({results.results.categories.count})</h2>
+              <h2>Categories ({results.categories.count})</h2>
             </div>
             <div className="categories-grid">
-              {results.results.categories.items.map((category) => (
+              {results.categories.results.map((category) => (
                 <Link key={category.id} to={category.url} className="category-card">
                   <h3>{category.display_name}</h3>
                   <p>{category.name}</p>
@@ -293,13 +288,13 @@ const SearchResultsPage: React.FC = () => {
         )}
 
         {/* Brands Section */}
-        {results.results.brands && results.results.brands.count > 0 && (
+        {results && results.brands && results.brands.count > 0 && (
           <section className="results-section">
             <div className="section-header">
-              <h2>Brands ({results.results.brands.count})</h2>
+              <h2>Brands ({results.brands.count})</h2>
             </div>
             <div className="brands-grid">
-              {results.results.brands.items.map((brand) => (
+              {results.brands.results.map((brand) => (
                 <Link key={brand.id} to={brand.url} className="brand-card">
                   <div className="brand-logo">
                     <img src={brand.logo} alt={brand.display_name} />

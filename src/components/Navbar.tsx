@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, ChevronDown, Menu, X, Phone, Heart, BarChart3, FileText, HelpCircle, LogOut } from 'lucide-react';
 import { conditionalApiRequest } from '../config/api';
+import { cartService } from '../services/cartService';
 import './Navbar.css';
 
 // Custom hook for responsive breakpoints
@@ -52,21 +53,18 @@ const Navbar: React.FC = () => {
   // Cart count
   const [cartCount, setCartCount] = useState(0);
   useEffect(() => {
-    const cart = localStorage.getItem('cart');
-    try {
-      const cartArr = cart ? JSON.parse(cart) : [];
-      setCartCount(Array.isArray(cartArr) ? cartArr.length : 0);
-    } catch {
-      setCartCount(0);
-    }
-    const onStorage = () => {
-      const updatedCart = localStorage.getItem('cart');
+    const fetchCartCount = async () => {
       try {
-        const arr = updatedCart ? JSON.parse(updatedCart) : [];
-        setCartCount(Array.isArray(arr) ? arr.length : 0);
+        const summary = await cartService.getCartSummary();
+        setCartCount(summary.total_items || 0);
       } catch {
         setCartCount(0);
       }
+    };
+    fetchCartCount();
+    // Since cart token is in localStorage, listen for changes
+    const onStorage = () => {
+      fetchCartCount();
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);

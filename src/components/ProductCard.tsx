@@ -11,7 +11,8 @@ interface ProductCardProps {
   image: string;
   price: number;
   originalPrice?: number | null;
-  usdtPrice: string;
+  usdtPrice?: string;
+  originalUsdtPrice?: string;
   rating: number;
   reviews: number;
   badges?: string[];
@@ -52,6 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   price,
   originalPrice,
   usdtPrice,
+  originalUsdtPrice,
   rating,
   reviews,
   badges = [],
@@ -87,9 +89,23 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const isInStock = is_in_stock !== undefined ? is_in_stock : inStock;
   const isOutOfStock = is_out_of_stock || !isInStock;
 
+  // Format brand name - handle empty/null values
+  const formatBrandName = (brandValue: string | number): string => {
+    if (!brandValue) return 'Unknown Brand';
+    const brandStr = String(brandValue).trim();
+    // Return the brand name as-is since backend now returns actual brand names
+    return brandStr || 'Unknown Brand';
+  };
+
   // Generate badges based on product properties
   const generateBadges = () => {
     const generatedBadges: string[] = [...badges];
+
+    // Coupon badge - prioritize this over other badges for coupons
+    if (is_coupon) {
+      generatedBadges.unshift('COUPON'); // Add coupon badge and prioritize
+      return generatedBadges; // Return early for coupons to avoid other badges
+    }
 
     // Stock status badge
     if (isOutOfStock) {
@@ -121,12 +137,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
     // Condition badge
     if (condition_display) {
       generatedBadges.push(condition_display);
-    }
-
-    // Coupon badge - prioritize this over other badges for coupons
-    if (is_coupon) {
-      generatedBadges.unshift('🎁 Gift Coupon'); // Add gift emoji and prioritize
-      return generatedBadges; // Return early for coupons to avoid other badges
     }
 
     return generatedBadges;
@@ -250,7 +260,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
   const handleWhatsAppEnquiry = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const message = `Hello, I'd like to enquire about ${name} by ${brand}.`;
+    const message = `Hello, I'd like to enquire about ${name} by ${formatBrandName(brand)}.`;
     const whatsappUrl = `https://api.whatsapp.com/send?phone=2349138666111&text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -332,7 +342,18 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
       {/* Product Info */}
       <div className="brands-product-info">
-        <p className="brands-product-brand">{brand}</p>
+        <p className="brands-product-brand">{formatBrandName(brand)}</p>
+        
+        {/* USDT Prices - Below Brand */}
+        {usdtPrice && (
+          <div className="brands-usdt-prices">
+            <span className="brands-usdt-current-price">${usdtPrice}</span>
+            {originalUsdtPrice && (
+              <span className="brands-usdt-original-price">${originalUsdtPrice}</span>
+            )}
+          </div>
+        )}
+
         <h3 className="brands-product-name">{name}</h3>
 
         {/* Rating */}
@@ -348,26 +369,25 @@ const ProductCard: React.FC<ProductCardProps> = ({
           {is_coupon ? (
             <>
               <span className="brands-current-price coupon-value">
-                ₦{coupon_value?.toLocaleString()} Value
+                ₦{(coupon_value || 0)?.toLocaleString()} Value
               </span>
               <span className="coupon-price">
-                Buy for ₦{price.toLocaleString()}
+                Buy for ₦{(price || 0).toLocaleString()}
               </span>
             </>
           ) : (
             <>
               <span className="brands-current-price">
-                ₦{price.toLocaleString()}
+                ₦{(price || 0).toLocaleString()}
               </span>
               {originalPrice && (
                 <span className="brands-original-price">
-                  ₦{originalPrice.toLocaleString()}
+                  ₦{(originalPrice || 0).toLocaleString()}
                 </span>
               )}
             </>
           )}
         </div>
-        {!is_coupon && <p className="brands-usdt-price">{usdtPrice}</p>}
       </div>
 
       {/* Actions */}
@@ -385,7 +405,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             onClick={handleWhatsAppEnquiry}
             disabled={isOutOfStock}
           >
-            {isOutOfStock ? "Unavailable" : "WhatsApp Enquiry"}
+            {isOutOfStock ? "Unavailable" : "Enquiry"}
           </button>
         </div>
       )}

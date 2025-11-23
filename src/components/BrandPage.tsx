@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { publicApiRequest } from '../config/api';
+import { apiRequest, publicApiRequest } from '../config/api';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import ProductCard from './ProductCard';
 import './BrandPage.css';
 
@@ -46,8 +47,8 @@ interface BrandData {
 
 const BrandPage: React.FC = () => {
   const { brandName } = useParams<{ brandName: string }>();
+  const { setLoading } = useGlobalLoading();
   const [brandData, setBrandData] = useState<BrandData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<number[]>([]);
   const [cart, setCart] = useState<Record<number, number>>({});
@@ -90,11 +91,12 @@ const BrandPage: React.FC = () => {
   }, [brandName]);
 
   const handleAddToCart = async (productId: number) => {
+    const token = localStorage.getItem('authToken');
     // Optimistic update
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
 
     try {
-      const res = await publicApiRequest<any>('/api/cart/add/', {
+      const res = await (token ? apiRequest : publicApiRequest)<any>('/api/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
@@ -132,17 +134,6 @@ const BrandPage: React.FC = () => {
       setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="brand-page">
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-          <p>Loading products...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (error) {
     return (

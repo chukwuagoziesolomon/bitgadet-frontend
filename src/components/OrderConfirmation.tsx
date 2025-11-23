@@ -1,17 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { publicApiRequest, buildApiUrl } from '../config/api';
+import { cartService } from '../services/cartService';
+import { conditionalApiRequest } from '../config/api';
 import styles from './OrderConfirmation.module.css';
 
 const OrderConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const confirmation = location.state?.orderConfirmation || {};
-  const orderId = confirmation.order_id || 'BG-GSFMQJHWW';
+  
+  // Get from state passed by PaymentDetails after payment is confirmed
+  const orderId = location.state?.orderId;
+  const userEmail = location.state?.userEmail;
+  const cartTokenFromState = location.state?.cartToken;
+  const paymentStatusFromPolling = location.state?.paymentStatus;
 
   const [downloading, setDownloading] = useState(false);
-  const [checkoutStatus, setCheckoutStatus] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const [confirmationData, setConfirmationData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [orderStatsData, setOrderStatsData] = useState<any>(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [trackingData, setTrackingData] = useState<any>(null);
+  const [trackingLoading, setTrackingLoading] = useState(false);
 
   // SVG icons... (same as before)
   const boxIcon = (
@@ -27,26 +38,43 @@ const OrderConfirmation = () => {
     <svg width="21" height="21" viewBox="0 0 21 21" fill="none"><circle cx="10.5" cy="10.5" r="9.25" stroke="#d1dde8" strokeWidth="1.5" fill="#fff"/></svg>
   );
 
-  // Fetch comprehensive order status/summary on mount
+  // Fetch comprehensive order confirmation details on mount
   useEffect(() => {
-    if (!orderId) return;
+    if (!orderId) {
+      setError('Order ID not found');
+      setLoading(false);
+      return;
+    }
 
     let isMounted = true;
-    const fetchCheckoutStatus = async () => {
+    const fetchOrderConfirmation = async () => {
       setLoading(true);
       try {
-        const data = await publicApiRequest<any>(`/api/checkout/status/${orderId}/`);
+        // Build URL for confirmation endpoint
+        let confirmationUrl = `/api/orders/confirmation/${orderId}/`;
+        if (userEmail) {
+          confirmationUrl += `?email=${encodeURIComponent(userEmail)}`;
+        }
+        
+        console.log('📋 Fetching order confirmation from:', confirmationUrl);
+        
+        const data = await publicApiRequest<any>(confirmationUrl);
         if (!isMounted) return;
 
-        setCheckoutStatus(data);
+        console.log('✅ Order confirmation received:', data);
+        setConfirmationData(data);
+        setError(null);
 
-        const hasCouponProducts = data.products?.some((product: any) => product.is_coupon === true) || false;
-        if (hasCouponProducts) {
-          navigate(`/coupon/success/${orderId}`, { replace: true });
+        // Clear cart token if order is confirmed
+        if (data.order?.status === 'paid' || data.order?.status === 'processing') {
+          console.log('🧹 Clearing cart token for confirmed order');
+          cartService.clearCartToken();
         }
-      } catch (error) {
+      } catch (err: any) {
         if (isMounted) {
-          setCheckoutStatus(null);
+          console.error('❌ Error fetching order confirmation:', err);
+          setError(err.message || 'Failed to load order confirmation');
+          setConfirmationData(null);
         }
       } finally {
         if (isMounted) {
@@ -55,12 +83,62 @@ const OrderConfirmation = () => {
       }
     };
 
-    fetchCheckoutStatus();
+    fetchOrderConfirmation();
 
     return () => {
       isMounted = false;
     };
-  }, [orderId, navigate]);
+  }, [orderId, userEmail]);
+
+  // Fetch order summary statistics
+  useEffect(() => {
+    const fetchOrderSummary = async () => {
+      setSummaryLoading(true);
+      try {
+        // Use the correct endpoint for order statistics
+        const endpoint = '/api/user/order-stats/';
+        
+        console.log('Fetching order summary from:', endpoint);
+        const data = await conditionalApiRequest<any>(endpoint);
+        console.log('Order summary data:', data);
+        setOrderStatsData(data);
+      } catch (error) {
+        console.error('Error fetching order summary:', error);
+        // Use fallback data on error
+        setOrderStatsData(null);
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+    fetchOrderSummary();
+  }, [cartTokenFromState]);
+
+  // Fetch tracking data for the order
+  useEffect(() => {
+    if (!orderId) return;
+
+    const fetchTrackingData = async () => {
+      setTrackingLoading(true);
+      try {
+        console.log('📍 Fetching tracking data for order:', orderId);
+        const data = await conditionalApiRequest<any>(`/api/checkout/status/${orderId}/`);
+        console.log('✅ Tracking data received:', data);
+        setTrackingData(data);
+      } catch (error) {
+        console.error('Error fetching tracking data:', error);
+        setTrackingData(null);
+      } finally {
+        setTrackingLoading(false);
+      }
+    };
+
+    // Fetch immediately and then poll every 30 seconds
+    fetchTrackingData();
+    const interval = setInterval(fetchTrackingData, 30000);
+
+    return () => clearInterval(interval);
+  }, [orderId]);
 
   const downloadReceipt = async () => {
     setDownloading(true);
@@ -95,17 +173,63 @@ const OrderConfirmation = () => {
     return '₦' + num.toLocaleString();
   };
 
-  // Extract data from checkoutStatus (with fallback to confirmation)
-  const orderSummary = checkoutStatus?.order_summary || {};
-  const delivery = checkoutStatus?.delivery_info || {};
-  const products = checkoutStatus?.products || [];
-  const customer = orderSummary;
-  const status = orderSummary.status || confirmation.status;
-  const statusDisplay = orderSummary.status_display || status;
-  const paymentMethod = orderSummary.payment_method_display || orderSummary.payment_method || confirmation.payment_method || 'Bitcoin';
+  // Extract data from confirmationData (API response)
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            width: '50px', 
+            height: '50px', 
+            border: '3px solid #e2e8f0', 
+            borderTop: '3px solid #00b894',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 20px'
+          }}></div>
+          <h2>Loading order confirmation...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center', color: '#dc2626' }}>
+          <h2>❌ Error Loading Order</h2>
+          <p>{error}</p>
+          <button onClick={() => navigate('/')}>Return Home</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!confirmationData) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h2>No order data found</h2>
+          <button onClick={() => navigate('/')}>Return Home</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Destructure confirmationData
+  const orderObj = confirmationData.order || {};
+  const cartItems = confirmationData.cart_items || [];
+  const orderSummaryData = confirmationData.order_summary || {};
+  const customerInfo = confirmationData.customer_info || {};
+  const actions = confirmationData.actions || {};
+  const nextSteps = confirmationData.next_steps || [];
+
+  const status = orderObj.status || 'pending';
+  const statusDisplay = orderObj.status_display || status;
+  const paymentMethod = orderSummaryData.payment_method || 'Unknown';
   const isPaid = status === 'paid';
-  const isProcessing = status === 'payment_processing';
-  const orderDate = orderSummary.order_date || confirmation.created_at || 'Placed date unavailable';
+  const isProcessing = status === 'payment_processing' || status === 'processing';
+  const orderDate = orderObj.created_at || new Date().toISOString();
 
   // Enhanced Order Tracking steps based on actual order status
   const getTrackingSteps = (orderStatus: string) => {
@@ -174,12 +298,12 @@ const OrderConfirmation = () => {
           {isPaid ? (statusDisplay || 'Order Confirmed!') : 'Payment is still processing'}
             </div>
         <div className={styles.confirmSubhead}>
-          Thank you for your purchase from BitGadgetz{customer.customer_name ? `, ${customer.customer_name}` : ''}
+          Thank you for your purchase from BitGadgetz{customerInfo.name ? `, ${customerInfo.name}` : ''}
             </div>
         <div className={styles.confirmOrderLine}>
-          <span className={styles.orderNumber}>Order #{orderSummary.order_id || orderId}</span>
+          <span className={styles.orderNumber}>Order #{orderObj.order_id || orderId}</span>
           <span className={styles.dot}>•</span>
-          <span className={styles.placedOn}>{orderDate}</span>
+          <span className={styles.placedOn}>{new Date(orderDate).toLocaleDateString()}</span>
         </div>
       </div>
       {/* Main Content Grid */}
@@ -188,19 +312,25 @@ const OrderConfirmation = () => {
           {/* Order Items - actual products */}
           <div className={styles.card}>
             <div className={styles.sectionTitle}>{boxIcon} Order Items</div>
-            {products.length ? (
-              products.map((prod: any) => (
-                <div className={styles.orderItemRow} key={prod.id}>
-                  <img
-                    src={prod.image || ''}
-                    alt={prod.name || ''}
-                    className={styles.productImg}
-                  />
+            {cartItems.length ? (
+              cartItems.map((item: any) => (
+                <div className={styles.orderItemRow} key={item.id}>
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className={styles.productImg}
+                    />
+                  )}
                   <div>
-                    <div className={styles.productName}>{prod.name}</div>
-                    <div className={styles.productPrice}>{formatNaira(prod.discounted_price ?? prod.price)}</div>
-                    <div className={styles.productQty}>Quantity: {prod.quantity}</div>
-                    <div className={styles.productQty} style={{opacity:0.7}}>{prod.brand} {prod.model}</div>
+                    <div className={styles.productName}>{item.name}</div>
+                    <div className={styles.productPrice}>{formatNaira(item.price)}</div>
+                    <div className={styles.productQty}>Quantity: {item.quantity}</div>
+                    {item.subtotal && (
+                      <div className={styles.productQty} style={{opacity:0.7}}>
+                        Subtotal: {formatNaira(item.subtotal)}
+                      </div>
+                    )}
             </div>
                 </div>
               ))
@@ -226,29 +356,196 @@ const OrderConfirmation = () => {
             <div className={styles.sectionTitle}><span className={styles.deliveryIcon}>📍</span> Delivery Information</div>
             <div className={styles.deliveryInfo}>
               <div className={styles.deliveryLabel}>Shipping Address</div>
-              <div>{delivery.shipping_address?.full_address || 'N/A'}</div>
+              <div>{orderObj.shipping_address_full || customerInfo.address || 'N/A'}</div>
               <div className={styles.estimatedDelivery}>
-                Estimated Delivery <span className={styles.deliveryDate}>{delivery.estimated_delivery || 'N/A'}</span>
+                Status: <span className={styles.deliveryDate}>{statusDisplay}</span>
               </div>
             </div>
           </div>
+
+          {/* Real-Time Tracking Information */}
+          {trackingData?.order && (
+            <div className={styles.card}>
+              <div className={styles.sectionTitle}>📦 Live Tracking</div>
+              
+              {/* Tracking Status Badge */}
+              {['shipped', 'en_route', 'en-route', 'delivered'].includes(trackingData.order.status) ? (
+                <div style={{
+                  background: '#d1fae5',
+                  border: '1px solid #10b981',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  color: '#065f46',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  marginBottom: '12px'
+                }}>
+                  ✓ Tracking Available - Your order is on the way!
+                </div>
+              ) : (
+                <div style={{
+                  background: '#fef3c7',
+                  border: '1px solid #f59e0b',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  color: '#92400e',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  marginBottom: '12px'
+                }}>
+                  ⏱ {trackingData.order.status === 'pending' ? 'Awaiting Payment' : 'Order Being Prepared'}
+                </div>
+              )}
+
+              {/* Shipping Details */}
+              {trackingData.order.tracking_number && (
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>
+                    Tracking Number
+                  </div>
+                  <div style={{
+                    padding: '10px 12px',
+                    background: '#f0f9ff',
+                    borderRadius: '6px',
+                    fontFamily: 'monospace',
+                    color: '#1e40af',
+                    fontSize: '14px'
+                  }}>
+                    {trackingData.order.tracking_number}
+                  </div>
+                </div>
+              )}
+
+              {trackingData.order.carrier_name && (
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '13px', color: '#666', marginBottom: '4px', fontWeight: '600' }}>
+                    Carrier
+                  </div>
+                  <div style={{
+                    padding: '10px 12px',
+                    background: '#f3f4f6',
+                    borderRadius: '6px',
+                    fontSize: '14px'
+                  }}>
+                    {trackingData.order.carrier_name}
+                  </div>
+                </div>
+              )}
+
+              {trackingData.order.tracking_url && (
+                <a 
+                  href={trackingData.order.tracking_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-block',
+                    marginTop: '8px',
+                    padding: '10px 16px',
+                    background: '#3b82f6',
+                    color: 'white',
+                    borderRadius: '6px',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    fontSize: '13px'
+                  }}
+                >
+                  Track Package →
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Payment Status Section - If Pending */}
+          {trackingData?.payment_status?.is_pending && trackingData?.payment_status?.bank_transfer && (
+            <div className={styles.card}>
+              <div className={styles.sectionTitle}>🏦 Bank Transfer Details</div>
+              <div style={{
+                padding: '14px',
+                background: '#f8fafc',
+                border: '2px dashed #cbd5e1',
+                borderRadius: '8px',
+                fontSize: '13px'
+              }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ color: '#64748b', fontSize: '12px', marginBottom: '2px', fontWeight: '600' }}>
+                    Bank Name
+                  </div>
+                  <div style={{ fontWeight: '600' }}>{trackingData.payment_status.bank_transfer.bank_name}</div>
+                </div>
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ color: '#64748b', fontSize: '12px', marginBottom: '2px', fontWeight: '600' }}>
+                    Account Number
+                  </div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '14px', fontWeight: '600' }}>
+                    {trackingData.payment_status.bank_transfer.account_number}
+                  </div>
+                </div>
+                <div style={{
+                  marginTop: '10px',
+                  padding: '8px',
+                  background: '#fef2f2',
+                  borderRadius: '4px',
+                  color: '#991b1b',
+                  fontSize: '12px'
+                }}>
+                  ⏰ Payment expires on {new Date(trackingData.payment_status.bank_transfer.expires_at).toLocaleString()}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <div className={styles.rightCol}>
             {/* Order Summary */}
           <div className={styles.card}>
             <div className={styles.sectionTitle}>Order Summary</div>
-            <div className={styles.summaryRow}>
-              <span>Subtotal</span>
-              <span className={styles.bold}>{delivery.subtotal !== undefined ? formatNaira(delivery.subtotal) : ''}</span>
+            {summaryLoading ? (
+              <div className={styles.summaryRow} style={{ textAlign: 'center', padding: '20px' }}>
+                Loading statistics...
+              </div>
+            ) : orderStatsData ? (
+              <>
+                <div className={styles.summaryRow}>
+                  <span>Total Orders</span>
+                  <span className={styles.bold}>{orderStatsData.total_orders || 0}</span>
                 </div>
-            <div className={styles.summaryRow}>
-              <span>Shipping</span>
-              <span className={styles.success}>{delivery.shipping_cost === 0 || delivery.shipping_cost === '0' ? 'Free' : formatNaira(delivery.shipping_cost)}</span>
-            </div>
-            <div className={styles.summaryTotal}>
-              <span>Total</span>
-              <span className={styles.boldTotal}>{delivery.total_amount !== undefined ? formatNaira(delivery.total_amount) : ''}</span>
-            </div>
+                <div className={styles.summaryRow}>
+                  <span>Total Revenue</span>
+                  <span className={styles.bold}>{orderStatsData.currency || 'USD'} {orderStatsData.total_revenue?.toLocaleString() || '0.00'}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>Shipping Fees</span>
+                  <span className={styles.success}>{orderStatsData.currency || 'USD'} {orderStatsData.total_shipping_fee?.toLocaleString() || '0.00'}</span>
+                </div>
+                <div className={styles.summaryTotal}>
+                  <span>Average Order Value</span>
+                  <span className={styles.boldTotal}>{orderStatsData.currency || 'USD'} {orderStatsData.average_order_value?.toLocaleString() || '0.00'}</span>
+                </div>
+                {orderStatsData.note && (
+                  <div className={styles.summaryRow} style={{ fontSize: '0.85rem', color: '#666', marginTop: '8px' }}>
+                    <span>{orderStatsData.note}</span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className={styles.summaryRow}>
+                  <span>Subtotal</span>
+                  <span className={styles.bold}>{formatNaira(orderSummaryData.subtotal || 0)}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>Tax</span>
+                  <span className={styles.success}>{formatNaira(orderSummaryData.tax || 0)}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>Shipping</span>
+                  <span className={styles.success}>{formatNaira(orderSummaryData.shipping || 0)}</span>
+                </div>
+                <div className={styles.summaryTotal}>
+                  <span>Total</span>
+                  <span className={styles.boldTotal}>{formatNaira(orderSummaryData.total || orderObj.total_amount || 0)}</span>
+                </div>
+              </>
+            )}
             <div className={styles.summaryRow}>
               <span className={styles.summaryLabel}>Payment Method</span>
               <span className={styles.methodTag}>{paymentMethod}</span>
@@ -277,8 +574,8 @@ const OrderConfirmation = () => {
           <div className={styles.card}>
             <div className={styles.sectionTitle}>Need Help?</div>
             <div className={styles.helpText}>Our customer support team is available 24/7 to help with your order.</div>
-            <div className={styles.contactItem}>WhatsApp: <span className={styles.contactVal}>{customer.customer_phone || '+234 901 234 5678'}</span></div>
-            <div className={styles.contactItem}>Email: <span className={styles.contactVal}>{customer.customer_email || 'support@bitgadgetz.com'}</span></div>
+            <div className={styles.contactItem}>WhatsApp: <span className={styles.contactVal}>{customerInfo.phone || orderObj.phone_number || '+234 901 234 5678'}</span></div>
+            <div className={styles.contactItem}>Email: <span className={styles.contactVal}>{customerInfo.email || orderObj.email || 'support@bitgadgetz.com'}</span></div>
           </div>
         </div>
                 </div>

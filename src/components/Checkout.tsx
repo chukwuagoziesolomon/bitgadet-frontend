@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
-import { conditionalApiRequest } from '../config/api';
+import { conditionalApiRequest, API_CONFIG } from '../config/api';
+import { handleApiError } from '../utils/errorHandler';
+import { cartService } from '../services/cartService';
 import './Checkout.css';
 
 const Checkout: React.FC = () => {
@@ -72,8 +74,11 @@ const Checkout: React.FC = () => {
     const fetchOrderSummary = async () => {
       setSummaryLoading(true);
       try {
-        console.log('Fetching order summary from /api/orders/summary/');
-        const data = await conditionalApiRequest<any>('/api/orders/summary/');
+        console.log('Fetching order summary from /api/user/order-stats/');
+        // Use the correct endpoint for order statistics
+        let endpoint = API_CONFIG.ENDPOINTS.USER_ORDER_STATS;
+        
+        const data = await conditionalApiRequest<any>(endpoint);
         console.log('Order summary data:', data);
         setOrderSummary(data);
 
@@ -82,16 +87,15 @@ const Checkout: React.FC = () => {
         setHasCouponProducts(false);
       } catch (error) {
         console.error('Error fetching order summary:', error);
-        showError('Failed to load order summary');
-        // Set a fallback summary for development
+        const errorMessage = handleApiError(error as any, 'Order Summary');
+        showError('Failed to load order summary', errorMessage);
+        // Set a fallback summary for development - matching the actual API response format
         setOrderSummary({
-          subtotal: 150000.0,
-          item_count: 2,
-          shipping: 2000.0,
-          tax: 11250.0,
-          total: 163250.0,
-          currency: "NGN",
-          currency_symbol: "₦"
+          total_orders: 0,
+          total_spent: 0.0,
+          average_order_value: 0.0,
+          status_breakdown: {},
+          currency: "USD"
         });
       } finally {
         setSummaryLoading(false);
@@ -103,63 +107,117 @@ const Checkout: React.FC = () => {
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
-      showError('Please enter a coupon code');
+      showError('Validation Error', 'Please enter a coupon code');
       return;
     }
 
     if (!formData.email) {
-      showError('Please enter your email address first');
-      return;
-    }
-
-    if (!orderSummary?.total) {
-      showError('Unable to calculate discount - order summary not loaded');
+      showError('Validation Error', 'Please enter your email address first');
       return;
     }
 
     setCouponLoading(true);
 
     try {
-      const response = await conditionalApiRequest<any>('/api/coupons/validate/', {
+      const response = await conditionalApiRequest<any>(API_CONFIG.ENDPOINTS.COUPONS_VALIDATE, {
         method: 'POST',
         body: JSON.stringify({
           coupon_code: couponCode.trim(),
-          user_email: formData.email,
-          order_amount: orderSummary.total
+          user_email: formData.email
         })
       });
 
-      if (response.valid) {
-        setAppliedCoupon(response);
-        showSuccess('Coupon applied!', response.message);
+      if (response.success) {
+        // Store coupon data with all details
+        setAppliedCoupon({
+          code: response.coupon_code,
+          discount_type: response.discount_type,
+          discount_value: response.discount_value,
+          discount_amount: response.discount_amount,
+          final_amount: response.final_amount
+        });
+        
+        // Format discount message based on type
+        const discountText = response.discount_type === 'percentage' 
+          ? `${response.discount_value}% off` 
+          : `₦${response.discount_amount?.toLocaleString()} off`;
+        
+        showSuccess('Coupon Applied!', `You saved ${discountText} on your order!`);
 
-        // Update order summary with discount
-        setOrderSummary((prev: any) => ({
-          ...prev,
-          discount: response.coupon.discount_amount,
-          total: response.order_summary.final_amount
-        }));
+        // Now fetch the updated order summary with the coupon code applied
+        try {
+          console.log('Fetching updated order summary with coupon...');
+          const summaryEndpoint = `${API_CONFIG.ENDPOINTS.ORDER_SUMMARY_STATS}?coupon_code=${couponCode.trim()}`;
+          const summaryData = await conditionalApiRequest<any>(summaryEndpoint);
+          
+          if (summaryData) {
+            console.log('Updated order summary with coupon:', summaryData);
+            // Update order summary with discount information
+            setOrderSummary((prev: any) => ({
+              ...prev,
+              ...summaryData,
+              coupon_applied: true,
+              applied_coupon_code: couponCode.trim()
+            }));
+          }
+        } catch (summaryError) {
+          console.warn('Could not fetch updated order summary:', summaryError);
+          // Continue anyway - the discount will still be shown from the coupon response
+          setOrderSummary((prev: any) => ({
+            ...prev,
+            coupon_applied: true,
+            applied_coupon_code: couponCode.trim(),
+            discount_amount: response.discount_amount,
+            discount: response.discount_amount
+          }));
+        }
+
       } else {
-        showError('Invalid coupon', 'This coupon code is not valid or has expired');
+        showError('Invalid Coupon', response.message || 'This coupon code is not valid or has expired');
+        setAppliedCoupon(null);
       }
     } catch (error: any) {
       console.error('Coupon validation failed:', error);
-      showError('Coupon validation failed', error.message || 'Please try again');
+      const errorMessage = handleApiError(error, 'Coupon Validation');
+      showError('Coupon Validation Failed', errorMessage);
+      setAppliedCoupon(null);
     } finally {
       setCouponLoading(false);
     }
   };
 
-  const handleRemoveCoupon = () => {
+  const handleRemoveCoupon = async () => {
     setAppliedCoupon(null);
     setCouponCode('');
 
-    // Restore original total
-    setOrderSummary((prev: any) => ({
-      ...prev,
-      discount: 0,
-      total: (prev.subtotal || 0) + (prev.shipping_cost || 0)
-    }));
+    try {
+      // Fetch the original order summary without coupon
+      console.log('Fetching original order summary without coupon...');
+      const summaryData = await conditionalApiRequest<any>(API_CONFIG.ENDPOINTS.ORDER_SUMMARY_STATS);
+      
+      if (summaryData) {
+        console.log('Original order summary restored:', summaryData);
+        setOrderSummary((prev: any) => ({
+          ...prev,
+          ...summaryData,
+          coupon_applied: false,
+          applied_coupon_code: null,
+          discount_amount: 0,
+          discount: 0
+        }));
+      }
+    } catch (error) {
+      console.warn('Could not restore original order summary:', error);
+      // Restore original total manually
+      setOrderSummary((prev: any) => ({
+        ...prev,
+        discount: 0,
+        discount_amount: 0,
+        coupon_applied: false,
+        applied_coupon_code: null,
+        total: (prev.subtotal || 0) + (prev.shipping_cost || 0)
+      }));
+    }
 
     showSuccess('Coupon removed');
   };
@@ -215,11 +273,14 @@ const Checkout: React.FC = () => {
 
       if (result.success) {
         showSuccess('Order created successfully!', 'Redirecting to payment details...');
+        // Get cart token to pass through the payment flow
+        const cartToken = cartService.getCartToken();
         // Navigate to payment details with the API response
         navigate('/payment-details', {
           state: {
             paymentMethod,
             cryptoType,
+            cartToken,
             orderData: result.order,
             paymentInfo: result.payment_info,
             accountInfo: result.account_info
@@ -228,54 +289,10 @@ const Checkout: React.FC = () => {
       } else {
         showError('Error creating order', result.message);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error submitting order:', error);
-
-      let errorMessage = 'Error submitting order. Please try again.';
-      let errorTitle = 'Checkout Failed';
-
-      // Handle specific error types based on response
-      if (error.message) {
-        // Handle specific API error messages
-        if (error.message.includes('cart is empty')) {
-          errorMessage = 'Your cart is empty. Please add some products before proceeding to checkout.';
-          errorTitle = 'Empty Cart';
-        } else if (error.message.includes('address') || error.message.includes('shipping')) {
-          errorMessage = 'Please provide a valid shipping address.';
-          errorTitle = 'Shipping Address Error';
-        } else if (error.message.includes('payment')) {
-          errorMessage = 'There was an issue with your payment method. Please try again or contact support.';
-          errorTitle = 'Payment Error';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = 'Network error. Please check your internet connection and try again.';
-          errorTitle = 'Connection Error';
-        } else {
-          errorMessage = error.message;
-        }
-      } else if (error.errors) {
-        // Handle validation errors from API
-        if (Array.isArray(error.errors)) {
-          errorMessage = error.errors.join(', ');
-        } else {
-          errorMessage = Object.values(error.errors).flat().join(', ');
-        }
-        errorTitle = 'Validation Error';
-      } else if (error.response?.data) {
-        // Handle nested error responses
-        const responseData = error.response.data;
-        if (responseData.message) {
-          errorMessage = responseData.message;
-        } else if (responseData.errors) {
-          if (Array.isArray(responseData.errors)) {
-            errorMessage = responseData.errors.join(', ');
-          } else {
-            errorMessage = Object.values(responseData.errors).flat().join(', ');
-          }
-          errorTitle = 'Validation Error';
-        }
-      }
-
-      showError(errorTitle, errorMessage);
+      const errorMessage = handleApiError(error as any, 'Order Submission');
+      showError('Error submitting order', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -323,8 +340,18 @@ const Checkout: React.FC = () => {
                   <div className="coupon-success">
                     <span className="coupon-check">✓</span>
                     <span className="coupon-text">
-                      {appliedCoupon.coupon.description}
+                      {appliedCoupon.code}: {appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : `₦${appliedCoupon.discount_value?.toLocaleString()}`} off
                     </span>
+                  </div>
+                  <div className="coupon-details">
+                    <div className="coupon-detail-row">
+                      <span>Discount:</span>
+                      <span className="discount-amount">-₦{appliedCoupon.discount_amount?.toLocaleString()}</span>
+                    </div>
+                    <div className="coupon-detail-row final">
+                      <span>Final Amount:</span>
+                      <span className="final-amount">₦{appliedCoupon.final_amount?.toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -334,33 +361,41 @@ const Checkout: React.FC = () => {
                 ) : orderSummary ? (
                   <>
                     <div className="summary-row">
-                      <span>Subtotal ({orderSummary.item_count || 0} items)</span>
-                      <span>{orderSummary.currency_symbol || '₦'}{orderSummary.subtotal?.toLocaleString() || '0'}</span>
+                      <span>Total Orders</span>
+                      <span>{orderSummary.total_orders || 0}</span>
                     </div>
                     <div className="summary-row">
-                      <span>Shipping</span>
-                      <span>{orderSummary.currency_symbol || '₦'}{orderSummary.shipping?.toLocaleString() || '0'}</span>
+                      <span>Total Spent</span>
+                      <span>{orderSummary.currency || 'USD'} {orderSummary.total_spent?.toLocaleString() || '0.00'}</span>
                     </div>
-                    {orderSummary.tax && (
-                      <div className="summary-row">
-                        <span>Tax</span>
-                        <span>{orderSummary.currency_symbol || '₦'}{orderSummary.tax.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {orderSummary.discount > 0 && (
-                      <div className="summary-row discount">
-                        <span>Discount</span>
-                        <span>-₦{orderSummary.discount.toLocaleString()}</span>
-                      </div>
-                    )}
-                    <div className="summary-row total">
-                      <span>Total</span>
-                      <span>₦{orderSummary.total?.toLocaleString() || '0'}</span>
+                    <div className="summary-row">
+                      <span>Average Order Value</span>
+                      <span>{orderSummary.currency || 'USD'} {orderSummary.average_order_value?.toLocaleString() || '0.00'}</span>
                     </div>
-                    {orderSummary.total_usdt && (
-                      <div className="summary-row usdt">
-                        <span></span>
-                        <span>{orderSummary.total_usdt.toLocaleString()} USDT</span>
+                    
+                    {/* Display discount if coupon is applied */}
+                    {orderSummary.coupon_applied && orderSummary.discount_amount && (
+                      <>
+                        <div style={{ borderTop: '1px solid #e0e0e0', margin: '12px 0', paddingTop: '12px' }}>
+                          <div className="summary-row discount-row">
+                            <span>Subtotal:</span>
+                            <span>₦{((orderSummary.total_spent || 0) + (orderSummary.discount_amount || 0)).toLocaleString()}</span>
+                          </div>
+                          <div className="summary-row discount-row">
+                            <span style={{ color: '#10b981', fontWeight: '600' }}>Discount:</span>
+                            <span style={{ color: '#10b981', fontWeight: '700' }}>-₦{(orderSummary.discount_amount || 0).toLocaleString()}</span>
+                          </div>
+                          <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.1rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '8px', marginTop: '8px' }}>
+                            <span>Final Total:</span>
+                            <span>₦{(orderSummary.total_spent || 0).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    
+                    {orderSummary.note && (
+                      <div className="summary-row note" style={{ fontSize: '0.85rem', color: '#666', marginTop: '8px' }}>
+                        <span>{orderSummary.note}</span>
                       </div>
                     )}
                   </>
@@ -604,8 +639,25 @@ const Checkout: React.FC = () => {
               </div>
             </div>
 
-            
-  
+            {/* WhatsApp Help Section */}
+            <div className="whatsapp-help-section">
+              <div className="whatsapp-help-title">Need Help?</div>
+              <p className="whatsapp-help-text">Get instant assistance from our support team</p>
+              <button
+                type="button"
+                className="whatsapp-help-btn"
+                onClick={() => {
+                  const message = "Hi, I need help with my order during checkout.";
+                  const whatsappUrl = `https://api.whatsapp.com/send?phone=2349138666111&text=${encodeURIComponent(message)}`;
+                  window.open(whatsappUrl, '_blank');
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                </svg>
+                Get Help by WhatsApp
+              </button>
+            </div>
             <div className="checkbox-row">
               <label className="checkbox-label">
                 <input type="checkbox" checked={agree} onChange={e => setAgree(e.target.checked)} required />
@@ -657,8 +709,18 @@ const Checkout: React.FC = () => {
                   <div className="coupon-success">
                     <span className="coupon-check">✓</span>
                     <span className="coupon-text">
-                      {appliedCoupon.coupon.description}
+                      {appliedCoupon.code}: {appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : `₦${appliedCoupon.discount_value?.toLocaleString()}`} off
                     </span>
+                  </div>
+                  <div className="coupon-details">
+                    <div className="coupon-detail-row">
+                      <span>Discount:</span>
+                      <span className="discount-amount">-₦{appliedCoupon.discount_amount?.toLocaleString()}</span>
+                    </div>
+                    <div className="coupon-detail-row final">
+                      <span>Final Amount:</span>
+                      <span className="final-amount">₦{appliedCoupon.final_amount?.toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -668,35 +730,17 @@ const Checkout: React.FC = () => {
                 ) : orderSummary ? (
                   <>
                     <div className="summary-row">
-                      <span>Subtotal ({orderSummary.item_count || 0} items)</span>
-                      <span>{orderSummary.currency_symbol || '₦'}{orderSummary.subtotal?.toLocaleString() || '0'}</span>
+                      <span>Total Orders</span>
+                      <span>{orderSummary.total_orders || 0}</span>
                     </div>
                     <div className="summary-row">
-                      <span>Shipping</span>
-                      <span>{orderSummary.currency_symbol || '₦'}{orderSummary.shipping?.toLocaleString() || '0'}</span>
+                      <span>Total Spent</span>
+                      <span>{orderSummary.currency || 'USD'} {orderSummary.total_spent?.toLocaleString() || '0.00'}</span>
                     </div>
-                    {orderSummary.tax && (
-                      <div className="summary-row">
-                        <span>Tax</span>
-                        <span>{orderSummary.currency_symbol || '₦'}{orderSummary.tax.toLocaleString()}</span>
-                      </div>
-                    )}
-                    {orderSummary.discount > 0 && (
-                      <div className="summary-row discount">
-                        <span>Discount</span>
-                        <span>-₦{orderSummary.discount.toLocaleString()}</span>
-                      </div>
-                    )}
                     <div className="summary-row total">
-                      <span>Total</span>
-                      <span>₦{orderSummary.total?.toLocaleString() || '0'}</span>
+                      <span>Average Order Value</span>
+                      <span>{orderSummary.currency || 'USD'} {orderSummary.average_order_value?.toLocaleString() || '0.00'}</span>
                     </div>
-                    {orderSummary.total_usdt && (
-                      <div className="summary-row usdt">
-                        <span></span>
-                        <span>{orderSummary.total_usdt.toLocaleString()} USDT</span>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <div className="summary-error">Unable to load order summary</div>
@@ -737,3 +781,5 @@ const Checkout: React.FC = () => {
 };
 
 export default Checkout;
+
+

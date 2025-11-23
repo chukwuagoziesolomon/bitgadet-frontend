@@ -66,11 +66,12 @@ const CategoryPage: React.FC = () => {
       id: product.id,
       slug: product.slug,
       name: product.name,
-      brand: product.brand,
+      brand: product.brand_name || product.brand,
       image: product.main_image,
       price: parseFloat(product.current_price),
       originalPrice: parseFloat(product.original_price),
       usdtPrice: product.current_price_usdt,
+      originalUsdtPrice: product.original_price_usdt,
       rating: 4.5,
       reviews: 0,
       badges: product.is_featured ? ['featured'] : product.is_best_seller ? ['best-seller'] : product.is_new_arrival ? ['new-arrival'] : [],
@@ -81,6 +82,8 @@ const CategoryPage: React.FC = () => {
       onToggleWishlist: handleToggleWishlist,
       product_condition: product.product_condition,
       condition_display: product.condition_display,
+      is_coupon: product.is_coupon,
+      coupon_value: product.coupon_value,
     };
   };
 

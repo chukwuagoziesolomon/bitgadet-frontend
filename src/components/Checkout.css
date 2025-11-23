@@ -254,10 +254,25 @@ input[type="tel"]::placeholder {
 .coupon-input {
   flex: 1;
   padding: 10px 12px;
-  border: 1px solid #e0e0e0;
+  border: 2px solid #e0e0e0;
   border-radius: 6px;
   font-size: 1rem;
   font-family: 'Outfit', Arial, sans-serif;
+  transition: all 0.3s ease;
+  background: #fff;
+}
+
+.coupon-input:focus {
+  outline: none;
+  border-color: #00b894;
+  box-shadow: 0 0 8px rgba(0, 184, 148, 0.15);
+}
+
+.coupon-input:disabled {
+  background: #f0f0f0;
+  border-color: #d0d0d0;
+  color: #999;
+  cursor: not-allowed;
 }
 
 .coupon-input::placeholder {
@@ -267,57 +282,117 @@ input[type="tel"]::placeholder {
   font-size: 1rem;
 }
 .apply-btn {
-  background: #00b894;
+  background: linear-gradient(135deg, #00b894, #00a080);
   color: #fff;
   border: none;
   border-radius: 6px;
   padding: 0 18px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 184, 148, 0.2);
 }
 .apply-btn:hover:not(:disabled) {
-  background: #009e7a;
+  background: linear-gradient(135deg, #009e7a, #008566);
+  box-shadow: 0 4px 12px rgba(0, 184, 148, 0.4);
+  transform: translateY(-2px);
 }
 
 .apply-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
 }
 
 .apply-btn.remove {
-  background: #ef4444;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
 
 .apply-btn.remove:hover {
-  background: #dc2626;
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  transform: translateY(-2px);
 }
 
 /* Applied Coupon Styles */
 .applied-coupon {
   margin-bottom: 18px;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .coupon-success {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #d1fae5;
-  border: 1px solid #10b981;
+  background: linear-gradient(135deg, #d1fae5, #c7f0dd);
+  border: 2px solid #10b981;
   border-radius: 6px;
-  padding: 10px 12px;
+  padding: 12px 14px;
   font-size: 0.95rem;
   color: #065f46;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
 }
 
 .coupon-check {
   color: #10b981;
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
 .coupon-text {
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.coupon-details {
+  background: #f0fdf4;
+  border: 1px solid #dbeafe;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.coupon-detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #374151;
+}
+
+.coupon-detail-row.final {
+  border-top: 1px solid #dbeafe;
+  padding-top: 8px;
+  font-weight: 700;
+  color: #065f46;
+}
+
+.discount-amount {
+  color: #10b981;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.final-amount {
+  color: #059669;
+  font-weight: 800;
+  font-size: 16px;
 }
 .summary-details {
   margin-bottom: 18px;
@@ -336,6 +411,15 @@ input[type="tel"]::placeholder {
   color: #888;
   font-size: 0.95rem;
   margin-bottom: 0;
+}
+
+.summary-row.discount-row {
+  font-size: 0.95rem;
+}
+
+.summary-row.total-row {
+  font-weight: 700;
+  font-size: 1.1rem;
 }
 .shipping-info {
   background: #eaf0fb;
@@ -358,29 +442,40 @@ input[type="tel"]::placeholder {
 /* Coupon notice */
 .coupon-notice {
   background: linear-gradient(135deg, #f3e8ff, #e9d5ff);
-  border: 1px solid #a855f7;
+  border: 2px solid #a855f7;
   border-radius: 8px;
-  padding: 12px;
+  padding: 14px 16px;
   margin: 16px 0;
   display: flex;
   align-items: center;
   gap: 12px;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
 }
 
 .coupon-notice-icon {
-  font-size: 24px;
+  font-size: 28px;
   flex-shrink: 0;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 .coupon-notice-text {
   color: #6b21a8;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .coupon-notice-text strong {
   color: #7c3aed;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .trust-badges {

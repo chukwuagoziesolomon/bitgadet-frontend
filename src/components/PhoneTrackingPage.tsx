@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { AlertTriangle, Check, X, CheckCircle } from 'lucide-react';
 import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { handleApiError } from '../utils/errorHandler';
 import './PhoneTrackingPage.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -98,32 +99,8 @@ const PhoneTrackingPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Failed to submit tracking request:', error);
-
-      // Handle validation errors from API
-      if (error.response?.data?.errors) {
-        const errors = error.response.data.errors;
-
-        // Handle non_field_errors specifically
-        if (errors.non_field_errors && Array.isArray(errors.non_field_errors)) {
-          const nonFieldErrors = errors.non_field_errors.join(', ');
-          showError('Validation Error', nonFieldErrors);
-        } else {
-          // Handle field-specific errors - flatten all error arrays
-          const errorMessages = Object.entries(errors)
-            .map(([field, messages]) => {
-              if (Array.isArray(messages)) {
-                return `${field}: ${messages.join(', ')}`;
-              }
-              return `${field}: ${messages}`;
-            })
-            .join('; ');
-          showError('Validation Error', errorMessages);
-        }
-      } else if (error.response?.data?.message) {
-        showError('Error', error.response.data.message);
-      } else {
-        showError('Error', 'There was an error submitting your tracking request. Please try again.');
-      }
+      const errorMessage = handleApiError(error, 'Phone Tracking Submission');
+      showError('Submission Error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }

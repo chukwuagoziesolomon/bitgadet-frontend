@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShoppingBag } from 'lucide-react';
 import { API_CONFIG, publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import './BrandsPage.css';
 
 interface Brand {
@@ -20,9 +21,9 @@ interface Brand {
 
 const BrandsPage: React.FC = () => {
   const { showError } = useToast();
+  const { setLoading } = useGlobalLoading();
   const navigate = useNavigate();
   const [brands, setBrands] = useState<Brand[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,24 +53,6 @@ const BrandsPage: React.FC = () => {
   const handleViewProducts = (brandName: string) => {
     navigate(`/brands/${encodeURIComponent(brandName)}`);
   };
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="brands-page">
-        <div className="brands-container">
-          <div className="brands-header">
-            <ShoppingBag size={48} className="brands-icon" />
-            <h1>Our Brands</h1>
-            <p>Loading brands...</p>
-          </div>
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Error state
   if (error) {

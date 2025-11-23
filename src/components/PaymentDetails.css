@@ -294,6 +294,7 @@
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   overflow: hidden;
+  gap: 4px;
 }
 
 .detail-input {
@@ -304,21 +305,33 @@
   font-size: 14px;
   color: #1a202c;
   font-family: 'Outfit', sans-serif;
+  min-width: 0;
+  word-break: break-all;
 }
 
 .copy-btn {
   background: #00b894;
   color: white;
   border: none;
-  padding: 8px 12px;
+  padding: 10px 14px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-width: 48px;
 }
 
 .copy-btn:hover {
   background: #00a085;
   transform: scale(1.05);
+}
+
+.copy-btn:active {
+  transform: scale(0.95);
 }
 
 .amount-card {
@@ -328,19 +341,24 @@
   padding: 20px;
   border-radius: 12px;
   text-align: center;
+  box-shadow: 0 8px 16px rgba(0, 184, 148, 0.3);
 }
 
 .amount-card label {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
   font-weight: 500;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .amount-display {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: white;
+  word-break: break-word;
 }
 
 /* Payment Instructions */
@@ -520,6 +538,26 @@
   margin: 0;
 }
 
+.card-features {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+}
+
+.feature-check {
+  color: #00b894;
+  font-weight: bold;
+}
+
 /* Account Info Card */
 .account-info-card {
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
@@ -697,6 +735,215 @@
   animation: spin 1s linear infinite;
 }
 
+/* Account Pending Card */
+.account-pending-card {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+.pending-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.pending-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pending-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.pending-info h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #92400e;
+  margin: 0 0 4px 0;
+}
+
+.pending-info p {
+  color: #a16207;
+  font-size: 14px;
+  margin: 0;
+}
+
+.pending-content {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.pending-message p {
+  color: #92400e;
+  font-size: 14px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.next-steps h4,
+.important-notes h4 {
+  color: #92400e;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.next-steps ul,
+.important-notes ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.next-steps li,
+.important-notes li {
+  color: #a16207;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.pending-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  justify-content: center;
+}
+
+.refresh-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.alternative-methods {
+  text-align: center;
+}
+
+.alternative-methods p {
+  color: #92400e;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.method-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.alt-method-btn {
+  padding: 8px 16px;
+  background: #64748b;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.alt-method-btn:hover {
+  background: #475569;
+  transform: translateY(-1px);
+}
+
+/* Polling Status Card */
+.polling-status-card {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid #f59e0b;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+.polling-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.polling-icon {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.polling-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.polling-info h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #92400e;
+  margin: 0 0 4px 0;
+}
+
+.polling-info p {
+  color: #a16207;
+  font-size: 14px;
+  margin: 0;
+}
+
+.polling-message {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.polling-message p {
+  color: #92400e;
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Error Toast */
 .error-toast {
   position: fixed;
@@ -750,6 +997,44 @@
 
   .bank-details-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .bank-detail-card {
+    width: 100%;
+  }
+
+  .detail-input-group {
+    flex-wrap: wrap;
+  }
+
+  .detail-input {
+    padding: 14px 12px;
+    font-size: 15px;
+  }
+
+  .copy-btn {
+    padding: 12px 16px;
+    min-width: 52px;
+  }
+
+  .copy-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .amount-card {
+    padding: 18px;
+    margin-top: 4px;
+  }
+
+  .amount-card label {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .amount-display {
+    font-size: 26px;
   }
 
   .payment-actions {
@@ -781,11 +1066,60 @@
   }
 
   .payment-details-card {
-    padding: 20px;
+    padding: 16px 20px;
   }
 
   .payment-header h1 {
     font-size: 20px;
+  }
+
+  .payment-header p {
+    font-size: 13px;
+  }
+
+  .bank-details-grid {
+    gap: 12px;
+  }
+
+  .bank-detail-card label {
+    font-size: 13px;
+  }
+
+  .detail-input-group {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .detail-input {
+    padding: 12px 10px;
+    font-size: 14px;
+    min-width: 0;
+  }
+
+  .copy-btn {
+    padding: 10px 12px;
+    min-width: 44px;
+    font-size: 12px;
+  }
+
+  .copy-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .amount-card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  .amount-card label {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .amount-display {
+    font-size: 22px;
+    line-height: 1.3;
   }
 
   .order-amount {

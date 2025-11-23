@@ -15,6 +15,8 @@ import {
   X
 } from 'lucide-react';
 import { publicApiRequest, conditionalApiRequest } from '../config/api';
+import { cartService } from '../services/cartService';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import './ProductDetails.css';
 
 interface Category {
@@ -110,6 +112,7 @@ interface Recommendation {
 
 const ProductDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { setLoading: setGlobalLoading } = useGlobalLoading();
   const [product, setProduct] = useState<ProductDetails | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -143,6 +146,7 @@ const ProductDetails: React.FC = () => {
 
       try {
         setLoading(true);
+        setGlobalLoading(true);
         setError(null);
 
         // Fetch product details
@@ -171,8 +175,10 @@ const ProductDetails: React.FC = () => {
 
         // Fetch recommendations
         try {
-          const recommendationsData = await publicApiRequest<Recommendation[]>(`/api/products/recommendations/?category=${productData.category.name}&limit=6`);
-          setRecommendations(recommendationsData);
+          const recommendationsData = await publicApiRequest<any>(`/api/products/recommendations/?category=${productData.category.name}&limit=6`);
+          // Handle both direct array and object with products property
+          const productsArray = Array.isArray(recommendationsData) ? recommendationsData : (recommendationsData?.products || []);
+          setRecommendations(productsArray);
         } catch (recError) {
           console.warn('Failed to fetch recommendations:', recError);
           setRecommendations([]);
@@ -183,6 +189,7 @@ const ProductDetails: React.FC = () => {
         setError('Failed to load product details. Please try again.');
       } finally {
         setLoading(false);
+        setGlobalLoading(false);
       }
     };
 
@@ -287,10 +294,7 @@ const ProductDetails: React.FC = () => {
     try {
       setIsAddingToCart(true);
       setAddedToCart(false);
-      await publicApiRequest<any>('/api/cart/add/', {
-        method: 'POST',
-        body: JSON.stringify({ product_id: product.id, quantity }),
-      });
+      const result = await cartService.addToCart(product.id, quantity);
       setAddedToCart(true);
       // Reset the added state after a short delay
       setTimeout(() => setAddedToCart(false), 2000);
@@ -307,8 +311,40 @@ const ProductDetails: React.FC = () => {
     window.open(whatsappUrl, '_blank');
   };
 
-  const toggleWishlist = () => {
-    setIsWishlisted(!isWishlisted);
+  const toggleWishlist = async () => {
+    const authToken = localStorage.getItem('authToken');
+    
+    // Only allow wishlist functionality for authenticated users
+    if (!authToken) {
+      alert('Please log in to add items to your wishlist');
+      return;
+    }
+
+    try {
+      const headers = {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json',
+      };
+
+      const endpoint = isWishlisted 
+        ? `/api/wishlist/${product?.id}/remove/`
+        : `/api/wishlist/add/`;
+
+      const response = await fetch(endpoint, {
+        method: isWishlisted ? 'DELETE' : 'POST',
+        headers,
+        body: !isWishlisted ? JSON.stringify({ product_id: product?.id }) : undefined
+      });
+
+      if (response.ok) {
+        setIsWishlisted(!isWishlisted);
+      } else {
+        alert('Failed to update wishlist');
+      }
+    } catch (error) {
+      console.error('Wishlist error:', error);
+      alert('Error updating wishlist');
+    }
   };
 
   const handleShare = () => {
@@ -444,14 +480,6 @@ const ProductDetails: React.FC = () => {
     setCurrentImageIndex(index);
   };
 
-  if (loading) {
-    return (
-      <div className="product-details-loading">
-        <div className="loading-spinner">Loading product details...</div>
-      </div>
-    );
-  }
-
   if (error || !product) {
     return (
       <div className="product-details-error">
@@ -484,11 +512,11 @@ const ProductDetails: React.FC = () => {
         <div className="product-images">
           <div className="main-image">
             <img
-              src={product.images[currentImageIndex]?.image || product.main_image}
+              src={product.images[currentImageIndex]?.image || product.main_image || 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image+Available'}
               alt={product.images[currentImageIndex]?.alt_text || product.name}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+                target.src = 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image+Available'; // Fallback placeholder
               }}
             />
             {(product.is_bestseller || product.is_new || product.is_featured) && (
@@ -1025,11 +1053,11 @@ const ProductDetails: React.FC = () => {
                 <Link key={relatedProduct.id} to={`/product/${relatedProduct.slug}`} className="related-product-card">
                   <div className="related-product-image">
                     <img
-                      src={relatedProduct.main_image}
+                      src={relatedProduct.main_image || 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image+Available'}
                       alt={relatedProduct.name}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
+                        target.src = 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image+Available'; // Fallback placeholder
                       }}
                     />
                     <div className="related-product-badges">

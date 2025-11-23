@@ -3,11 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { publicApiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
+import { handleApiError } from '../utils/errorHandler';
 import './SignUpPage.css';
 
 const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
   const { showError, showSuccess } = useToast();
+  const { setLoading } = useGlobalLoading();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -43,6 +46,7 @@ const SignUpPage: React.FC = () => {
       return;
     }
 
+    setLoading(true);
     setIsLoading(true);
 
     try {
@@ -51,11 +55,9 @@ const SignUpPage: React.FC = () => {
         body: JSON.stringify({
           first_name: formData.firstName,
           last_name: formData.lastName,
-          phone_number: formData.phoneNumber,
           email: formData.email,
           password: formData.password,
           password_confirm: formData.confirmPassword,
-          agree_to_terms: agreedToTerms,
         }),
       });
 
@@ -63,20 +65,15 @@ const SignUpPage: React.FC = () => {
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
       localStorage.setItem('isAdmin', response.is_admin.toString());
-      localStorage.setItem('loginType', response.login_type || 'user');
 
       showSuccess('Account Created', response.message || 'Welcome to BitGadgetz!');
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup failed:', error);
-      let errorMessage = 'Signup failed. Please try again.';
-      if (error.message) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
+      const errorMessage = handleApiError(error, 'SignUp');
       showError('Signup Failed', errorMessage);
     } finally {
+      setLoading(false);
       setIsLoading(false);
     }
   };

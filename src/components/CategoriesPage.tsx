@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Grid3X3, List } from 'lucide-react';
 import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import { Link } from 'react-router-dom';
 import './CategoriesPage.css';
 
@@ -19,10 +20,10 @@ interface Category {
 
 const CategoriesPage: React.FC = () => {
   const { showError } = useToast();
+  const { setLoading } = useGlobalLoading();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -67,29 +68,6 @@ const CategoriesPage: React.FC = () => {
     }, 350);
     return () => clearTimeout(handle);
   }, [searchTerm]);
-
-  // Loading state
-  if (loading) {
-    return (
-      <div className="categories-page">
-        {/* Hero Banner */}
-        <div className="hero-banner">
-          <div className="hero-content">
-            <h1>Product Categories</h1>
-            <p>Loading categories...</p>
-            <div className="hero-features">
-              <span>Categories</span>
-              <span>Loading...</span>
-              <span>Fast Delivery</span>
-            </div>
-          </div>
-        </div>
-        <div className="loading-spinner">
-          <div className="spinner"></div>
-        </div>
-      </div>
-    );
-  }
 
   // Error state
   if (error) {

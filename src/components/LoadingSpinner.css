@@ -1,0 +1,617 @@
+/* ============================================
+   LOADING SPINNER - MAIN CONTAINER
+   ============================================ */
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+/* Full screen loading overlay */
+.loading-fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  background: transparent;
+}
+
+.loading-fullscreen.with-overlay {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(3px);
+}
+
+/* Loading text */
+.loading-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #00C896;
+  letter-spacing: 0.5px;
+  animation: fadeInOut 1.8s ease-in-out infinite;
+  margin: 0;
+}
+
+/* Size variations */
+.loading-small {
+  gap: 12px;
+}
+
+.loading-large {
+  gap: 28px;
+}
+
+.loading-small .loading-text {
+  font-size: 14px;
+}
+
+.loading-large .loading-text {
+  font-size: 18px;
+}
+
+/* ============================================
+   VARIANT 1: ELEGANT LOADER - Double Ring Gradient
+   ============================================ */
+
+.spinner-elegant {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.elegant-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px solid transparent;
+  border-radius: 50%;
+  border-top: 3px solid #00C896;
+  border-right: 3px solid #00C896;
+  animation: spin-smooth 2s linear infinite;
+}
+
+.elegant-ring-1 {
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+}
+
+.elegant-ring-2 {
+  width: 75%;
+  height: 75%;
+  opacity: 0.6;
+  animation: spin-smooth-reverse 1.5s linear infinite;
+  border-top-color: #00b085;
+  border-right-color: #00b085;
+}
+
+.elegant-center-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: #00C896;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(0, 200, 150, 0.5);
+}
+
+.loading-small .elegant-ring {
+  border-width: 2px;
+}
+
+.loading-small .elegant-ring-2 {
+  border-width: 2px;
+}
+
+.loading-small .elegant-center-dot {
+  width: 6px;
+  height: 6px;
+}
+
+.loading-large .elegant-ring {
+  border-width: 4px;
+  width: 90px;
+  height: 90px;
+}
+
+.loading-large .elegant-ring-2 {
+  border-width: 4px;
+}
+
+.loading-large .elegant-center-dot {
+  width: 10px;
+  height: 10px;
+}
+
+/* ============================================
+   VARIANT 2: ORBIT LOADER - Orbiting Particles
+   ============================================ */
+
+.spinner-orbit {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.orbit-particle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #00C896;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  box-shadow: 0 0 6px rgba(0, 200, 150, 0.8);
+}
+
+.orbit-particle-1 {
+  animation: orbit 2s linear infinite;
+  animation-delay: 0s;
+}
+
+.orbit-particle-2 {
+  animation: orbit 2s linear infinite;
+  animation-delay: 0.67s;
+}
+
+.orbit-particle-3 {
+  animation: orbit 2s linear infinite;
+  animation-delay: 1.34s;
+}
+
+.orbit-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 6px;
+  background: #00C896;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 200, 150, 0.6);
+}
+
+.loading-small .orbit-particle {
+  width: 8px;
+  height: 8px;
+}
+
+.loading-small .orbit-center {
+  width: 4px;
+  height: 4px;
+}
+
+.loading-large .orbit-particle {
+  width: 12px;
+  height: 12px;
+}
+
+.loading-large .orbit-center {
+  width: 8px;
+  height: 8px;
+}
+
+/* ============================================
+   VARIANT 3: FLOW LOADER - Liquid Blobs
+   ============================================ */
+
+.spinner-flow {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.flow-blob {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: #00C896;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  filter: blur(2px);
+  opacity: 0.8;
+}
+
+.flow-blob-1 {
+  animation: flow-move-1 3s ease-in-out infinite;
+  box-shadow: 0 0 12px rgba(0, 200, 150, 0.5);
+}
+
+.flow-blob-2 {
+  animation: flow-move-2 3s ease-in-out infinite;
+  animation-delay: 0.5s;
+  box-shadow: 0 0 12px rgba(0, 200, 150, 0.5);
+}
+
+.flow-blob-3 {
+  animation: flow-move-3 3s ease-in-out infinite;
+  animation-delay: 1s;
+  box-shadow: 0 0 12px rgba(0, 200, 150, 0.5);
+}
+
+.loading-small .flow-blob {
+  width: 16px;
+  height: 16px;
+}
+
+.loading-large .flow-blob {
+  width: 26px;
+  height: 26px;
+}
+
+/* ============================================
+   VARIANT 4: PULSE LOADER - Concentric Circles
+   ============================================ */
+
+.spinner-pulse {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.pulse-circle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid #00C896;
+  border-radius: 50%;
+  animation: pulse-expand 1.5s ease-out infinite;
+}
+
+.pulse-circle-1 {
+  width: 30px;
+  height: 30px;
+  opacity: 0.8;
+}
+
+.pulse-circle-2 {
+  width: 30px;
+  height: 30px;
+  opacity: 0.8;
+  animation-delay: 0.5s;
+}
+
+.pulse-circle-3 {
+  width: 30px;
+  height: 30px;
+  opacity: 0.8;
+  animation-delay: 1s;
+}
+
+.loading-small .pulse-circle {
+  border-width: 1.5px;
+}
+
+.loading-small .pulse-circle-1,
+.loading-small .pulse-circle-2,
+.loading-small .pulse-circle-3 {
+  width: 24px;
+  height: 24px;
+}
+
+.loading-large .pulse-circle {
+  border-width: 3px;
+}
+
+.loading-large .pulse-circle-1,
+.loading-large .pulse-circle-2,
+.loading-large .pulse-circle-3 {
+  width: 40px;
+  height: 40px;
+}
+
+/* ============================================
+   VARIANT 5: MORPH LOADER - Shape Morphing
+   ============================================ */
+
+.spinner-morph {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.morph-shape {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #00C896, #00b085);
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  animation: morph 2s ease-in-out infinite;
+  box-shadow: 0 0 15px rgba(0, 200, 150, 0.4);
+}
+
+.loading-small .morph-shape {
+  width: 40px;
+  height: 40px;
+}
+
+.loading-large .morph-shape {
+  width: 60px;
+  height: 60px;
+}
+
+/* ============================================
+   VARIANT 6: TECH LOADER - Geometric Lines
+   ============================================ */
+
+.spinner-tech {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.tech-line {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, #00C896, transparent);
+  animation: tech-scan 1.8s ease-in-out infinite;
+}
+
+.tech-line-1 {
+  width: 50px;
+  height: 2px;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0s;
+}
+
+.tech-line-2 {
+  width: 50px;
+  height: 2px;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0.3s;
+}
+
+.tech-line-3 {
+  width: 50px;
+  height: 2px;
+  top: 60%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-delay: 0.6s;
+}
+
+.tech-line-4 {
+  width: 2px;
+  height: 50px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(180deg, transparent, #00C896, transparent);
+  animation: tech-scan-vertical 1.8s ease-in-out infinite;
+}
+
+.loading-small .tech-line:not(.tech-line-4) {
+  width: 40px;
+}
+
+.loading-small .tech-line-4 {
+  height: 40px;
+}
+
+.loading-large .tech-line:not(.tech-line-4) {
+  width: 60px;
+  height: 3px;
+}
+
+.loading-large .tech-line-4 {
+  height: 60px;
+  width: 3px;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes spin-smooth {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes spin-smooth-reverse {
+  0% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+
+@keyframes orbit {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) translateX(25px);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) translateX(25px);
+  }
+}
+
+@keyframes flow-move-1 {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(15px, -15px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 0.6;
+  }
+}
+
+@keyframes flow-move-2 {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(-15px, 15px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 0.6;
+  }
+}
+
+@keyframes flow-move-3 {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) translate(0, -20px);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(0, 0);
+    opacity: 0.6;
+  }
+}
+
+@keyframes pulse-expand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes morph {
+  0% {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  }
+  25% {
+    border-radius: 30% 50% 50% 70% / 30% 30% 70% 70%;
+  }
+  50% {
+    border-radius: 70% 30% 46% 66% / 33% 66% 33% 66%;
+  }
+  75% {
+    border-radius: 100% 60% 52% 37% / 72% 88% 12% 28%;
+  }
+  100% {
+    border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  }
+}
+
+@keyframes tech-scan {
+  0% {
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+}
+
+@keyframes tech-scan-vertical {
+  0% {
+    transform: translate(-50%, -50%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeInOut {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+  .loading-container {
+    gap: 16px;
+  }
+
+  .spinner-elegant {
+    width: 60px;
+    height: 60px;
+  }
+
+  .spinner-orbit {
+    width: 60px;
+    height: 60px;
+  }
+
+  .spinner-flow {
+    width: 60px;
+    height: 60px;
+  }
+
+  .spinner-pulse {
+    width: 60px;
+    height: 60px;
+  }
+
+  .spinner-morph {
+    width: 60px;
+    height: 60px;
+  }
+
+  .spinner-tech {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .elegant-ring,
+  .orbit-particle,
+  .flow-blob,
+  .pulse-circle,
+  .morph-shape,
+  .tech-line,
+  .loading-text {
+    animation-duration: 3s !important;
+    animation-iteration-count: 1 !important;
+  }
+}

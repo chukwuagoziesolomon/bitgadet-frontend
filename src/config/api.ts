@@ -1,3 +1,7 @@
+// Import cartService for cart_token management
+import { cartService } from '../services/cartService';
+import { extractErrorMessage } from '../utils/errorHandler';
+
 // Function to get CSRF token from cookies
 export const getCsrfToken = (): string | null => {
   // Try common CSRF token names
@@ -38,7 +42,7 @@ export const API_CONFIG = {
     PRODUCTS_FEATURED_COLLECTION: '/api/products/featured/',
     PRODUCTS_BEST_SELLERS_COLLECTION: '/api/products/best-sellers/',
     PRODUCTS_NEW_ARRIVALS_COLLECTION: '/api/products/new-arrivals/',
-    PRODUCTS_CURRENT_DEAL: '/api/products/current-deal/',
+    PRODUCTS_CURRENT_DEAL: '/api/deals/current/',
     PRODUCTS_COUPONS: '/api/products/?is_coupon=true',
     CATEGORIES: '/api/categories/',
     BANNERS_ACTIVE: '/api/banners/active/',
@@ -49,19 +53,40 @@ export const API_CONFIG = {
     AUTH_SIGNUP: '/api/auth/signup/',
     AUTH_LOGOUT: '/api/auth/logout/',
     AUTH_ME: '/api/auth/me/',
-    USER_ORDER_STATS: '/api/user/order-stats/',
+    // Order Statistics Endpoints
+    USER_ORDER_STATS: '/api/user/order-stats/', // Authenticated user order statistics
+    ORDER_SUMMARY_STATS: '/api/orders/summary/', // Guest or aggregate order summary (total_orders, total_revenue, etc.)
     USER_RECENT_ORDERS: '/api/user/recent-orders/',
     USER_ORDER_HISTORY: '/api/user/order-history/',
     USER_RECENT_WISHLIST: '/api/user/recent-wishlist/',
     WISHLIST_ALL: '/api/wishlist/all/',
     AUTH_PROFILE_SETTINGS: '/api/auth/profile-settings/',
     AUTH_PASSWORD_REQUIREMENTS: '/api/auth/profile-settings/?info=password-requirements',
+    AUTH_CHANGE_PASSWORD: '/api/auth/password/change/',
     // New User Profile Management Endpoints
     USER_PROFILE: '/api/user/profile/',
     USER_PROFILE_SETTINGS: '/api/user/profile/settings/',
     USER_PROFILE_UPDATE: '/api/user/profile/update/',
-    USER_CHANGE_PASSWORD: '/api/user/change-password/',
+    USER_CHANGE_PASSWORD: '/api/auth/password/change/',
     USER_DELETE_ACCOUNT: '/api/user/delete-account/',
+    // Checkout and Payment Endpoints
+    CHECKOUT_CREATE: '/api/checkout/create/',
+    CHECKOUT_ORDER_STATUS: '/api/checkout/{order_id}/status/',
+    CHECKOUT_VALIDATE_EMAIL: '/api/checkout/validate-email/',
+    COUPONS_VALIDATE: '/api/coupons/validate/',
+    COUPONS_APPLY: '/api/coupons/apply/',
+    COUPONS_REMOVE: '/api/coupons/remove/',
+    // Cart Endpoints (JWT Token Based)
+    CART_ADD: '/api/cart/add/',
+    CART_GET: '/api/cart/',
+    CART_UPDATE: '/api/cart/update/',
+    CART_REMOVE: '/api/cart/remove/',
+    CART_CLEAR: '/api/cart/clear/',
+    CART_SUMMARY: '/api/cart/summary/',
+    // Payment Verification Endpoints
+    PAYMENT_PAYSTACK_VERIFY: '/api/payments/paystack/{reference}/verify/',
+    PAYMENT_CRYPTO_STATUS: '/api/crypto/payments/{payment_id}/status/',
+    PAYMENT_DVA_VERIFY: '/api/payments/dva/{order_id}/verify/',
   },
   TIMEOUT: 10000, // 10 seconds
 };
@@ -86,6 +111,57 @@ export const buildApiUrl = (endpoint: string): string => {
   return `${baseUrl}${cleanEndpoint}`;
 };
 
+// Helper function to check if endpoint is a cart endpoint
+const isCartEndpoint = (endpoint: string): boolean => {
+  return endpoint.includes('/api/cart/');
+};
+
+// Helper function to check if endpoint is a wishlist endpoint
+const isWishlistEndpoint = (endpoint: string): boolean => {
+  return endpoint.includes('/api/wishlist/');
+};
+
+// Helper function to check if endpoint needs credentials removed
+const needsNoCredentials = (endpoint: string): boolean => {
+  // These endpoints use JWT cart_token instead of Django sessions
+  return endpoint.includes('/api/cart/') || 
+         endpoint.includes('/api/wishlist/') || 
+         endpoint.includes('/api/orders/summary/');
+};
+
+// Helper function to handle cart_token in request body
+const addCartTokenToBody = (body: string | undefined, cartToken: string | null): string => {
+  if (!body) {
+    return cartToken ? JSON.stringify({ cart_token: cartToken }) : '{}';
+  }
+  
+  try {
+    const parsed = JSON.parse(body);
+    if (cartToken) {
+      parsed.cart_token = cartToken;
+    }
+    return JSON.stringify(parsed);
+  } catch (e) {
+    // If body is not valid JSON, return as is
+    return body;
+  }
+};
+
+// Helper function to add cart_token to URL as query parameter
+const addCartTokenToUrl = (url: string, cartToken: string | null): string => {
+  if (!cartToken) return url;
+  const separator = url.includes('?') ? '&' : '?';
+  return `${url}${separator}cart_token=${encodeURIComponent(cartToken)}`;
+};
+
+// Helper function to save cart_token from response
+const saveCartTokenFromResponse = (responseData: any): void => {
+  if (responseData && responseData.cart_token) {
+    cartService.setCartToken(responseData.cart_token);
+    console.log('🛒 Saved cart_token from response:', responseData.cart_token);
+  }
+};
+
 // API fetch wrapper with error handling
 export const apiRequest = async <T>(
   endpoint: string,
@@ -97,7 +173,19 @@ export const apiRequest = async <T>(
   baseUrl = baseUrl.replace(/\/$/, '');
   // Ensure endpoint starts with slash
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  const url = `${baseUrl}${cleanEndpoint}`;
+  let url = `${baseUrl}${cleanEndpoint}`;
+
+  // Handle cart_token for cart and wishlist endpoints
+  const isCart = isCartEndpoint(endpoint);
+  const isWishlist = isWishlistEndpoint(endpoint);
+  const cartToken = (isCart || isWishlist) ? cartService.getCartToken() : null;
+  const method = (options.method || 'GET').toUpperCase();
+  const isGetRequest = method === 'GET';
+
+  // For GET requests to cart or wishlist endpoints, add cart_token as query parameter
+  if ((isCart || isWishlist) && isGetRequest && cartToken) {
+    url = addCartTokenToUrl(url, cartToken);
+  }
 
   console.log('🌐 Making authenticated API request to:', url);
 
@@ -110,8 +198,17 @@ export const apiRequest = async <T>(
   const isPostOrPut = options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH';
   const csrfToken = isPostOrPut ? getCsrfToken() : null;
 
+  // Handle cart_token in request body for POST/PUT/PATCH to cart or wishlist endpoints
+  let body = options.body as string | undefined;
+  if ((isCart || isWishlist) && isPostOrPut) {
+    body = addCartTokenToBody(body, cartToken);
+  }
+
+  // Don't use credentials for cart, wishlist, and order summary endpoints
+  const useCredentials = !needsNoCredentials(endpoint);
+
   const defaultOptions: RequestInit = {
-    credentials: 'include', // Important for Django sessions - send cookies
+    ...(useCredentials && { credentials: 'include' }),
     headers: {
       'Content-Type': 'application/json',
       // Add 'Token ' prefix here when sending the header
@@ -120,6 +217,7 @@ export const apiRequest = async <T>(
       ...options.headers,
     },
     ...options,
+    ...(body !== undefined && { body }),
   };
 
   try {
@@ -134,11 +232,19 @@ export const apiRequest = async <T>(
     }
 
     if (!response.ok) {
-      const error = new Error(`HTTP error! status: ${response.status}`) as any;
+      // Use enhanced error extraction function
+      const errorMessage = responseData ? extractErrorMessage(responseData) : `HTTP error! status: ${response.status}`;
+      
+      const error = new Error(errorMessage) as any;
       error.response = {
         status: response.status,
         data: responseData
       };
+      console.error('❌ API Error Response:', {
+        status: response.status,
+        data: responseData,
+        url: url
+      });
 
       // Clear invalid token on 401
       if (response.status === 401) {
@@ -149,6 +255,11 @@ export const apiRequest = async <T>(
       }
 
       throw error;
+    }
+
+    // Save cart_token from response if present (for cart or wishlist endpoints)
+    if (isCart || isWishlist) {
+      saveCartTokenFromResponse(responseData);
     }
 
     console.log('📦 Response data:', responseData);
@@ -170,21 +281,43 @@ export const publicApiRequest = async <T>(
   baseUrl = baseUrl.replace(/\/$/, '');
   // Ensure endpoint starts with slash
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  const url = `${baseUrl}${cleanEndpoint}`;
+  let url = `${baseUrl}${cleanEndpoint}`;
+
+  // Handle cart_token for cart and wishlist endpoints
+  const isCart = isCartEndpoint(endpoint);
+  const isWishlist = isWishlistEndpoint(endpoint);
+  const cartToken = (isCart || isWishlist) ? cartService.getCartToken() : null;
+  const method = (options.method || 'GET').toUpperCase();
+  const isGetRequest = method === 'GET';
+
+  // For GET requests to cart or wishlist endpoints, add cart_token as query parameter
+  if ((isCart || isWishlist) && isGetRequest && cartToken) {
+    url = addCartTokenToUrl(url, cartToken);
+  }
 
   console.log('🌐 Making public API request to:', url);
 
   const isPostOrPut = options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH';
   const csrfToken = isPostOrPut ? getCsrfToken() : null;
 
+  // Handle cart_token in request body for POST/PUT/PATCH to cart or wishlist endpoints
+  let body = options.body as string | undefined;
+  if ((isCart || isWishlist) && isPostOrPut) {
+    body = addCartTokenToBody(body, cartToken);
+  }
+
+  // Don't use credentials for cart, wishlist, and order summary endpoints
+  const useCredentials = !needsNoCredentials(endpoint);
+
   const defaultOptions: RequestInit = {
-    credentials: 'include', // Important for Django sessions - send cookies
+    ...(useCredentials && { credentials: 'include' }),
     headers: {
       'Content-Type': 'application/json',
       ...(csrfToken && { 'X-CSRFToken': csrfToken }),
       ...options.headers,
     },
     ...options,
+    ...(body !== undefined && { body }),
   };
 
   try {
@@ -200,12 +333,25 @@ export const publicApiRequest = async <T>(
     }
 
     if (!response.ok) {
-      const error = new Error(`HTTP error! status: ${response.status}`) as any;
+      // Use enhanced error extraction function
+      const errorMessage = responseData ? extractErrorMessage(responseData) : `HTTP error! status: ${response.status}`;
+      
+      const error = new Error(errorMessage) as any;
       error.response = {
         status: response.status,
         data: responseData
       };
+      console.error('❌ API Error Response:', {
+        status: response.status,
+        data: responseData,
+        url: url
+      });
       throw error;
+    }
+
+    // Save cart_token from response if present (for cart or wishlist endpoints)
+    if (isCart || isWishlist) {
+      saveCartTokenFromResponse(responseData);
     }
 
     console.log('📦 Response data:', responseData);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Smartphone, MapPin, RefreshCw, Target, Eye, Headphones, Shield, Truck, CreditCard, RotateCcw, Clock, TruckIcon, Zap } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
@@ -8,15 +8,20 @@ import { useToast } from '../hooks/useToast';
 import './LandingPage.css';
 
 interface DealResponse {
-  success: boolean;
-  deal: any;
-  time_info: {
+  page_title?: string;
+  page_description?: string;
+  deals: any[];
+  total_deals: number;
+  success?: boolean;
+  deal?: any;
+  time_info?: {
     time_remaining: number;
   };
 }
 
 const LandingPage: React.FC = () => {
   const { showSuccess, showError } = useToast();
+  const navigate = useNavigate();
 
   // State for animation switches
   const [topSwitched, setTopSwitched] = useState(false);
@@ -30,12 +35,15 @@ const LandingPage: React.FC = () => {
   const [visibleServiceCards, setVisibleServiceCards] = useState(1);
 
   // State for deal of the day
+  const [deals, setDeals] = useState<any[]>([]);
+  const [currentDealIndex, setCurrentDealIndex] = useState(0);
   const [deal, setDeal] = useState<any>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [formattedTime, setFormattedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
 
-  // State for add to cart loading
-  const [addingToCart, setAddingToCart] = useState(false);
+  // State for banners slideshow
+  const [banners, setBanners] = useState<any[]>([]);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
   
   // Service cards data
   const serviceCards = [
@@ -49,19 +57,19 @@ const LandingPage: React.FC = () => {
       id: 2,
       title: "Pay in Crypto",
       description: "Securely pay with Bitcoin, Ethereum, and more",
-      icon: "/truck.png"
+      icon: "/icon1.png"
     },
     {
       id: 3,
       title: "Fuss free return",
       description: "Easy returns, no stress.",
-      icon: "/truck.png"
+      icon: "/icon2.png"
     },
     {
       id: 4,
       title: "24/7 Support",
-      description: "We are here to help anytime",
-      icon: "/truck.png"
+      description: "We are here to help anytime",
+      icon: "/icon3.png"
     }
   ];
   
@@ -164,20 +172,96 @@ const LandingPage: React.FC = () => {
     const fetchDeal = async () => {
       try {
         const data = await publicApiRequest<DealResponse>(API_CONFIG.ENDPOINTS.PRODUCTS_CURRENT_DEAL);
-        if (data.success && data.deal) {
+        
+        // Handle new API response format (deals array)
+        if (data.deals && data.deals.length > 0) {
+          setDeals(data.deals);
+          setCurrentDealIndex(0);
+          const firstDeal = data.deals[0];
+          setDeal(firstDeal);
+          console.log('Deal image:', firstDeal.deal_image);
+          console.log('Product data main image:', firstDeal.product_data?.main_image);
+          
+          // Calculate time remaining if available
+          if (firstDeal.end_time) {
+            const endTime = new Date(firstDeal.end_time).getTime();
+            const now = new Date().getTime();
+            const remaining = Math.max(0, endTime - now);
+            setTimeRemaining(remaining);
+          }
+        } 
+        // Handle old API response format (single deal)
+        else if (data.deal) {
           setDeal(data.deal);
-          setTimeRemaining(data.time_info.time_remaining);
-        } else {
+          setDeals([data.deal]);
+          setCurrentDealIndex(0);
+          setTimeRemaining(data.time_info?.time_remaining || 0);
+        } 
+        else {
           setDeal(null);
+          setDeals([]);
         }
       } catch (error) {
         console.error('Failed to fetch deal:', error);
         setDeal(null);
+        setDeals([]);
       }
     };
 
     fetchDeal();
   }, []);
+
+  // Handle deal slideshow navigation
+  const goToNextDeal = () => {
+    if (deals.length === 0) return;
+    const nextIndex = (currentDealIndex + 1) % deals.length;
+    setCurrentDealIndex(nextIndex);
+    setDeal(deals[nextIndex]);
+    
+    if (deals[nextIndex].end_time) {
+      const endTime = new Date(deals[nextIndex].end_time).getTime();
+      const now = new Date().getTime();
+      const remaining = Math.max(0, endTime - now);
+      setTimeRemaining(remaining);
+    }
+  };
+
+  const goToPrevDeal = () => {
+    if (deals.length === 0) return;
+    const prevIndex = (currentDealIndex - 1 + deals.length) % deals.length;
+    setCurrentDealIndex(prevIndex);
+    setDeal(deals[prevIndex]);
+    
+    if (deals[prevIndex].end_time) {
+      const endTime = new Date(deals[prevIndex].end_time).getTime();
+      const now = new Date().getTime();
+      const remaining = Math.max(0, endTime - now);
+      setTimeRemaining(remaining);
+    }
+  };
+
+  // Auto-rotate deals every 5 seconds
+  useEffect(() => {
+    if (deals.length <= 1) return;
+    
+    const autoRotateInterval = setInterval(() => {
+      setCurrentDealIndex(prev => {
+        const nextIndex = (prev + 1) % deals.length;
+        setDeal(deals[nextIndex]);
+        
+        if (deals[nextIndex].end_time) {
+          const endTime = new Date(deals[nextIndex].end_time).getTime();
+          const now = new Date().getTime();
+          const remaining = Math.max(0, endTime - now);
+          setTimeRemaining(remaining);
+        }
+        
+        return nextIndex;
+      });
+    }, 5000);
+
+    return () => clearInterval(autoRotateInterval);
+  }, [deals]);
 
   
 
@@ -206,23 +290,65 @@ const LandingPage: React.FC = () => {
     setFormattedTime({ hours, minutes, seconds });
   }, [timeRemaining]);
 
-  // Handle add to cart for deal banner
-  const handleAddToCart = async () => {
-    if (!deal?.product?.id) return;
+  // Fetch banners
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const data = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.BANNERS_ACTIVE);
+        // New response structure: { banners: { hero: [...], ... }, total_banners, banner_types }
+        const heroBanners = data?.banners?.hero || [];
+        const items = Array.isArray(heroBanners) ? heroBanners : [];
+        setBanners(items);
+      } catch (error: any) {
+        console.error('Failed to load banners:', error);
+        setBanners([]);
+      }
+    };
+    fetchBanners();
+  }, []);
 
-    setAddingToCart(true);
-    try {
-      await publicApiRequest<any>('/api/cart/add/', {
-        method: 'POST',
-        body: JSON.stringify({ product_id: deal.product.id })
-      });
-      showSuccess('Added to cart', `${deal.product.name} has been added to your cart!`);
-    } catch (error: any) {
-      console.error('Failed to add to cart:', error);
-      showError('Failed to add to cart', error.message || 'Please try again.');
-    } finally {
-      setAddingToCart(false);
+  // Auto-rotate banners every 5 seconds
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    
+    const autoRotateInterval = setInterval(() => {
+      setCurrentBannerIndex(prev => (prev + 1) % banners.length);
+    }, 5000);
+
+    return () => clearInterval(autoRotateInterval);
+  }, [banners]);
+
+  // Handle banner click - navigate to product_url
+  const handleBannerClick = () => {
+    const banner = banners[currentBannerIndex];
+    if (banner?.product_url) {
+      navigate(banner.product_url);
+      return;
     }
+    // Default to all products if no URL specified
+    navigate('/all-products');
+  };
+
+  // Handle buy now - navigate to product details or cta_url_display
+  const handleBuyNow = () => {
+    // First priority: use cta_url_display from new API response
+    if (deal?.cta_url_display) {
+      navigate(deal.cta_url_display);
+      return;
+    }
+
+    // Fallback: construct URL from product data (old API compatibility)
+    const productId = deal?.product || deal?.product?.id;
+    if (!productId) {
+      showError('Error', 'Product ID not found');
+      return;
+    }
+
+    // Get product slug for URL
+    const productSlug = deal?.product_data?.slug || deal?.product?.slug || 'product';
+    
+    // Navigate to product details page
+    navigate(`/product/${productId}/${productSlug}`);
   };
 
   return (
@@ -474,12 +600,20 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Deal of the Day Banner */}
-      {deal && (
+      {deal && deals.length > 0 && (
         <section className="deal-banner">
           <div className="deal-banner-container">
             {/* Left Section - Product Image */}
             <div className="deal-banner-left">
-              <img src={deal.product.main_image} alt={deal.product.name} className="deal-product-image" />
+              <img 
+                src={deal.deal_image || deal.product?.main_image || deal.product_data?.main_image || 'https://via.placeholder.com/300x300?text=Deal'} 
+                alt={deal.title || deal.product?.name || deal.product_data?.name} 
+                className="deal-product-image"
+                onError={(e) => {
+                  console.log('Image failed to load');
+                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Deal';
+                }}
+              />
             </div>
 
             {/* Right Section - Product Details */}
@@ -490,12 +624,12 @@ const LandingPage: React.FC = () => {
                 <div className="deal-title-timer-pricing-row">
                   <div className="deal-left-section">
                     <h2 className="deal-product-title">
-                      {deal.product.name}<br />
-                      <span className="deal-title-highlight">Limited Time</span>
+                      {deal.title || deal.product?.name || deal.product_data?.name}<br />
+                      <span className="deal-title-highlight">{deal.subtitle || 'Limited Time'}</span>
                     </h2>
 
                     <p className="deal-product-description">
-                      {deal.subtitle || 'Limited time offer on premium products.'}
+                      {deal.deal_description || 'Limited time offer on premium products.'}
                     </p>
                   </div>
 
@@ -519,9 +653,9 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     <div className="deal-pricing">
-                      <div className="deal-current-price">₦{deal.deal_price.toLocaleString()}</div>
-                      <div className="deal-original-price">₦{deal.original_price.toLocaleString()}</div>
-                      <div className="deal-crypto-price">{deal.deal_price_usdt.toFixed(2)} USDT</div>
+                      <div className="deal-current-price">₦{parseFloat(deal.deal_price).toLocaleString('en-US', {maximumFractionDigits: 0})}</div>
+                      <div className="deal-original-price">₦{parseFloat(deal.original_price).toLocaleString('en-US', {maximumFractionDigits: 0})}</div>
+                      <div className="deal-crypto-price">{parseFloat(deal.deal_price_usdt).toFixed(2)} USDT</div>
                     </div>
                   </div>
                 </div>
@@ -538,15 +672,59 @@ const LandingPage: React.FC = () => {
                 ) : (
                   <button
                     className="deal-buy-now-btn"
-                    onClick={handleAddToCart}
-                    disabled={addingToCart}
+                    onClick={handleBuyNow}
                   >
-                    {addingToCart ? 'Adding...' : 'Buy Now'}
+                    Buy Now
                   </button>
                 )}
               
               </div>
             </div>
+
+            {/* Navigation Buttons and Indicators - Show only if multiple deals */}
+            {deals.length > 1 && (
+              <>
+                {/* Previous Button */}
+                <button 
+                  className="deal-carousel-btn deal-carousel-prev"
+                  onClick={goToPrevDeal}
+                  aria-label="Previous deal"
+                >
+                  ‹
+                </button>
+
+                {/* Next Button */}
+                <button 
+                  className="deal-carousel-btn deal-carousel-next"
+                  onClick={goToNextDeal}
+                  aria-label="Next deal"
+                >
+                  ›
+                </button>
+
+                {/* Slide Indicators */}
+                <div className="deal-carousel-indicators">
+                  {deals.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`deal-carousel-dot ${index === currentDealIndex ? 'active' : ''}`}
+                      onClick={() => {
+                        setCurrentDealIndex(index);
+                        setDeal(deals[index]);
+                        
+                        if (deals[index].end_time) {
+                          const endTime = new Date(deals[index].end_time).getTime();
+                          const now = new Date().getTime();
+                          const remaining = Math.max(0, endTime - now);
+                          setTimeRemaining(remaining);
+                        }
+                      }}
+                      aria-label={`Go to deal ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </section>
       )}

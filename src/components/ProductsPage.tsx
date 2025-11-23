@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
 import './ProductsPage.css';
-import { conditionalApiRequest } from '../config/api';
+import { apiRequest, publicApiRequest, conditionalApiRequest } from '../config/api';
 
 const ProductsPage: React.FC = () => {
   const [wishlist, setWishlist] = useState<number[]>([]);
@@ -44,6 +44,7 @@ const ProductsPage: React.FC = () => {
       price: 1850000,
       originalPrice: 2100000,
       usdtPrice: '650 USDT',
+      originalUsdtPrice: '740 USDT',
       rating: 4.5,
       reviews: 324,
       badges: ['-12% OFF', 'New', 'Bestseller'],
@@ -57,6 +58,7 @@ const ProductsPage: React.FC = () => {
       price: 1850000,
       originalPrice: 2100000,
       usdtPrice: '650 USDT',
+      originalUsdtPrice: '740 USDT',
       rating: 4.5,
       reviews: 324,
       badges: ['-14%', 'out of stock'],
@@ -70,6 +72,7 @@ const ProductsPage: React.FC = () => {
       price: 1850000,
       originalPrice: 2100000,
       usdtPrice: '650 USDT',
+      originalUsdtPrice: '740 USDT',
       rating: 4.5,
       reviews: 324,
       badges: ['-12% OFF', 'New'],
@@ -83,6 +86,7 @@ const ProductsPage: React.FC = () => {
       price: 1850000,
       originalPrice: 2100000,
       usdtPrice: '650 USDT',
+      originalUsdtPrice: '740 USDT',
       rating: 4.5,
       reviews: 324,
       badges: ['New', 'Bestseller'],
@@ -96,6 +100,7 @@ const ProductsPage: React.FC = () => {
       price: 1850000,
       originalPrice: 2100000,
       usdtPrice: '650 USDT',
+      originalUsdtPrice: '740 USDT',
       rating: 4.5,
       reviews: 324,
       badges: ['-12% OFF'],
@@ -109,6 +114,7 @@ const ProductsPage: React.FC = () => {
       price: 2500000,
       originalPrice: 2800000,
       usdtPrice: '850 USDT',
+      originalUsdtPrice: '950 USDT',
       rating: 4.8,
       reviews: 156,
       badges: ['New', 'Premium'],
@@ -122,6 +128,7 @@ const ProductsPage: React.FC = () => {
       price: 450000,
       originalPrice: 500000,
       usdtPrice: '150 USDT',
+      originalUsdtPrice: '170 USDT',
       rating: 4.6,
       reviews: 89,
       badges: ['Sale', 'Popular'],
@@ -135,6 +142,7 @@ const ProductsPage: React.FC = () => {
       price: 1200000,
       originalPrice: 1350000,
       usdtPrice: '400 USDT',
+      originalUsdtPrice: '450 USDT',
       rating: 4.7,
       reviews: 203,
       badges: ['New', 'Bestseller'],
@@ -150,7 +158,7 @@ const ProductsPage: React.FC = () => {
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
 
     try {
-      const res = await conditionalApiRequest<any>('/api/cart/add/', {
+      const res = await (token ? apiRequest : publicApiRequest)<any>('/api/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
@@ -217,6 +225,7 @@ const ProductsPage: React.FC = () => {
               price={product.price}
               originalPrice={product.originalPrice}
               usdtPrice={product.usdtPrice}
+              originalUsdtPrice={product.originalUsdtPrice}
               rating={product.rating}
               reviews={product.reviews}
               badges={product.badges}

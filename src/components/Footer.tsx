@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, Linkedin, Youtube } from 'lucide-react';
 import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { handleApiError } from '../utils/errorHandler';
 import './Footer.css';
 
 const Footer: React.FC = () => {
@@ -30,7 +31,7 @@ const Footer: React.FC = () => {
       setEmail('');
     } catch (error: any) {
       console.error('Waitlist subscription failed:', error);
-      const errorMessage = error.message || 'Failed to join waitlist. Please try again.';
+      const errorMessage = handleApiError(error, 'Waitlist Subscription');
       showError('Subscription Failed', errorMessage);
     } finally {
       setIsLoading(false);

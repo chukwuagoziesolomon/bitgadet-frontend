@@ -5,11 +5,21 @@ import Footer from './Footer';
 import Sidebar from './Sidebar';
 import { apiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { handleApiError } from '../utils/errorHandler';
 import './ProfileSettings.css';
 import { AlertTriangle } from 'lucide-react';
 
 // Password validation utility functions
-const validatePasswordRequirement = (password: string, requirement: string): boolean => {
+interface PasswordRequirementsObject {
+  min_length?: number;
+  require_uppercase?: boolean;
+  require_lowercase?: boolean;
+  require_numbers?: boolean;
+  require_special?: boolean;
+  common_passwords_blocked?: boolean;
+}
+
+const validatePasswordRequirement = (password: string, requirement: string, requirementsObj?: PasswordRequirementsObject | null): boolean => {
   // Handle different types of requirements
   if (requirement.toLowerCase().includes('at least') && requirement.toLowerCase().includes('characters')) {
     const match = requirement.match(/at least (\d+) characters/);
@@ -18,8 +28,12 @@ const validatePasswordRequirement = (password: string, requirement: string): boo
     }
   }
 
-  if (requirement.toLowerCase().includes('uppercase') && requirement.toLowerCase().includes('lowercase')) {
-    return /[a-z]/.test(password) && /[A-Z]/.test(password);
+  if (requirement.toLowerCase().includes('uppercase')) {
+    return /[A-Z]/.test(password);
+  }
+
+  if (requirement.toLowerCase().includes('lowercase')) {
+    return /[a-z]/.test(password);
   }
 
   if (requirement.toLowerCase().includes('letters and numbers')) {
@@ -42,8 +56,34 @@ const validatePasswordRequirement = (password: string, requirement: string): boo
   return password.length > 0;
 };
 
-const checkPasswordRequirements = (password: string, requirements: string[]): boolean[] => {
-  return requirements.map(req => validatePasswordRequirement(password, req));
+const checkPasswordRequirements = (password: string, requirements: string[], requirementsObj?: PasswordRequirementsObject | null): boolean[] => {
+  return requirements.map(req => validatePasswordRequirement(password, req, requirementsObj));
+};
+
+// Convert password requirements object to human-readable array
+const buildRequirementsArray = (reqObj: PasswordRequirementsObject): string[] => {
+  const requirements: string[] = [];
+  
+  if (reqObj.min_length) {
+    requirements.push(`At least ${reqObj.min_length} characters`);
+  }
+  if (reqObj.require_uppercase) {
+    requirements.push('Include at least one uppercase letter');
+  }
+  if (reqObj.require_lowercase) {
+    requirements.push('Include at least one lowercase letter');
+  }
+  if (reqObj.require_numbers) {
+    requirements.push('Include at least one number');
+  }
+  if (reqObj.require_special) {
+    requirements.push('Include at least one special character (!@#$%^&*)');
+  }
+  if (reqObj.common_passwords_blocked) {
+    requirements.push('Not be a common password');
+  }
+  
+  return requirements;
 };
 
 const ProfileSettings: React.FC = () => {
@@ -69,7 +109,8 @@ const ProfileSettings: React.FC = () => {
   });
   const [deletePassword, setDeletePassword] = useState('');
   const [newsletter, setNewsletter] = useState('subscribe');
-  const [passwordRequirements, setPasswordRequirements] = useState<any>(null);
+  const [passwordRequirements, setPasswordRequirements] = useState<PasswordRequirementsObject | null>(null);
+  const [passwordRequirementsArray, setPasswordRequirementsArray] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -84,9 +125,15 @@ const ProfileSettings: React.FC = () => {
       try {
         const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_PASSWORD_REQUIREMENTS);
         if (response.password_requirements) {
-          setPasswordRequirements(response.password_requirements);
-          // Initialize validation status array with false values
-          setPasswordValidationStatus(new Array(response.password_requirements.requirements?.length || 0).fill(false));
+          const reqObj: PasswordRequirementsObject = response.password_requirements;
+          setPasswordRequirements(reqObj);
+          
+          // Convert object to array of human-readable requirements
+          const requirementsArray = buildRequirementsArray(reqObj);
+          setPasswordRequirementsArray(requirementsArray);
+          
+          // Initialize validation status array
+          setPasswordValidationStatus(new Array(requirementsArray.length).fill(false));
         }
       } catch (error: any) {
         console.error('Failed to fetch password requirements:', error);
@@ -103,6 +150,10 @@ const ProfileSettings: React.FC = () => {
       try {
         setLoading(true);
         const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_PROFILE_SETTINGS);
+
+        // Extract user data from nested structure
+        const userData = response.user || {};
+        const profileData_api = response.profile || {};
 
         // Check if shipping fields are empty and need fallback from checkout
         let phone_number = response.phone_number || '';
@@ -133,9 +184,9 @@ const ProfileSettings: React.FC = () => {
         }
 
         setProfileData({
-          first_name: response.first_name || '',
-          last_name: response.last_name || '',
-          email: response.email || '',
+          first_name: userData.first_name || '',
+          last_name: userData.last_name || '',
+          email: userData.email || profileData_api.email || '',
           phone_number: phone_number,
           address: address,
           city: city,
@@ -143,7 +194,7 @@ const ProfileSettings: React.FC = () => {
           country: country,
           date_of_birth: response.date_of_birth || null,
           agree_to_terms: response.agree_to_terms || false,
-          date_joined: response.date_joined || ''
+          date_joined: userData.date_joined || ''
         });
       } catch (error: any) {
         console.error('Failed to fetch profile:', error);
@@ -199,8 +250,8 @@ const ProfileSettings: React.FC = () => {
     }));
 
     // Update validation status in real-time for new password field
-    if (name === 'new_password' && passwordRequirements?.requirements) {
-      const validationResults = checkPasswordRequirements(value, passwordRequirements.requirements);
+    if (name === 'new_password' && passwordRequirementsArray.length > 0) {
+      const validationResults = checkPasswordRequirements(value, passwordRequirementsArray, passwordRequirements);
       setPasswordValidationStatus(validationResults);
     }
   };
@@ -241,13 +292,8 @@ const ProfileSettings: React.FC = () => {
       showSuccess('Profile updated', 'Your profile has been updated successfully.');
     } catch (error: any) {
       console.error('Failed to update profile:', error);
-      // Handle validation errors from API
-      if (error.errors) {
-        const errorMessages = Object.values(error.errors).flat().join(', ');
-        showError('Profile update failed', errorMessages);
-      } else {
-        showError('Failed to update profile', error.message || 'Please try again.');
-      }
+      const errorMessage = handleApiError(error, 'Profile Update');
+      showError('Profile update failed', errorMessage);
     } finally {
       setSaving(false);
     }
@@ -280,9 +326,9 @@ const ProfileSettings: React.FC = () => {
       await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_CHANGE_PASSWORD, {
         method: 'POST',
         body: JSON.stringify({
-          current_password: passwordData.current_password,
+          old_password: passwordData.current_password,
           new_password: passwordData.new_password,
-          confirm_password: passwordData.confirm_password
+          new_password_confirm: passwordData.confirm_password
         }),
       });
 
@@ -296,35 +342,8 @@ const ProfileSettings: React.FC = () => {
       showSuccess('Password changed', 'Your password has been changed successfully.');
     } catch (error: any) {
       console.error('Failed to change password:', error);
-
-      let errorMessages: string[] = [];
-      let errorTitle = 'Password change failed';
-
-      if (error.errors) {
-        // Handle the new error format with specific password errors
-        if (Array.isArray(error.errors)) {
-          errorMessages = error.errors;
-        } else {
-          errorMessages = Object.values(error.errors).flat() as string[];
-        }
-      } else if (error.message) {
-        errorMessages = [error.message];
-      } else {
-        errorMessages = ['Please try again.'];
-      }
-
-      // If password requirements are included in error response, store them
-      if (error.password_requirements) {
-        setPasswordRequirements(error.password_requirements);
-        // Initialize validation status array with false values
-        setPasswordValidationStatus(new Array(error.password_requirements.requirements?.length || 0).fill(false));
-      }
-
-      // Show the first error message as the main error, and include all errors
-      const mainErrorMessage = errorMessages[0] || 'Password change failed';
-      const allErrors = errorMessages.join(', ');
-
-      showError(errorTitle, `${mainErrorMessage}${errorMessages.length > 1 ? ` (${allErrors})` : ''}`);
+      const errorMessage = handleApiError(error, 'Change Password');
+      showError('Password change failed', errorMessage);
     } finally {
       setChangingPassword(false);
     }
@@ -352,15 +371,7 @@ const ProfileSettings: React.FC = () => {
       navigate('/login');
     } catch (error: any) {
       console.error('Failed to delete account:', error);
-      
-      let errorMessage = 'Failed to delete account. Please try again.';
-      if (error.message) {
-        errorMessage = error.message;
-      } else if (error.errors) {
-        const errorMessages = Object.values(error.errors).flat().join(', ');
-        errorMessage = errorMessages;
-      }
-      
+      const errorMessage = handleApiError(error, 'Delete Account');
       showError('Account deletion failed', errorMessage);
     } finally {
       setDeletingAccount(false);
@@ -581,11 +592,11 @@ const ProfileSettings: React.FC = () => {
               {passwordRequirements && (
                 <div className="password-requirements-section">
                   <h4>Password Requirements</h4>
-                  {passwordRequirements.requirements && passwordRequirements.requirements.length > 0 ? (
+                  {passwordRequirementsArray && passwordRequirementsArray.length > 0 ? (
                     <div className="requirements-list">
                       <h5>Password must:</h5>
                       <div className="requirements-checkboxes">
-                        {passwordRequirements.requirements.map((req: string, index: number) => {
+                        {passwordRequirementsArray.map((req: string, index: number) => {
                           const isMet = passwordValidationStatus[index] || false;
                           return (
                             <label key={index} className={`requirement-item ${isMet ? 'met' : 'unmet'}`}>
@@ -604,16 +615,6 @@ const ProfileSettings: React.FC = () => {
                   ) : (
                     <div className="requirements-loading">
                       <p>Loading password requirements...</p>
-                    </div>
-                  )}
-                  {passwordRequirements.suggestions && passwordRequirements.suggestions.length > 0 && (
-                    <div className="suggestions-list">
-                      <h5>Suggestions for a strong password:</h5>
-                      <ul>
-                        {passwordRequirements.suggestions.map((suggestion: string, index: number) => (
-                          <li key={index}>{suggestion}</li>
-                        ))}
-                      </ul>
                     </div>
                   )}
                 </div>

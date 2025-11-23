@@ -3,11 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { publicApiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
+import { handleApiError } from '../utils/errorHandler';
 import './LoginPage.css';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { showError, showSuccess } = useToast();
+  const { setLoading } = useGlobalLoading();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -112,6 +115,7 @@ const LoginPage: React.FC = () => {
     }
 
     setIsLoading(true);
+    setLoading(true);
 
     try {
       const response = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_LOGIN, {
@@ -139,29 +143,10 @@ const LoginPage: React.FC = () => {
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login failed:', error);
-
-      let errorMessage = 'Login failed. Please try again.';
-      let errorTitle = 'Login Failed';
-
-      // Handle specific error types based on response
-      if (error.message) {
-        // Handle specific API error messages
-        if (error.message.includes('No account found with this email')) {
-          errorMessage = 'No account found with this email address. Please check your email or sign up for a new account.';
-          errorTitle = 'Account Not Found';
-        } else if (error.message.includes('Invalid credentials') || error.message.includes('wrong password')) {
-          errorMessage = 'The password you entered is incorrect. Please try again.';
-          errorTitle = 'Invalid Password';
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = 'Network error. Please check your internet connection and try again.';
-          errorTitle = 'Connection Error';
-        } else {
-          errorMessage = error.message;
-        }
-      }
-
-      showError(errorTitle, errorMessage);
+      const errorMessage = handleApiError(error, 'Login');
+      showError('Login Failed', errorMessage);
     } finally {
+      setLoading(false);
       setIsLoading(false);
     }
   };
@@ -249,14 +234,7 @@ const LoginPage: React.FC = () => {
               className={`login-button ${isLoading ? 'loading' : ''}`}
               disabled={isLoading || !formData.email || !formData.password}
             >
-              {isLoading ? (
-                <>
-                  <div className="spinner"></div>
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 

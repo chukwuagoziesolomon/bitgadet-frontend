@@ -80,6 +80,24 @@ const OrderHistory: React.FC = () => {
    setTrackingModalOpen(true);
  };
 
+ const canTrackOrder = (status: string) => {
+   return ['shipped', 'en_route', 'en-route', 'delivered'].includes(status?.toLowerCase());
+ };
+
+ const getTrackingBadgeInfo = (status: string) => {
+   const statusLower = status?.toLowerCase();
+   if (['shipped', 'en_route', 'en-route'].includes(statusLower)) {
+     return { text: '📦 In Transit', color: '#3b82f6', bgColor: '#eff6ff' };
+   } else if (statusLower === 'delivered') {
+     return { text: '✓ Delivered', color: '#10b981', bgColor: '#f0fdf4' };
+   } else if (statusLower === 'pending') {
+     return { text: '⏳ Pending Payment', color: '#f59e0b', bgColor: '#fffbeb' };
+   } else if (['processing', 'payment_processing'].includes(statusLower)) {
+     return { text: '⚙ Preparing', color: '#8b5cf6', bgColor: '#f5f3ff' };
+   }
+   return { text: status, color: '#6b7280', bgColor: '#f3f4f6' };
+ };
+
  const handlePageChange = (page: number) => {
    setCurrentPage(page);
  };
@@ -120,6 +138,9 @@ const OrderHistory: React.FC = () => {
              <div className="orders-list">
                {orders.map((order) => {
                  const firstProduct = order.products?.[0];
+                 const canTrack = canTrackOrder(order.status);
+                 const trackingBadge = getTrackingBadgeInfo(order.status);
+                 
                  return (
                    <div key={order.order_id} className="order-card">
                      <div className="order-image-container">
@@ -131,8 +152,30 @@ const OrderHistory: React.FC = () => {
                        </div>
                        <h3 className="order-product">{firstProduct?.name || 'Product'}</h3>
                        <div className="order-date">{order.date}</div>
-                       <button onClick={() => handleTrackOrder(order)} className="track-button">
-                         Track Order
+                       
+                       {/* Tracking Badge */}
+                       <div style={{
+                         display: 'inline-block',
+                         padding: '4px 10px',
+                         borderRadius: '6px',
+                         fontSize: '13px',
+                         fontWeight: '600',
+                         backgroundColor: trackingBadge.bgColor,
+                         color: trackingBadge.color,
+                         marginBottom: '8px'
+                       }}>
+                         {trackingBadge.text}
+                       </div>
+                       
+                       <button 
+                         onClick={() => handleTrackOrder(order)} 
+                         className="track-button"
+                         style={{
+                           opacity: canTrack ? 1 : 0.6,
+                           cursor: canTrack ? 'pointer' : 'default'
+                         }}
+                       >
+                         {canTrack ? 'Track Order' : 'View Details'}
                        </button>
                      </div>
                      <div className="order-right-section">

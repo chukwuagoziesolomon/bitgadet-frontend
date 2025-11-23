@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Phone, Mail, MessageCircle, Clock, CheckCircle, X } from 'lucide-react';
 import { publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { handleApiError } from '../utils/errorHandler';
 import './ContactPage.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -68,16 +69,8 @@ const ContactPage: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Failed to submit contact form:', error);
-
-      if (error.response?.data?.errors) {
-        const errors = error.response.data.errors;
-        const errorMessages = Object.values(errors).flat().join(', ');
-        showError('Validation Error', errorMessages);
-      } else if (error.response?.data?.message) {
-        showError('Error', error.response.data.message);
-      } else {
-        showError('Error', 'Failed to send your message. Please try again.');
-      }
+      const errorMessage = handleApiError(error, 'Contact Form Submission');
+      showError('Submission Error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }

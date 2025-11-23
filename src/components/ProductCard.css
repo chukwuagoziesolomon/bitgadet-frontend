@@ -41,17 +41,20 @@
 .product-card-component .badges {
   display: flex;
   flex-direction: row;
-  gap: 4px;
+  gap: 3px;
   align-items: flex-start;
+  flex-wrap: wrap;
 }
 
 .product-card-component .badge {
-  font-size: 9px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 3px;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 4px;
   color: white;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .product-card-component .badge.new {
@@ -73,12 +76,17 @@
 .product-card-component .wishlist-btn {
   background: none;
   border: none;
-  font-size: 28px;
+  font-size: 24px;
   cursor: pointer;
   color: #666;
-  padding: 5px;
+  padding: 4px;
   border-radius: 50%;
   transition: color 0.2s ease;
+  min-width: 32px;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-card-component .wishlist-btn:hover {
@@ -94,26 +102,22 @@
 
 /* Product Image */
 .product-card-component .brands-product-image-container {
-  min-height: 200px; /* Increased from 130px for better visibility */
-    height: 200px; /* Fixed height for consistent appearance */
-    padding: 16px; /* More padding for better spacing */
-    margin: 12px 0 16px 0; /* Better spacing */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8f9fa;
-    border-radius: 8px;
-    overflow: hidden;
+  text-align: center;
+  margin: 4px 0 8px 0;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 6px;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .product-card-component .brands-product-image {
   max-width: 100%;
-  max-height: 180px;
+  max-height: 140px;
   object-fit: contain;
   border-radius: 4px;
-  width:auto;
-  height:auto;
-
 }
 
 /* Info */
@@ -128,6 +132,28 @@
   font-size: 11px;
   color: #6c757d;
   margin: 0 0 1px 0;
+  font-weight: 400;
+}
+
+/* USDT Prices */
+.product-card-component .brands-usdt-prices {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.product-card-component .brands-usdt-current-price {
+  font-size: 12px;
+  font-weight: 600;
+  color: #007bff;
+}
+
+.product-card-component .brands-usdt-original-price {
+  font-size: 10px;
+  color: #999;
+  text-decoration: line-through;
   font-weight: 400;
 }
 
@@ -199,29 +225,21 @@
   font-weight: 400;
 }
 
-.product-card-component .brands-usdt-price {
-  font-size: 10px;
-  color: #495057;
-  margin: 0;
-  gap: 0;
-  font-weight: 400;
-}
-
 /* Actions */
 .product-card-component .brands-actions {
   display: flex !important;
   flex-direction: row !important;
   gap: 8px !important;
-  justify-content: center;
+  justify-content: space-between !important;
   margin-top: 10px;
 }
 .product-card-component .add-to-cart-btn,
 .product-card-component .whatsapp-btn {
-  width: 200px;
+  width: 100% !important;
   min-width: 0;
   font-size: 11px;
-  height: 40px;
-  border-radius: 0 16px;
+  height: 32px;
+  border-radius: 5px;
 }
 
 .product-card-component .add-to-cart-btn {
@@ -421,7 +439,7 @@
 /* Mobile specific adjustments for 2-column layout */
 @media (max-width: 576px) {
   .product-card-component .brands-product-card {
-    padding: 12px; /* Further reduced padding */
+    padding: 8px 8px 10px 8px; /* Compact padding */
     max-width: 100%;
     width: 100%;
     margin: 0;
@@ -430,10 +448,10 @@
 
   /* Reduce image container space on mobile */
   .product-card-component .brands-product-image-container {
-    min-height: 160px; /* Increased from 100px to make it more square */
-    height: 160px; /* Fixed height for square appearance */
-    padding: 12px; /* Increased from 8px */
-    margin: 8px 0 12px 0; /* Better spacing */
+    min-height: 120px; /* Reduced height */
+    height: 120px; /* Fixed height */
+    padding: 8px; /* Reduced padding */
+    margin: 4px 0 6px 0; /* Tighter spacing */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -443,7 +461,7 @@
   }
 
   .product-card-component .brands-product-image {
-    max-height: 140px; /* Further reduced */
+    max-height: 110px;
     width:auto;
     object-fit: contain;
     height:auto;
@@ -451,22 +469,28 @@
   }
 
   .product-card-component .brands-product-name {
-    font-size: 14px; /* Slightly smaller */
-    margin-bottom: 4px;
-    line-height: 1.3;
+    font-size: 12px; /* Smaller for mobile */
+    margin-bottom: 3px;
+    line-height: 1.2;
+    max-height: 24px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .product-card-component .brands-product-brand {
-    font-size: 16px; /* Smaller */
+    font-size: 11px; /* Smaller */
+    margin-bottom: 3px;
+    opacity: 0.8;
   }
 
   .product-card-component .brands-rating {
-    font-size: 11px; /* Smaller */
-    margin-bottom: 6px;
+    font-size: 10px; /* Smaller */
+    margin-bottom: 4px;
   }
 
   .product-card-component .brands-current-price {
-    font-size: 14px; /* Smaller */
+    font-size: 13px; /* Smaller */
+    font-weight: 700;
   }
 
   .product-card-component .brands-original-price {
@@ -478,8 +502,8 @@
   }
 
   .product-card-component .brands-actions {
-    gap: 8px;
-    margin-top: 12px;
+    gap: 6px;
+    margin-top: 8px;
     flex-direction: column; /* vertical layout on mobile */
     justify-content: center;
   }
@@ -487,15 +511,16 @@
   .product-card-component .add-to-cart-btn,
   .product-card-component .whatsapp-btn {
     width: 100%; /* Full width */
-    height: 38px; /* Fixed */
-    padding: 0 12px;
-    border-radius: 6px; /* Requested radius */
+    height: 34px; /* Reduced height */
+    padding: 0 10px;
+    border-radius: 6px;
     border-width: 1px;
     opacity: 1;
-    font-size: 11px;
+    font-size: 10px; /* Slightly smaller */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: 600;
   }
 }
 
@@ -598,25 +623,49 @@
 }
 
 /* Coupon badge styling */
-.product-card-component .badge.gift-coupon {
-  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+.product-card-component .badge.coupon {
+  background: linear-gradient(135deg, #a855f7, #d946ef);
   color: white;
-  font-weight: 600;
-  box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  letter-spacing: 0.5px;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background: linear-gradient(135deg, #a855f7, #d946ef);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    background: linear-gradient(135deg, #d946ef, #a855f7);
+    box-shadow: 0 4px 16px rgba(217, 70, 239, 0.5);
+  }
 }
 
 /* Coupon value styling */
 .product-card-component .coupon-value {
-  color: #8b5cf6 !important;
-  font-weight: 700 !important;
-  font-size: 18px !important;
+  color: #a855f7 !important;
+  font-weight: 800 !important;
+  font-size: 16px !important;
+  background: linear-gradient(135deg, #a855f7, #d946ef);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .product-card-component .coupon-price {
-  color: #6b7280;
-  font-size: 14px;
-  font-weight: 500;
-  margin-top: 4px;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: #f3e8ff;
+  border-radius: 4px;
+  display: inline-block;
+  border-left: 3px solid #a855f7;
 }
 
 @keyframes pulse {

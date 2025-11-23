@@ -3,10 +3,15 @@ import { conditionalApiRequest } from '../config/api';
 import { Product } from './useFeaturedProducts';
 
 interface AllProductsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Product[];
+  count?: number;
+  next?: string | null;
+  previous?: string | null;
+  results?: Product[];
+  total_products?: number;
+  current_page?: number;
+  total_pages?: number;
+  per_page?: number;
+  products?: Product[];
 }
 
 interface UseAllProductsOptions {
@@ -51,10 +56,14 @@ export const useAllProducts = (options: UseAllProductsOptions = {}) => {
         const endpoint = `/api/products/filter/?${params.toString()}`;
         const data: AllProductsResponse = await conditionalApiRequest(endpoint);
 
-        setProducts(data.results || []);
-        setTotalCount(data.count || 0);
-        setNextPage(data.next);
-        setPreviousPage(data.previous);
+        // Handle both old and new API response formats
+        const productsList = data.results || data.products || [];
+        const totalProducts = data.count || data.total_products || 0;
+
+        setProducts(productsList);
+        setTotalCount(totalProducts);
+        setNextPage(data.next || null);
+        setPreviousPage(data.previous || null);
 
       } catch (err) {
         setError('Failed to fetch products');

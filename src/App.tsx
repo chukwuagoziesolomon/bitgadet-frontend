@@ -25,13 +25,16 @@ import ProductDetails from './components/ProductDetails';
 import AboutUs from './components/AboutUs';
 import OrderHistory from './components/OrderHistory';
 import Wishlist from './components/Wishlist';
+import WishlistPage from './components/WishlistPage';
 import TermsAndConditions from './components/TermsAndConditions';
 import CouponSuccess from './components/CouponSuccess';
+import CouponSuccessBeautiful from './components/CouponSuccessBeautiful';
 import SearchResultsPage from './components/SearchResultsPage';
 import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
 import ToastDemo from './components/ToastDemo';
 import { ToastProvider, useToast } from './hooks/useToast';
+import GlobalLoadingProvider from './hooks/useGlobalLoading';
 import SuccessPage from './components/SuccessPage';
 import './App.css';
 
@@ -204,12 +207,19 @@ const AppContent: React.FC = () => {
               <Footer />
             </>
           } />
+          <Route path="/coupon-success/:orderId" element={
+            <>
+              <main style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)' }}>
+                <CouponSuccessBeautiful />
+              </main>
+            </>
+          } />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile-settings" element={<ProfileSettings />} />
           <Route path="/order-history" element={<OrderHistory />} />
-          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/product/:slug" element={
             <>
               <Navbar />
@@ -248,7 +258,9 @@ const AppContent: React.FC = () => {
 function App() {
   return (
     <ToastProvider>
-      <AppContent />
+      <GlobalLoadingProvider>
+        <AppContent />
+      </GlobalLoadingProvider>
     </ToastProvider>
   );
 }

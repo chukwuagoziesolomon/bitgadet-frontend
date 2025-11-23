@@ -49,6 +49,17 @@ const ProductCard: React.FC<ProductCardProps> = ({
     return stars;
   };
 
+  // Format brand name - handle numeric IDs from API
+  const formatBrandName = (brandValue: string | number): string => {
+    if (!brandValue) return 'Unknown Brand';
+    const brandStr = String(brandValue).trim();
+    // If brand is just a number, it's likely an ID from the backend
+    if (/^\d+$/.test(brandStr)) {
+      return 'Brand Not Found';
+    }
+    return brandStr;
+  };
+
   return (
     <div className="product-card-new">
       {/* Product Image */}
@@ -70,7 +81,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
       
       {/* Product Info */}
       <div className="product-info">
-        <div className="product-brand">{brand}</div>
+        <div className="product-brand">{formatBrandName(brand)}</div>
         <h3 className="product-name">{name}</h3>
         
         {/* Rating */}
@@ -96,7 +107,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
             target="_blank"
             rel="noopener noreferrer"
           >
-            WhatsApp Enquiry
+            Enquiry
           </a>
         </div>
       </div>

@@ -12,6 +12,7 @@ export interface Product {
   original_price: string;
   original_price_usdt: string;
   brand: string;
+  brand_name?: string;
   model: string;
   main_image: string;
   is_featured: boolean;
@@ -31,6 +32,8 @@ export interface Product {
   is_bestseller: boolean;
   product_condition?: string;
   condition_display?: string;
+  is_coupon?: boolean;
+  coupon_value?: number;
 }
 
 export const useFeaturedProducts = () => {

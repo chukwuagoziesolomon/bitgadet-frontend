@@ -5,8 +5,18 @@ import Gamepad2 from './icons/Gamepad2';
 import ShoppingCart from './icons/ShoppingCart';
 import { Copy, Check, AlertTriangle, Lightbulb, Lock, User, Info } from 'lucide-react';
 import { useToast } from '../hooks/useToast';
-import { publicApiRequest } from '../config/api';
+import { cartService } from '../services/cartService';
 import './PaymentDetails.css';
+
+// Helper function to normalize base URL (convert HTTPS to HTTP for localhost)
+const normalizeBaseUrl = (url: string): string => {
+  if (!url) return url;
+  // Convert https://127.0.0.1 or https://localhost to http://
+  if (url.startsWith('https://127.0.0.1') || url.startsWith('https://localhost')) {
+    return url.replace('https://', 'http://');
+  }
+  return url;
+};
 
 
 const PaymentDetails: React.FC = () => {
@@ -19,12 +29,19 @@ const PaymentDetails: React.FC = () => {
   const paymentInfo = location.state?.paymentInfo;
   const accountInfo = location.state?.accountInfo;
   const paymentMethod = location.state?.paymentMethod;
+  const cartToken = location.state?.cartToken;
 
   const [paymentData, setPaymentData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [pollingActive, setPollingActive] = useState(false);
+  const [pollingAttempts, setPollingAttempts] = useState(0);
+  const [paymentStatus, setPaymentStatus] = useState<any>(null);
+
+  const MAX_POLLING_ATTEMPTS = 100;
+  const POLLING_INTERVAL = 3000; // 3 seconds
 
   useEffect(() => {
     // Check if we have the required data from Checkout
@@ -61,22 +78,83 @@ const PaymentDetails: React.FC = () => {
   };
 
   const handleConfirmPayment = async () => {
-    if (!paymentData?.payment_info?.order_id || !paymentData?.order?.email) {
-      setError('Order ID or Email missing!');
+    if (!paymentData?.payment_info?.order_id) {
+      setError('Order ID missing!');
       return;
     }
+    
     setError(null);
     setConfirming(true);
-    try {
-      const data = await publicApiRequest<any>(`/api/checkout/confirm-payment/${paymentData.payment_info.order_id}/`, {
-        method: 'POST',
-        body: JSON.stringify({ email: paymentData.order.email }),
-      });
-      navigate('/order-confirmation', { state: { orderConfirmation: data } });
-    } catch (err) {
-      setError('Failed to confirm payment. Please try again.');
-    } finally {
+    setPollingActive(true);
+    setPollingAttempts(0);
+
+    // Start polling for payment confirmation
+    pollPaymentStatus(paymentData.payment_info.order_id);
+  };
+
+  const pollPaymentStatus = async (orderId: string) => {
+    if (pollingAttempts >= MAX_POLLING_ATTEMPTS) {
+      setPollingActive(false);
       setConfirming(false);
+      setError('Payment verification timeout. Please check your email or try again.');
+      return;
+    }
+
+    try {
+      const apiUrl = normalizeBaseUrl(process.env.REACT_APP_API_URL || '');
+      const statusUrl = apiUrl 
+        ? `${apiUrl}/api/checkout/status/${orderId}/`
+        : `/api/checkout/status/${orderId}/`;
+      
+      console.log('🔄 Polling payment status - Attempt', pollingAttempts + 1);
+      
+      const response = await fetch(statusUrl);
+      const data = await response.json();
+      
+      setPaymentStatus(data);
+
+      // Check payment status
+      if (data.payment_status?.is_paid) {
+        console.log('✅ Payment confirmed!');
+        setPollingActive(false);
+        setConfirming(false);
+        showSuccess('Payment Confirmed!', 'Redirecting to order confirmation...');
+        
+        // Use cart token from state if available, otherwise get from service
+        const token = cartToken || cartService.getCartToken();
+        
+        // Navigate to order confirmation with payment status data
+        navigate('/order-confirmation', {
+          state: {
+            orderId: orderId,
+            paymentStatus: data,
+            cartToken: token,
+            userEmail: paymentData.order.email
+          }
+        });
+        return;
+      } else if (data.payment_status?.is_failed) {
+        console.log('❌ Payment failed!');
+        setPollingActive(false);
+        setConfirming(false);
+        setError('Payment failed. Please try again.');
+        return;
+      }
+
+      // Continue polling
+      setPollingAttempts(prev => prev + 1);
+      setTimeout(() => {
+        pollPaymentStatus(orderId);
+      }, POLLING_INTERVAL);
+      
+    } catch (err) {
+      console.error('❌ Polling error:', err);
+      setPollingAttempts(prev => prev + 1);
+      
+      // Continue polling even on error (retry)
+      setTimeout(() => {
+        pollPaymentStatus(orderId);
+      }, POLLING_INTERVAL);
     }
   };
 
@@ -145,13 +223,13 @@ const PaymentDetails: React.FC = () => {
                         <div className="detail-input-group">
                           <input 
                             type="text" 
-                            value={paymentData.order.dedicated_account_number} 
+                            value={paymentData.payment_info?.account_details?.account_number || paymentData.order?.dedicated_account_number || paymentData.payment_info?.account_number || ''} 
                             readOnly 
                             className="detail-input"
                           />
                           <button
                             className="copy-btn"
-                            onClick={() => handleCopy(paymentData.order.dedicated_account_number, 'Account Number', 'account')}
+                            onClick={() => handleCopy(paymentData.payment_info?.account_details?.account_number || paymentData.order?.dedicated_account_number || paymentData.payment_info?.account_number, 'Account Number', 'account')}
                           >
                             {copied === 'account' ? <Check /> : <Copy />}
                           </button>
@@ -161,14 +239,14 @@ const PaymentDetails: React.FC = () => {
                       <div className="bank-detail-card">
                         <label>Account Name</label>
                         <div className="detail-input">
-                          {paymentData.order.dedicated_account_name}
+                          {paymentData.payment_info?.account_details?.account_name || paymentData.order?.dedicated_account_name || paymentData.payment_info?.account_name || 'N/A'}
                         </div>
                       </div>
 
                       <div className="bank-detail-card">
                         <label>Bank Name</label>
                         <div className="detail-input">
-                          {paymentData.order.dedicated_bank_name}
+                          {paymentData.payment_info?.account_details?.bank_name || paymentData.order?.dedicated_bank_name || paymentData.payment_info?.bank_name || 'N/A'}
                         </div>
                       </div>
 
@@ -386,7 +464,7 @@ const PaymentDetails: React.FC = () => {
               {confirming ? (
                 <>
                   <div className="btn-spinner"></div>
-                  Processing...
+                  {pollingActive ? `Verifying Payment (${pollingAttempts}/${MAX_POLLING_ATTEMPTS})...` : 'Processing...'}
                 </>
               ) : (
                 <>
@@ -401,6 +479,31 @@ const PaymentDetails: React.FC = () => {
                 </>
               )}
             </button>
+
+            {pollingActive && (
+              <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{
+                    width: '100%',
+                    height: '4px',
+                    backgroundColor: '#e2e8f0',
+                    borderRadius: '4px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      width: `${(pollingAttempts / MAX_POLLING_ATTEMPTS) * 100}%`,
+                      height: '100%',
+                      backgroundColor: '#00b894',
+                      transition: 'width 0.3s ease',
+                      borderRadius: '4px'
+                    }}></div>
+                  </div>
+                </div>
+                <p style={{ fontSize: '14px', color: '#666', margin: '0' }}>
+                  ⏳ Checking payment status... (Attempt {pollingAttempts}/{MAX_POLLING_ATTEMPTS})
+                </p>
+              </div>
+            )}
           </div>
 
           {error && (

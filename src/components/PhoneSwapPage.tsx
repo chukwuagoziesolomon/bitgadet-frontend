@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle, X } from 'lucide-react';
 import { API_CONFIG, publicApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { handleApiError } from '../utils/errorHandler';
 import './PhoneSwapPage.css';
 import { useNavigate } from 'react-router-dom';
 
@@ -226,25 +227,8 @@ const PhoneSwapPage: React.FC = () => {
 
     } catch (error: any) {
       console.error('Error submitting phone swap request:', error);
-
-      // Handle validation errors from API
-      if (error.response?.data?.errors) {
-        const errors = error.response.data.errors;
-
-        // Handle non_field_errors specifically
-        if (errors.non_field_errors && Array.isArray(errors.non_field_errors)) {
-          const nonFieldErrors = errors.non_field_errors.join(', ');
-          showError('Validation Error', nonFieldErrors);
-        } else {
-          // Handle field-specific errors
-          const errorMessages = Object.values(errors).flat().join(', ');
-          showError('Validation Error', errorMessages);
-        }
-      } else if (error.response?.data?.message) {
-        showError('Error', error.response.data.message);
-      } else {
-        showError('Error', 'There was an error submitting your request. Please try again.');
-      }
+      const errorMessage = handleApiError(error, 'Phone Swap Submission');
+      showError('Submission Error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }

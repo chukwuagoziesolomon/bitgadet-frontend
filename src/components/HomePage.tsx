@@ -207,7 +207,8 @@ const HomePage: React.FC = () => {
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
 
     try {
-      const res = await publicApiRequest<any>('/api/cart/add/', {
+      // Use the appropriate request method based on auth status
+      const res = await (token ? apiRequest : publicApiRequest)<any>('/api/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
@@ -568,10 +569,11 @@ const HomePage: React.FC = () => {
                   id={product.id}
                   slug={product.slug}
                   name={product.name}
-                  brand={product.brand}
+                  brand={product.brand_name || product.brand}
                   price={parseFloat(product.current_price)}
                   originalPrice={parseFloat(product.original_price)}
                   usdtPrice={product.current_price_usdt}
+                  originalUsdtPrice={product.original_price_usdt}
                   rating={4.5} // Default rating since not in API response
                   reviews={0} // Default reviews since not in API response
                   image={product.main_image}
@@ -587,6 +589,8 @@ const HomePage: React.FC = () => {
                   onToggleWishlist={handleToggleWishlist}
                   product_condition={product.product_condition}
                   condition_display={product.condition_display}
+                  is_coupon={product.is_coupon}
+                  coupon_value={product.coupon_value}
                 />
               ))
             )}

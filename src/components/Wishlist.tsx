@@ -4,7 +4,7 @@ import { Bell, ShoppingBag, Trash2, Heart } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import Sidebar from './Sidebar';
-import { conditionalApiRequest, publicApiRequest, API_CONFIG } from '../config/api';
+import { apiRequest, conditionalApiRequest, publicApiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './Wishlist.css';
 
@@ -90,8 +90,9 @@ const Wishlist: React.FC = () => {
   };
 
   const handleAddToCart = async (productId: number) => {
+    const token = localStorage.getItem('authToken');
     try {
-      await publicApiRequest<any>('/api/cart/add/', {
+      await (token ? apiRequest : publicApiRequest)<any>('/api/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
@@ -134,7 +135,7 @@ const Wishlist: React.FC = () => {
             <div className="wishlist-items">
               {wishlistItems.map((item) => (
                 <div key={item.product_id} className="wishlist-item">
-                  <img src={item.main_image} alt={item.product_name} className="wishlist-image" />
+                  <img src={item.main_image || 'https://via.placeholder.com/300x300/f3f4f6/9ca3af?text=No+Image+Available'} alt={item.product_name} className="wishlist-image" />
                   <div className="wishlist-info">
                     <div className="item-brand">{item.brand}</div>
                     <div className="item-name">{item.product_name}</div>

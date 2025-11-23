@@ -872,28 +872,25 @@ body {
 }
 
 .our-service-feature-icon {
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   margin-bottom: 0;
-  background: rgba(55, 65, 81, 0.8);
-  border-radius: 50%;
-  border: 1px solid rgba(55, 65, 81, 0.3);
+  background: rgba(0, 200, 150, 0.1);
+  border-radius: 12px;
+  border: 2px solid rgba(0, 200, 150, 0.3);
   position: relative;
-  box-shadow: 
-    0 0 0 1px rgba(139, 92, 246, 0.3),
-    0 0 8px rgba(139, 92, 246, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 1px rgba(0, 200, 150, 0.2);
 }
 
 .truck-icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(64%) sepia(98%) saturate(1204%) hue-rotate(94deg) brightness(103%) contrast(103%);
+  filter: none;
 }
 
 .our-service-feature-text {
@@ -1221,13 +1218,16 @@ body {
 }
 
 .deal-banner-container {
-  display: inline-block;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   width: 100%;
-  max-width: 1325px; /* Maximum width for desktop */
+  max-width: 1325px;
   height: 378px;
   border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
+  position: relative;
 }
 
 .deal-banner-left {
@@ -1236,25 +1236,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 518px; /* Fixed width for desktop, but flexible */
   height: 378px;
   border-radius: 12px 0 0 12px;
 }
 
-/* Discount badge removed - using the one in the image */
-
 .deal-product-image {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.deal-product-image {
-  width: 518px;
-  height: 378px;
-  object-fit: cover;
-  opacity: 1;
-  transform: rotate(0deg);
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 .deal-banner-right {
@@ -1435,6 +1426,71 @@ body {
   box-shadow: 0 5px 15px rgba(0, 200, 150, 0.3);
 }
 
+/* Carousel Navigation Buttons */
+.deal-carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 200, 150, 0.8);
+  color: white;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.deal-carousel-btn:hover {
+  background: rgba(0, 200, 150, 1);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.deal-carousel-prev {
+  left: 1rem;
+}
+
+.deal-carousel-next {
+  right: 1rem;
+}
+
+/* Carousel Indicators */
+.deal-carousel-indicators {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.deal-carousel-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.deal-carousel-dot.active {
+  background: #00C896;
+  border-color: #00C896;
+}
+
+.deal-carousel-dot:hover {
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
 /* Tablet Styles for Deal of the Day Banner - Same as Mobile */
 @media (max-width: 1024px) {
   .deal-banner {
@@ -1444,6 +1500,7 @@ body {
   }
 
   .deal-banner-container {
+    grid-template-columns: 1fr;
     flex-direction: column;
     width: 100%;
     max-width: 100%;
@@ -1460,13 +1517,14 @@ body {
   .deal-product-image {
     width: 100%;
     height: 200px;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 1rem;
   }
 
   .deal-banner-right {
     width: 100%;
     height: auto;
-    min-height: 300px;
+    min-height: 250px;
     border-radius: 0 0 0.75rem 0.75rem;
   }
 
@@ -1521,6 +1579,29 @@ body {
   .deal-buy-now-btn {
     padding: 0.7rem 1.25rem;
     font-size: 0.85rem;
+  }
+
+  .deal-carousel-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+  }
+
+  .deal-carousel-prev {
+    left: 0.5rem;
+  }
+
+  .deal-carousel-next {
+    right: 0.5rem;
+  }
+
+  .deal-carousel-indicators {
+    bottom: 0.75rem;
+  }
+
+  .deal-carousel-dot {
+    width: 10px;
+    height: 10px;
   }
 }
 

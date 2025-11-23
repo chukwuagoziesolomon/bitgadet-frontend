@@ -19,11 +19,14 @@ import Sidebar from './Sidebar';
 import OrderTrackingModal from './OrderTrackingModal';
 import { apiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
+import { useGlobalLoading } from '../hooks/useGlobalLoading';
+import { handleApiError } from '../utils/errorHandler';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { showError, showSuccess } = useToast();
+  const { setLoading } = useGlobalLoading();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [trackingModalOpen, setTrackingModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -45,26 +48,36 @@ const Dashboard: React.FC = () => {
   // Fetch order stats and recent orders on component mount
   useEffect(() => {
     const fetchDashboardData = async () => {
-      // Fetch order stats
+      setLoading(true);
       try {
-        setStatsLoading(true);
-        const statsData = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_ORDER_STATS);
-        setOrderStats(statsData);
-      } catch (error: any) {
-        console.error('Failed to fetch order stats:', error);
-        showError('Failed to load dashboard stats', error.message || 'Please try again later.');
-        // Set default values if API fails
-        setOrderStats({
-          total_orders: 0,
-          orders_this_month: 0,
-          orders_last_month: 0,
-          orders_percentage_change: 0,
-          wishlist_count: 0,
-          wishlist_percentage_change: 0
-        });
-      } finally {
-        setStatsLoading(false);
-      }
+        // Fetch order stats
+        try {
+          setStatsLoading(true);
+          const statsData = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_ORDER_STATS);
+          setOrderStats({
+            total_orders: statsData?.total_orders || 0,
+            orders_this_month: statsData?.orders_this_month || 0,
+            orders_last_month: statsData?.orders_last_month || 0,
+            orders_percentage_change: statsData?.orders_percentage_change ?? 0,
+            wishlist_count: statsData?.wishlist_count || 0,
+            wishlist_percentage_change: statsData?.wishlist_percentage_change ?? 0
+          });
+        } catch (error: any) {
+          console.error('Failed to fetch order stats:', error);
+          const errorMessage = handleApiError(error, 'Dashboard Stats');
+          showError('Failed to load dashboard stats', errorMessage);
+          // Set default values if API fails
+          setOrderStats({
+            total_orders: 0,
+            orders_this_month: 0,
+            orders_last_month: 0,
+            orders_percentage_change: 0,
+            wishlist_count: 0,
+            wishlist_percentage_change: 0
+          });
+        } finally {
+          setStatsLoading(false);
+        }
 
       // Fetch recent orders
       try {
@@ -73,7 +86,8 @@ const Dashboard: React.FC = () => {
         setApiRecentOrders(ordersData.recent_orders || []);
       } catch (error: any) {
         console.error('Failed to fetch recent orders:', error);
-        showError('Failed to load recent orders', error.message || 'Please try again later.');
+        const errorMessage = handleApiError(error, 'Recent Orders');
+        showError('Failed to load recent orders', errorMessage);
         // Keep empty array if API fails
         setApiRecentOrders([]);
       } finally {
@@ -87,16 +101,20 @@ const Dashboard: React.FC = () => {
         setRecentWishlist(wishlistData.recent_wishlist || []);
       } catch (error: any) {
         console.error('Failed to fetch recent wishlist:', error);
-        showError('Failed to load recent wishlist', error.message || 'Please try again later.');
+        const errorMessage = handleApiError(error, 'Recent Wishlist');
+        showError('Failed to load recent wishlist', errorMessage);
         // Keep empty array if API fails
         setRecentWishlist([]);
       } finally {
         setWishlistLoading(false);
       }
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchDashboardData();
-  }, [showError]);
+  }, [showError, setLoading]);
 
   // Sample orders data
   const recentOrders = [
@@ -195,7 +213,8 @@ const Dashboard: React.FC = () => {
       showSuccess('Removed from wishlist', 'Item has been removed from your wishlist.');
     } catch (error: any) {
       console.error('Failed to remove from wishlist:', error);
-      showError('Failed to remove item', error.message || 'Please try again.');
+      const errorMessage = handleApiError(error, 'Remove Wishlist');
+      showError('Failed to remove item', errorMessage);
     }
   };
 
@@ -208,7 +227,8 @@ const Dashboard: React.FC = () => {
       showSuccess('Added to cart', 'Item has been added to your cart.');
     } catch (error: any) {
       console.error('Failed to add to cart:', error);
-      showError('Failed to add to cart', error.message || 'Please try again.');
+      const errorMessage = handleApiError(error, 'Add to Cart');
+      showError('Failed to add to cart', errorMessage);
     }
   };
 

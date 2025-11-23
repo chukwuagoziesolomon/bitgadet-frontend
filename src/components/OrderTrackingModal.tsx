@@ -43,7 +43,8 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
     setError(null);
 
     try {
-      const response = await conditionalApiRequest<any>(`/api/checkout/${id}/status/`);
+      const response = await conditionalApiRequest<any>(`/api/checkout/status/${id}/`);
+      console.log('📍 Tracking data received:', response);
       setTrackingData(response);
     } catch (err: any) {
       console.error('Failed to fetch tracking data:', err);
@@ -110,11 +111,10 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
         <div className="modal-header">
           <div className="order-info">
             <div className="order-details">
-              <h3 className="order-id">Order #{trackingData?.order_summary?.order_id || orderId}</h3>
-              {trackingData && (
+              <h3 className="order-id">Order #{trackingData?.order?.order_id || orderId}</h3>
+              {trackingData?.order && (
                 <>
-                  <p className="order-date">Ordered on {formatDate(trackingData.order_summary?.order_date || new Date().toISOString())}</p>
-                  <p className="order-status">Status: {trackingData.order_summary?.status_display}</p>
+                  <p className="order-status">Status: {trackingData.order.status?.charAt(0).toUpperCase() + trackingData.order.status?.slice(1).replace('_', ' ')}</p>
                 </>
               )}
             </div>
@@ -136,149 +136,176 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
             </div>
           ) : trackingData ? (
             <>
+              {/* Status Icon and Title */}
               <div className="status-section">
                 <div className="status-icon">
-                  {getStatusIcon(trackingData.order_summary?.status)}
+                  {getStatusIcon(trackingData.order?.status)}
                 </div>
-                <h2 className="status-title" style={{ color: getStatusColor(trackingData.order_summary?.status) }}>
-                  {trackingData.order_summary?.status_display}
+                <h2 className="status-title" style={{ color: getStatusColor(trackingData.order?.status) }}>
+                  {trackingData.order?.status ? trackingData.order.status.charAt(0).toUpperCase() + trackingData.order.status.slice(1).replace('_', ' ') : 'Order Status Unknown'}
                 </h2>
               </div>
 
-              {/* Products Section */}
-              {trackingData.products && trackingData.products.length > 0 && (
-                <div className="products-section">
-                  <h3>Order Items</h3>
-                  <div className="products-list">
-                    {trackingData.products.map((product: any, index: number) => (
-                      <div key={index} className="product-item">
-                        {product.image && (
-                          <img src={product.image} alt={product.name} className="product-thumbnail" />
-                        )}
-                        <div className="product-info">
-                          <p className="product-name">{product.name}</p>
-                          <p className="product-quantity">Qty: {product.quantity}</p>
-                          <p className="product-price">{formatNaira(product.price)}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+              {/* Tracking Available Badge */}
+              {trackingData.order && (
+                <div style={{ marginBottom: '20px' }}>
+                  {['shipped', 'en_route', 'delivered'].includes(trackingData.order.status) ? (
+                    <div style={{
+                      background: '#d1fae5',
+                      border: '1px solid #10b981',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      color: '#065f46',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      ✓ Tracking Available
+                    </div>
+                  ) : (
+                    <div style={{
+                      background: '#fef3c7',
+                      border: '1px solid #f59e0b',
+                      borderRadius: '8px',
+                      padding: '10px 12px',
+                      color: '#92400e',
+                      fontSize: '14px',
+                      fontWeight: '600'
+                    }}>
+                      ⏱ {trackingData.order.status === 'pending' ? 'Awaiting Payment' : 'Order Being Prepared'}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Order Summary Section */}
-              {trackingData.order_summary && (
-                <div className="order-summary-section">
-                  <h3>Order Summary</h3>
-                  <div className="summary-item">
-                    <span>Total Amount:</span>
-                    <span className="summary-value">{formatNaira(trackingData.order_summary.total_amount)}</span>
-                  </div>
+              {/* Tracking Information - When Shipped */}
+              {trackingData.order && ['shipped', 'en_route', 'delivered'].includes(trackingData.order.status) && (
+                <div className="tracking-info" style={{ marginBottom: '20px' }}>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>📦 Shipping Details</h3>
+                  {trackingData.order.tracking_number && (
+                    <div style={{ marginBottom: '12px', padding: '10px', background: '#f0f9ff', borderRadius: '6px' }}>
+                      <strong>Tracking Number:</strong>
+                      <div style={{ fontSize: '14px', color: '#1e40af', fontFamily: 'monospace', marginTop: '4px' }}>
+                        {trackingData.order.tracking_number}
+                      </div>
+                    </div>
+                  )}
+                  {trackingData.order.carrier_name && (
+                    <div style={{ marginBottom: '12px', padding: '10px', background: '#f3f4f6', borderRadius: '6px' }}>
+                      <strong>Carrier:</strong>
+                      <div style={{ fontSize: '14px', marginTop: '4px' }}>
+                        {trackingData.order.carrier_name}
+                      </div>
+                    </div>
+                  )}
+                  {trackingData.order.tracking_url && (
+                    <a 
+                      href={trackingData.order.tracking_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-block',
+                        marginTop: '12px',
+                        padding: '10px 16px',
+                        background: '#3b82f6',
+                        color: 'white',
+                        borderRadius: '6px',
+                        textDecoration: 'none',
+                        fontWeight: '600',
+                        fontSize: '14px'
+                      }}
+                    >
+                      Track Package →
+                    </a>
+                  )}
                 </div>
               )}
 
               {/* Payment Status Section */}
               {trackingData.payment_status && (
-                <div className="payment-section">
-                  <h3>Payment Information</h3>
-                  <div className="payment-details">
-                    <div className="payment-item">
-                      <strong>Status:</strong> 
-                      <span style={{ 
-                        color: trackingData.payment_status.status === 'paid' ? '#00C896' : '#f59e0b',
-                        textTransform: 'capitalize'
-                      }}>
-                        {trackingData.payment_status.status}
-                      </span>
+                <div className="payment-section" style={{ marginBottom: '20px' }}>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>💳 Payment Status</h3>
+                  <div style={{
+                    padding: '12px',
+                    background: trackingData.payment_status.is_paid ? '#d1fae5' : '#fef3c7',
+                    border: `1px solid ${trackingData.payment_status.is_paid ? '#10b981' : '#f59e0b'}`,
+                    borderRadius: '6px',
+                    color: trackingData.payment_status.is_paid ? '#065f46' : '#92400e'
+                  }}>
+                    <div style={{ fontWeight: '600', marginBottom: '8px' }}>
+                      {trackingData.payment_status.is_paid ? '✓ Payment Confirmed' : '⏱ Payment Pending'}
+                    </div>
+                    <div style={{ fontSize: '13px' }}>
+                      Method: {trackingData.payment_status.payment_method}
                     </div>
                     {trackingData.payment_status.payment_reference && (
-                      <div className="payment-item">
-                        <strong>Reference:</strong> {trackingData.payment_status.payment_reference}
-                      </div>
-                    )}
-                    {trackingData.order_summary?.payment_method && (
-                      <div className="payment-item">
-                        <strong>Method:</strong> 
-                        <span style={{ textTransform: 'capitalize' }}>
-                          {trackingData.order_summary.payment_method.replace('_', ' ')}
-                        </span>
+                      <div style={{ fontSize: '13px', marginTop: '4px' }}>
+                        Reference: <code>{trackingData.payment_status.payment_reference}</code>
                       </div>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* Tracking Information Section */}
-              {trackingData.payment_status?.tracking_info && (
-                <div className="tracking-info">
-                  <h3>Shipping Information</h3>
-                  <div className="tracking-details">
-                    {trackingData.payment_status.tracking_info.tracking_number && (
-                      <div className="tracking-item">
-                        <strong>Tracking Number:</strong> {trackingData.payment_status.tracking_info.tracking_number}
-                      </div>
-                    )}
-                    {trackingData.payment_status.tracking_info.carrier_name && (
-                      <div className="tracking-item">
-                        <strong>Carrier:</strong> {trackingData.payment_status.tracking_info.carrier_name}
-                      </div>
-                    )}
-                    {trackingData.payment_status.tracking_info.estimated_delivery && (
-                      <div className="tracking-item">
-                        <strong>Estimated Delivery:</strong> {formatDate(trackingData.payment_status.tracking_info.estimated_delivery)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {trackingData.payment_status?.tracking_info?.tracking_notes && (
-                <div className="tracking-timeline">
-                  <h3>Tracking Updates</h3>
-                  <div className="tracking-notes">
-                    {trackingData.payment_status.tracking_info.tracking_notes.split('\n').map((note: string, index: number) => (
-                      <div key={index} className="tracking-note">
-                        {note}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Delivery Address Section */}
-              {trackingData.delivery_info && (
-                <div className="delivery-info">
-                  {trackingData.delivery_info.shipping_address && (
-                    <div className="info-card">
-                      <MapPin size={20} />
-                      <div>
-                        <h4>Delivery Address</h4>
-                        <div className="address-text">
-                          {trackingData.delivery_info.shipping_address.street_address && (
-                            <p>{trackingData.delivery_info.shipping_address.street_address}</p>
-                          )}
-                          {trackingData.delivery_info.shipping_address.city && (
-                            <p>
-                              {trackingData.delivery_info.shipping_address.city}
-                              {trackingData.delivery_info.shipping_address.state && `, ${trackingData.delivery_info.shipping_address.state}`}
-                            </p>
-                          )}
-                          {trackingData.delivery_info.shipping_address.country && (
-                            <p>{trackingData.delivery_info.shipping_address.country}</p>
-                          )}
-                        </div>
+              {/* Bank Transfer Details - If Pending */}
+              {trackingData.payment_status?.is_pending && trackingData.payment_status?.bank_transfer && (
+                <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>🏦 Bank Transfer Details</h3>
+                  <div style={{ 
+                    padding: '14px', 
+                    background: '#f8fafc', 
+                    border: '2px dashed #cbd5e1',
+                    borderRadius: '8px',
+                    fontSize: '14px'
+                  }}>
+                    <div style={{ marginBottom: '10px' }}>
+                      <div style={{ color: '#64748b', fontSize: '12px', marginBottom: '2px' }}>Bank Name</div>
+                      <div style={{ fontWeight: '600', fontSize: '15px' }}>{trackingData.payment_status.bank_transfer.bank_name}</div>
+                    </div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <div style={{ color: '#64748b', fontSize: '12px', marginBottom: '2px' }}>Account Name</div>
+                      <div style={{ fontWeight: '600' }}>{trackingData.payment_status.bank_transfer.account_name}</div>
+                    </div>
+                    <div style={{ marginBottom: '10px' }}>
+                      <div style={{ color: '#64748b', fontSize: '12px', marginBottom: '2px' }}>Account Number</div>
+                      <div style={{ fontWeight: '600', fontFamily: 'monospace', fontSize: '15px' }}>
+                        {trackingData.payment_status.bank_transfer.account_number}
                       </div>
                     </div>
-                  )}
-                  {trackingData.delivery_info.tracking_available && (
-                    <div className="info-card">
-                      <Package size={20} />
-                      <div>
-                        <h4>Tracking Available</h4>
-                        <p>Yes</p>
+                    <div style={{ marginBottom: '10px' }}>
+                      <div style={{ color: '#64748b', fontSize: '12px', marginBottom: '2px' }}>Reference</div>
+                      <div style={{ fontWeight: '600', color: '#3b82f6', fontFamily: 'monospace' }}>
+                        {trackingData.payment_status.bank_transfer.reference}
                       </div>
                     </div>
-                  )}
+                    {trackingData.payment_status.bank_transfer.expires_at && (
+                      <div style={{ 
+                        marginTop: '12px',
+                        padding: '8px',
+                        background: '#fef2f2',
+                        borderRadius: '4px',
+                        color: '#991b1b',
+                        fontSize: '12px'
+                      }}>
+                        ⏰ Payment expires on {formatDate(trackingData.payment_status.bank_transfer.expires_at)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Order Amount */}
+              {trackingData.order?.total_amount && (
+                <div style={{
+                  padding: '14px',
+                  background: '#f0f9ff',
+                  borderRadius: '8px',
+                  marginBottom: '20px',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ color: '#64748b', fontSize: '13px', marginBottom: '6px' }}>Total Amount</div>
+                  <div style={{ fontSize: '24px', fontWeight: '700', color: '#1e40af' }}>
+                    {formatNaira(trackingData.order.total_amount)}
+                  </div>
                 </div>
               )}
             </>
@@ -289,7 +316,7 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
           <button className="btn-secondary" onClick={onClose}>
             Close
           </button>
-          {trackingData && trackingData.order_summary?.status !== 'delivered' && (
+          {trackingData?.order && trackingData.order.status !== 'delivered' && (
             <button className="btn-primary">
               Contact Support
             </button>
