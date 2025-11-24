@@ -113,7 +113,7 @@ export const buildApiUrl = (endpoint: string): string => {
 
 // Helper function to check if endpoint is a cart endpoint
 const isCartEndpoint = (endpoint: string): boolean => {
-  return endpoint.includes('/api/cart/');
+  return endpoint.includes('/api/cart/') || endpoint.includes('/api/user/order-stats/') || endpoint.includes('/api/checkout/create/');
 };
 
 // Helper function to check if endpoint is a wishlist endpoint
@@ -126,7 +126,9 @@ const needsNoCredentials = (endpoint: string): boolean => {
   // These endpoints use JWT cart_token instead of Django sessions
   return endpoint.includes('/api/cart/') || 
          endpoint.includes('/api/wishlist/') || 
-         endpoint.includes('/api/orders/summary/');
+         endpoint.includes('/api/orders/summary/') ||
+         endpoint.includes('/api/user/order-stats/') ||
+         endpoint.includes('/api/checkout/create/');
 };
 
 // Helper function to handle cart_token in request body
@@ -388,6 +390,71 @@ export const conditionalApiRequest = async <T>(
       console.warn('🔁 Auth request returned 401 on a public/safe endpoint. Retrying without auth...');
       return await publicApiRequest<T>(endpoint, options);
     }
+    throw error;
+  }
+};
+
+// Checkout API request with cart_token in query parameter to avoid CORS preflight
+export const checkoutApiRequest = async <T>(
+  endpoint: string,
+  cartToken: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  // Use direct backend URL instead of proxy
+  let baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  baseUrl = baseUrl.replace(/\/$/, '');
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  let url = `${baseUrl}${cleanEndpoint}`;
+
+  // Add cart_token as query parameter to avoid CORS preflight
+  const separator = url.includes('?') ? '&' : '?';
+  url = `${url}${separator}cart_token=${encodeURIComponent(cartToken)}`;
+
+  const isPostOrPut = options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH';
+  const csrfToken = isPostOrPut ? getCsrfToken() : null;
+
+  console.log('🛒 Making checkout request with cart_token in query parameter');
+
+  const defaultOptions: RequestInit = {
+    credentials: 'omit',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken && { 'X-CSRFToken': csrfToken }),
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  try {
+    const response = await fetch(url, defaultOptions);
+
+    console.log('📡 Checkout response status:', response.status, response.statusText);
+    let responseData;
+    try {
+      responseData = await response.json();
+    } catch (e) {
+      responseData = null;
+    }
+
+    if (!response.ok) {
+      const errorMessage = responseData ? extractErrorMessage(responseData) : `HTTP error! status: ${response.status}`;
+      const error = new Error(errorMessage) as any;
+      error.response = {
+        status: response.status,
+        data: responseData
+      };
+      console.error('❌ Checkout API Error Response:', {
+        status: response.status,
+        data: responseData,
+        url: url
+      });
+      throw error;
+    }
+
+    console.log('📦 Checkout response data:', responseData);
+    return responseData;
+  } catch (error) {
+    console.error(`❌ Checkout request failed for ${url}:`, error);
     throw error;
   }
 };

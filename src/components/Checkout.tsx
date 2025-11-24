@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
-import { conditionalApiRequest, API_CONFIG } from '../config/api';
+import { conditionalApiRequest, checkoutApiRequest, API_CONFIG } from '../config/api';
 import { handleApiError } from '../utils/errorHandler';
 import { cartService } from '../services/cartService';
 import './Checkout.css';
@@ -54,8 +54,8 @@ const Checkout: React.FC = () => {
           if (data.currencies) {
             setCryptoCurrencies(data.currencies);
             // Set first available currency as default if current selection is not available
-            if (data.currencies.length > 0 && !data.currencies.find((c: any) => c.code.toLowerCase() === cryptoType)) {
-              setCryptoType(data.currencies[0].code.toLowerCase());
+            if (data.currencies.length > 0 && !data.currencies.find((c: any) => c.id === cryptoType)) {
+              setCryptoType(data.currencies[0].id);
             }
           }
         })
@@ -74,9 +74,19 @@ const Checkout: React.FC = () => {
     const fetchOrderSummary = async () => {
       setSummaryLoading(true);
       try {
-        console.log('Fetching order summary from /api/user/order-stats/');
-        // Use the correct endpoint for order statistics
-        let endpoint = API_CONFIG.ENDPOINTS.USER_ORDER_STATS;
+        // Get cart token for guest users
+        const cartToken = cartService.getCartToken();
+        
+        console.log('Fetching order summary with cart_token:', cartToken);
+        
+        // Build query parameters for order summary
+        const params = new URLSearchParams();
+        if (cartToken) params.append('cart_token', cartToken);
+        if (formData.state) params.append('state', formData.state);
+        params.append('payment_method', paymentMethod);
+        
+        // Use the correct endpoint for order summary (works for both guests and authenticated users)
+        const endpoint = `${API_CONFIG.ENDPOINTS.ORDER_SUMMARY_STATS}?${params.toString()}`;
         
         const data = await conditionalApiRequest<any>(endpoint);
         console.log('Order summary data:', data);
@@ -119,11 +129,17 @@ const Checkout: React.FC = () => {
     setCouponLoading(true);
 
     try {
+      // Get cart token for guest users
+      const cartToken = cartService.getCartToken();
+      
       const response = await conditionalApiRequest<any>(API_CONFIG.ENDPOINTS.COUPONS_VALIDATE, {
         method: 'POST',
         body: JSON.stringify({
           coupon_code: couponCode.trim(),
-          user_email: formData.email
+          user_email: formData.email,
+          cart_token: cartToken,
+          state: formData.state,
+          payment_method: paymentMethod
         })
       });
 
@@ -147,7 +163,18 @@ const Checkout: React.FC = () => {
         // Now fetch the updated order summary with the coupon code applied
         try {
           console.log('Fetching updated order summary with coupon...');
-          const summaryEndpoint = `${API_CONFIG.ENDPOINTS.ORDER_SUMMARY_STATS}?coupon_code=${couponCode.trim()}`;
+          
+          // Get cart token for guest users
+          const cartToken = cartService.getCartToken();
+          
+          // Build query parameters
+          const params = new URLSearchParams();
+          if (cartToken) params.append('cart_token', cartToken);
+          if (formData.state) params.append('state', formData.state);
+          params.append('payment_method', paymentMethod);
+          params.append('coupon_code', couponCode.trim());
+          
+          const summaryEndpoint = `${API_CONFIG.ENDPOINTS.ORDER_SUMMARY_STATS}?${params.toString()}`;
           const summaryData = await conditionalApiRequest<any>(summaryEndpoint);
           
           if (summaryData) {
@@ -237,31 +264,51 @@ const Checkout: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Prepare cart items (this would come from your cart state/context)
-      const cartItems: { [key: string]: number } = {};
-      // For now, we'll use a sample product - in real app this would come from cart
-      cartItems['sample_product_id'] = 1;
+      // Validate cart is not empty
+      if (!orderSummary || orderSummary.total_items === 0) {
+        showError('Empty Cart', 'Your cart is empty. Please add items before checking out.');
+        setIsSubmitting(false);
+        return;
+      }
 
+      // Get cart token for guest users
+      const cartToken = cartService.getCartToken();
+      
+      if (!cartToken) {
+        showError('Cart Error', 'Unable to identify your cart. Please add items to cart first.');
+        setIsSubmitting(false);
+        return;
+      }
+      
+      console.log('Creating order with cart_token:', cartToken);
+      console.log('Order summary:', orderSummary);
+
+      // Use actual order summary data instead of hardcoded values
       const orderData = {
+        coupon_code: appliedCoupon?.code || couponCode || null,
+        state: formData.state,
+        payment_method: paymentMethod,
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
         phone_number: formData.phoneNumber,
         street_address: formData.streetAddress,
         city: formData.city,
-        state: formData.state,
         postal_code: formData.postalCode,
         country: formData.country,
-        payment_method: paymentMethod,
-        cart_items: cartItems,
-        subtotal: 155000, // Sample amount - in real app from cart total
-        shipping_cost: 5000, // Sample shipping - in real app from calculation
-        total_amount: 160000, // Sample total - in real app from calculation
         additional_info: specialInstructions,
-        terms_agreed: agree
+        terms_agreed: agree,
+        // Use actual totals from order summary
+        subtotal: orderSummary?.subtotal || 0,
+        tax_amount: orderSummary?.tax_amount || 0,
+        shipping_cost: orderSummary?.shipping_cost || 0,
+        discount_amount: orderSummary?.discount_amount || 0,
+        total_amount: orderSummary?.total || orderSummary?.total_naira || 0,
+        total_amount_usdt: orderSummary?.total_usdt || 0
       };
 
-      const result = await conditionalApiRequest<any>('/api/checkout/create/', {
+      // Use checkoutApiRequest with X-Cart-Token header instead of body
+      const result = await checkoutApiRequest<any>('/api/checkout/create/', cartToken, {
         method: 'POST',
         body: JSON.stringify(orderData)
       });
@@ -273,8 +320,6 @@ const Checkout: React.FC = () => {
 
       if (result.success) {
         showSuccess('Order created successfully!', 'Redirecting to payment details...');
-        // Get cart token to pass through the payment flow
-        const cartToken = cartService.getCartToken();
         // Navigate to payment details with the API response
         navigate('/payment-details', {
           state: {
@@ -361,37 +406,76 @@ const Checkout: React.FC = () => {
                 ) : orderSummary ? (
                   <>
                     <div className="summary-row">
-                      <span>Total Orders</span>
-                      <span>{orderSummary.total_orders || 0}</span>
-                    </div>
-                    <div className="summary-row">
-                      <span>Total Spent</span>
-                      <span>{orderSummary.currency || 'USD'} {orderSummary.total_spent?.toLocaleString() || '0.00'}</span>
-                    </div>
-                    <div className="summary-row">
-                      <span>Average Order Value</span>
-                      <span>{orderSummary.currency || 'USD'} {orderSummary.average_order_value?.toLocaleString() || '0.00'}</span>
+                      <span>Subtotal</span>
+                      <span>
+                        ₦{orderSummary.subtotal?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
+                        {orderSummary.subtotal_usdt && orderSummary.subtotal_usdt !== orderSummary.subtotal && (
+                          <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
+                            ({orderSummary.subtotal_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
+                          </span>
+                        )}
+                      </span>
                     </div>
                     
+                    {orderSummary.tax_amount > 0 && (
+                      <div className="summary-row">
+                        <span>Tax ({(orderSummary.tax_amount / orderSummary.subtotal * 100).toFixed(1)}%)</span>
+                        <span>
+                          ₦{orderSummary.tax_amount?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
+                          {orderSummary.tax_amount_usdt && orderSummary.tax_amount_usdt !== orderSummary.tax_amount && (
+                            <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
+                              ({orderSummary.tax_amount_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {orderSummary.shipping_cost > 0 && (
+                      <div className="summary-row">
+                        <span>Shipping</span>
+                        <span>
+                          ₦{orderSummary.shipping_cost?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
+                          {orderSummary.shipping_cost_usdt && orderSummary.shipping_cost_usdt !== orderSummary.shipping_cost && (
+                            <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
+                              ({orderSummary.shipping_cost_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    
                     {/* Display discount if coupon is applied */}
-                    {orderSummary.coupon_applied && orderSummary.discount_amount && (
+                    {orderSummary.coupon_applied && orderSummary.discount_amount > 0 && (
                       <>
                         <div style={{ borderTop: '1px solid #e0e0e0', margin: '12px 0', paddingTop: '12px' }}>
                           <div className="summary-row discount-row">
-                            <span>Subtotal:</span>
-                            <span>₦{((orderSummary.total_spent || 0) + (orderSummary.discount_amount || 0)).toLocaleString()}</span>
-                          </div>
-                          <div className="summary-row discount-row">
                             <span style={{ color: '#10b981', fontWeight: '600' }}>Discount:</span>
-                            <span style={{ color: '#10b981', fontWeight: '700' }}>-₦{(orderSummary.discount_amount || 0).toLocaleString()}</span>
-                          </div>
-                          <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.1rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '8px', marginTop: '8px' }}>
-                            <span>Final Total:</span>
-                            <span>₦{(orderSummary.total_spent || 0).toLocaleString()}</span>
+                            <span style={{ color: '#10b981', fontWeight: '700' }}>
+                              -₦{(orderSummary.discount_amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                              {orderSummary.discount_amount_usdt && orderSummary.discount_amount_usdt !== orderSummary.discount_amount && (
+                                <span style={{ fontSize: '0.9rem', marginLeft: '8px' }}>
+                                  ({orderSummary.discount_amount_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
+                                </span>
+                              )}
+                            </span>
                           </div>
                         </div>
                       </>
                     )}
+                    
+                    {/* Final Total */}
+                    <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
+                      <span>Total:</span>
+                      <span>
+                        ₦{(orderSummary.total_naira || orderSummary.total || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        {orderSummary.total_usdt && (
+                          <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
+                            ({orderSummary.total_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
+                          </span>
+                        )}
+                      </span>
+                    </div>
                     
                     {orderSummary.note && (
                       <div className="summary-row note" style={{ fontSize: '0.85rem', color: '#666', marginTop: '8px' }}>
@@ -564,23 +648,21 @@ const Checkout: React.FC = () => {
                   <div className="crypto-loading">Loading cryptocurrencies...</div>
                 ) : cryptoCurrencies.length > 0 ? (
                   cryptoCurrencies.map((currency) => (
-                    <label key={currency.code}>
+                    <label key={currency.id}>
                       <input
                         type="radio"
                         name="crypto"
-                        value={currency.code.toLowerCase()}
-                        checked={cryptoType === currency.code.toLowerCase()}
-                        onChange={() => setCryptoType(currency.code.toLowerCase())}
+                        value={currency.id}
+                        checked={cryptoType === currency.id}
+                        onChange={() => setCryptoType(currency.id)}
                       />
                       <div className="crypto-option">
-                        <img
-                          src={currency.code === 'USDT' ? '/usdt.png' : currency.logo_url}
-                          alt={currency.name}
-                          className="crypto-icon"
-                        />
+                        <div className="crypto-icon" style={currency.symbol === 'USDT' ? {backgroundColor: '#26a17b', color: 'white'} : {}}>
+                          {currency.symbol}
+                        </div>
                         <div className="crypto-info">
-                          <div className="crypto-name">{currency.display_name}</div>
-                          <div className="crypto-network">{currency.network}</div>
+                          <div className="crypto-name">{currency.name}</div>
+                          <div className="crypto-network">{currency.network_name}</div>
                         </div>
                       </div>
                     </label>
