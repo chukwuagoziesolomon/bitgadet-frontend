@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, ChevronDown, Grid3X3, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import ProductCard from './ProductCard';
 import './AllProductsPage.css';
-import { apiRequest, publicApiRequest, conditionalApiRequest } from '../config/api';
+import { apiRequest, publicApiRequest, conditionalApiRequest, API_CONFIG } from '../config/api';
 import { cartService } from '../services/cartService';
 import { useAllProducts } from '../hooks/useAllProducts';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
