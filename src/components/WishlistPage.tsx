@@ -26,40 +26,41 @@ const WishlistPage: React.FC = () => {
     );
   };
 
+  const fetchWishlist = async () => {
+    const token = localStorage.getItem('authToken');
+    const cartToken = getCartToken();
+
+    // If not logged in and no cart token, show empty wishlist and skip API call
+    if (!token && !cartToken) {
+      setWishlistItems([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      let url = API_CONFIG.ENDPOINTS.WISHLIST_ALL;
+      if (!token && cartToken) {
+        url = `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}`;
+      }
+
+      const response = token
+        ? await conditionalApiRequest<any>(url)
+        : await publicApiRequest<any>(url);
+
+      setWishlistItems(response.products || []);
+    } catch (error: any) {
+      console.error('Failed to fetch wishlist:', error);
+      showError('Failed to load wishlist', error.message || 'Please try again later.');
+      setWishlistItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch wishlist items on component mount
   useEffect(() => {
-    const fetchWishlist = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem('authToken');
-        const cartToken = getCartToken();
-
-        // If not logged in and no cart token, show empty wishlist and skip API call
-        if (!token && !cartToken) {
-          setWishlistItems([]);
-          setLoading(false);
-          return;
-        }
-
-        let url = API_CONFIG.ENDPOINTS.WISHLIST_ALL;
-        if (!token && cartToken) {
-          url = `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}`;
-        }
-
-        const response = token
-          ? await conditionalApiRequest<any>(url)
-          : await publicApiRequest<any>(url);
-
-        setWishlistItems(response.products || []);
-      } catch (error: any) {
-        console.error('Failed to fetch wishlist:', error);
-        showError('Failed to load wishlist', error.message || 'Please try again later.');
-        setWishlistItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchWishlist();
   }, [showError]);
 
