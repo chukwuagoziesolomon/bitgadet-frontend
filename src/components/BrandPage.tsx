@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiRequest, publicApiRequest, API_CONFIG } from '../config/api';
+import { apiRequest, publicApiRequest, conditionalApiRequest, API_CONFIG } from '../config/api';
 import { cartService } from '../services/cartService';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import ProductCard from './ProductCard';
