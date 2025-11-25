@@ -17,19 +17,35 @@ const WishlistPage: React.FC = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [filterBy, setFilterBy] = useState('all');
 
+  // Helper to get cart token from all possible keys
+  const getCartToken = () => {
+    return (
+      localStorage.getItem('cartToken') ||
+      localStorage.getItem('bitgadgets_cart_token') ||
+      null
+    );
+  };
+
   // Fetch wishlist items on component mount
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem('authToken');
-        const cartToken = localStorage.getItem('cartToken');
+        const cartToken = getCartToken();
 
         let url = API_CONFIG.ENDPOINTS.WISHLIST_ALL;
 
-        // Add cart_token for guest users
-        if (!token && cartToken) {
-          url = `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}`;
+        // Add cart_token for guest users if it exists
+        if (!token) {
+          if (cartToken) {
+            url = `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}`;
+          } else {
+            // No cart token and not logged in: show empty wishlist, skip API call
+            setWishlistItems([]);
+            setLoading(false);
+            return;
+          }
         }
 
         // Use appropriate request function based on auth status
@@ -58,7 +74,7 @@ const WishlistPage: React.FC = () => {
   const handleRemoveFromWishlist = async (productId: number) => {
     try {
       const token = localStorage.getItem('authToken');
-      const cartToken = localStorage.getItem('cartToken');
+      const cartToken = getCartToken();
 
       const payload: any = { product_id: productId };
       
@@ -88,7 +104,7 @@ const WishlistPage: React.FC = () => {
 
   const handleAddToCart = async (productId: number) => {
     const token = localStorage.getItem('authToken');
-    const cartToken = localStorage.getItem('cartToken');
+    const cartToken = getCartToken();
 
     const payload: any = { product_id: productId, quantity: 1 };
     
