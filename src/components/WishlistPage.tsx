@@ -34,26 +34,22 @@ const WishlistPage: React.FC = () => {
         const token = localStorage.getItem('authToken');
         const cartToken = getCartToken();
 
-        let url = API_CONFIG.ENDPOINTS.WISHLIST_ALL;
-
-        // Add cart_token for guest users if it exists
-        if (!token) {
-          if (cartToken) {
-            url = `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}`;
-          } else {
-            // No cart token and not logged in: show empty wishlist, skip API call
-            setWishlistItems([]);
-            setLoading(false);
-            return;
-          }
+        // If not logged in and no cart token, show empty wishlist and skip API call
+        if (!token && !cartToken) {
+          setWishlistItems([]);
+          setLoading(false);
+          return;
         }
 
-        // Use appropriate request function based on auth status
+        let url = API_CONFIG.ENDPOINTS.WISHLIST_ALL;
+        if (!token && cartToken) {
+          url = `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}`;
+        }
+
         const response = token
           ? await conditionalApiRequest<any>(url)
           : await publicApiRequest<any>(url);
 
-        // API returns products array with full product objects
         setWishlistItems(response.products || []);
       } catch (error: any) {
         console.error('Failed to fetch wishlist:', error);
