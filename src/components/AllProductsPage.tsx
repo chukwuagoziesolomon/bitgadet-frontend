@@ -3,6 +3,7 @@ import { Search, ChevronDown, Grid3X3, List, ChevronLeft, ChevronRight } from 'l
 import ProductCard from './ProductCard';
 import './AllProductsPage.css';
 import { apiRequest, publicApiRequest, conditionalApiRequest } from '../config/api';
+import { cartService } from '../services/cartService';
 import { useAllProducts } from '../hooks/useAllProducts';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
 const AllProductsPage: React.FC = () => {
@@ -69,29 +70,41 @@ const AllProductsPage: React.FC = () => {
   }, [loading, setLoading, setLoadingText]);
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const cartToken = cartService.getCartToken();
+
+    // If neither auth token nor cart token, skip wishlist and cart fetches
+    if (!token && !cartToken) {
+      setWishlist([]);
+      setCart({});
+      return;
+    }
+
     // Fetch wishlist on mount (silent - no error toasts)
-    conditionalApiRequest<any>('/api/wishlist/').then(res => {
-      setWishlist(res.wishlist || []);
-    }).catch(error => {
-      // Only log error if user is actually logged in (has token)
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        console.error('Failed to fetch wishlist:', error);
+    (async () => {
+      try {
+        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/wishlist/';
+        const wishlistRes = token
+          ? await conditionalApiRequest<any>(wishlistUrl)
+          : await publicApiRequest<any>(wishlistUrl);
+        setWishlist(wishlistRes.wishlist || []);
+      } catch (error) {
+        if (token) console.error('Failed to fetch wishlist:', error);
       }
-      // Silent failure - don't show error toast to user
-    });
+    })();
 
     // Fetch cart on mount (silent - no error toasts)
-    conditionalApiRequest<any>('/api/cart/').then(res => {
-      setCart(res.cart || {});
-    }).catch(error => {
-      // Only log error if user is actually logged in (has token)
-      const token = localStorage.getItem('authToken');
-      if (token) {
-        console.error('Failed to fetch cart:', error);
+    (async () => {
+      try {
+        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/cart/';
+        const cartRes = token
+          ? await conditionalApiRequest<any>(cartUrl)
+          : await publicApiRequest<any>(cartUrl);
+        setCart(cartRes.cart || {});
+      } catch (error) {
+        if (token) console.error('Failed to fetch cart:', error);
       }
-      // Silent failure - don't show error toast to user
-    });
+    })();
   }, []);
 
 

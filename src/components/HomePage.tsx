@@ -4,6 +4,7 @@ import { Smartphone, Laptop, Gamepad2, Watch, Headphones, TrendingUp, TrendingDo
 import ProductCard from './ProductCard';
 import './HomePage.css';
 import { apiRequest, publicApiRequest, conditionalApiRequest, API_CONFIG } from '../config/api';
+import { cartService } from '../services/cartService';
 import { useFeaturedProducts } from '../hooks/useFeaturedProducts';
 import { useBestSellers } from '../hooks/useBestSellers';
 import { useNewArrivals } from '../hooks/useNewArrivals';
@@ -131,9 +132,22 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     const fetchWishlistAndCart = async () => {
+      const token = localStorage.getItem('authToken');
+      const cartToken = cartService.getCartToken();
+
+      // If not logged in and no cart token, skip wishlist and cart API calls
+      if (!token && !cartToken) {
+        setWishlist([]);
+        setCart({});
+        return;
+      }
+
       try {
-        // Fetch wishlist on mount (uses authentication if available)
-        const wishlistRes = await conditionalApiRequest<any>('/api/wishlist/');
+        // Build wishlist URL for guest users with cartToken
+        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/wishlist/';
+        const wishlistRes = token
+          ? await conditionalApiRequest<any>(wishlistUrl)
+          : await publicApiRequest<any>(wishlistUrl);
         setWishlist(wishlistRes.wishlist || []);
       } catch (error: any) {
         // Only show error if user is actually logged in (has token)
@@ -145,10 +159,12 @@ const HomePage: React.FC = () => {
 
       try {
         // Fetch cart on mount (uses authentication if available)
-        const cartRes = await conditionalApiRequest<any>('/api/cart/');
+        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/cart/';
+        const cartRes = token
+          ? await conditionalApiRequest<any>(cartUrl)
+          : await publicApiRequest<any>(cartUrl);
         setCart(cartRes.cart || {});
       } catch (error: any) {
-        // Only show error if user is actually logged in (has token)
         const token = localStorage.getItem('authToken');
         if (token) {
           showError('Failed to load cart', error.message || 'Please try again later.');
@@ -157,7 +173,7 @@ const HomePage: React.FC = () => {
     };
 
     fetchWishlistAndCart();
-  }, [showError]);
+  }, []);
 
   // Get current products based on active tab
   const getCurrentProducts = () => {

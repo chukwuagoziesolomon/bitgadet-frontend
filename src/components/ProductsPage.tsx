@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
 import './ProductsPage.css';
-import { apiRequest, publicApiRequest, conditionalApiRequest } from '../config/api';
+import { apiRequest, publicApiRequest, conditionalApiRequest, API_CONFIG } from '../config/api';
+import { cartService } from '../services/cartService';
 
 const ProductsPage: React.FC = () => {
   const [wishlist, setWishlist] = useState<number[]>([]);
@@ -9,25 +10,34 @@ const ProductsPage: React.FC = () => {
 
   // Fetch wishlist and cart on mount
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const cartToken = cartService.getCartToken();
+
+    if (!token && !cartToken) {
+      setWishlist([]);
+      setCart({});
+      return;
+    }
+
     const fetchWishlistAndCart = async () => {
       try {
-        const wishlistRes = await conditionalApiRequest<any>('/api/wishlist/');
+        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/wishlist/';
+        const wishlistRes = token
+          ? await conditionalApiRequest<any>(wishlistUrl)
+          : await publicApiRequest<any>(wishlistUrl);
         setWishlist(wishlistRes.wishlist || []);
       } catch (error: any) {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          console.error('Failed to fetch wishlist:', error);
-        }
+        if (token) console.error('Failed to fetch wishlist:', error);
       }
 
       try {
-        const cartRes = await conditionalApiRequest<any>('/api/cart/');
+        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/cart/';
+        const cartRes = token
+          ? await conditionalApiRequest<any>(cartUrl)
+          : await publicApiRequest<any>(cartUrl);
         setCart(cartRes.cart || {});
       } catch (error: any) {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          console.error('Failed to fetch cart:', error);
-        }
+        if (token) console.error('Failed to fetch cart:', error);
       }
     };
 

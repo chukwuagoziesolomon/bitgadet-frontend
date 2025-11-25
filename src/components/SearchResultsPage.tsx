@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { conditionalApiRequest, apiRequest, publicApiRequest } from '../config/api';
+import { conditionalApiRequest, apiRequest, publicApiRequest, API_CONFIG } from '../config/api';
 import ProductCard from './ProductCard';
 import { useToast } from '../hooks/useToast';
 import { cartService } from '../services/cartService';
@@ -75,13 +75,23 @@ const SearchResultsPage: React.FC = () => {
   }, [query]);
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const cartToken = cartService.getCartToken();
+
+    if (!token && !cartToken) {
+      setWishlist([]);
+      setCart({});
+      return;
+    }
+
     const fetchWishlistAndCart = async () => {
       try {
-        // Fetch wishlist on mount (uses authentication if available)
-        const wishlistRes = await conditionalApiRequest<any>('/api/wishlist/');
+        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/wishlist/';
+        const wishlistRes = token
+          ? await conditionalApiRequest<any>(wishlistUrl)
+          : await publicApiRequest<any>(wishlistUrl);
         setWishlist(wishlistRes.wishlist || []);
       } catch (error: any) {
-        // Only show error if user is actually logged in (has token)
         const token = localStorage.getItem('authToken');
         if (token) {
           showError('Failed to load wishlist', error.message || 'Please try again later.');
@@ -89,11 +99,12 @@ const SearchResultsPage: React.FC = () => {
       }
 
       try {
-        // Fetch cart on mount (uses authentication if available)
-        const cartRes = await conditionalApiRequest<any>('/api/cart/');
+        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/cart/';
+        const cartRes = token
+          ? await conditionalApiRequest<any>(cartUrl)
+          : await publicApiRequest<any>(cartUrl);
         setCart(cartRes.cart || {});
       } catch (error: any) {
-        // Only show error if user is actually logged in (has token)
         const token = localStorage.getItem('authToken');
         if (token) {
           showError('Failed to load cart', error.message || 'Please try again later.');

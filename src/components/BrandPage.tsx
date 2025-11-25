@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { apiRequest, publicApiRequest } from '../config/api';
+import { apiRequest, publicApiRequest, API_CONFIG } from '../config/api';
+import { cartService } from '../services/cartService';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import ProductCard from './ProductCard';
 import './BrandPage.css';
@@ -71,18 +72,33 @@ const BrandPage: React.FC = () => {
     };
 
     const fetchWishlistAndCart = async () => {
-      try {
-        const wishlistRes = await publicApiRequest<any>('/api/wishlist/');
-        setWishlist(wishlistRes.wishlist || []);
-      } catch (error) {
-        console.error('Failed to fetch wishlist:', error);
+      const token = localStorage.getItem('authToken');
+      const cartToken = cartService.getCartToken();
+
+      if (!token && !cartToken) {
+        setWishlist([]);
+        setCart({});
+        return;
       }
 
       try {
-        const cartRes = await publicApiRequest<any>('/api/cart/');
+        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/wishlist/';
+        const wishlistRes = token
+          ? await conditionalApiRequest<any>(wishlistUrl)
+          : await publicApiRequest<any>(wishlistUrl);
+        setWishlist(wishlistRes.wishlist || []);
+      } catch (error) {
+        if (token) console.error('Failed to fetch wishlist:', error);
+      }
+
+      try {
+        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/cart/';
+        const cartRes = token
+          ? await conditionalApiRequest<any>(cartUrl)
+          : await publicApiRequest<any>(cartUrl);
         setCart(cartRes.cart || {});
       } catch (error) {
-        console.error('Failed to fetch cart:', error);
+        if (token) console.error('Failed to fetch cart:', error);
       }
     };
 

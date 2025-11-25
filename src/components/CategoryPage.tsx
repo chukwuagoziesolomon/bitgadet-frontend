@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { publicApiRequest, conditionalApiRequest } from '../config/api';
+import { publicApiRequest, conditionalApiRequest, API_CONFIG } from '../config/api';
+import { cartService } from '../services/cartService';
 import ProductCard from './ProductCard';
 import './CategoryPage.css';
 
@@ -42,11 +43,24 @@ const CategoryPage: React.FC = () => {
 
     // Fetch wishlist and cart on mount
     const fetchWishlistAndCart = async () => {
+      const token = localStorage.getItem('authToken');
+      const cartToken = cartService.getCartToken();
+
+      if (!token && !cartToken) {
+        setWishlist([]);
+        setCart({});
+        return;
+      }
+
       try {
+        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/wishlist/';
+        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/cart/';
+
         const [wishlistRes, cartRes] = await Promise.all([
-          conditionalApiRequest<any>('/api/wishlist/'),
-          conditionalApiRequest<any>('/api/cart/')
+          token ? conditionalApiRequest<any>(wishlistUrl) : publicApiRequest<any>(wishlistUrl),
+          token ? conditionalApiRequest<any>(cartUrl) : publicApiRequest<any>(cartUrl)
         ]);
+
         setWishlist(wishlistRes.wishlist || []);
         setCart(cartRes.cart || {});
       } catch (error) {
