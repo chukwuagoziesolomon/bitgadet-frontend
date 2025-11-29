@@ -48,6 +48,48 @@ const OrderHistory: React.FC = () => {
    return `₦${amount.toLocaleString()}`;
  };
 
+  const getSafeImageUrl = (url?: string) => {
+    if (!url) return '/placeholder.png';
+    try {
+      // Remove surrounding quotes and control characters, then trim
+      let trimmed = String(url).replace(/^\s+|\s+$/g, '');
+      // Remove surrounding single/double quotes if present
+      trimmed = trimmed.replace(/^['\"]+|['\"]+$/g, '');
+      // Remove any leftover control characters/newlines
+      trimmed = trimmed.replace(/[\n\r\t\0\u200B]/g, '');
+      if (!trimmed) return '/placeholder.png';
+      // Accept absolute and protocol-relative URLs and root-relative paths
+      if (
+        trimmed.startsWith('http://') ||
+        trimmed.startsWith('https://') ||
+        trimmed.startsWith('//') ||
+        trimmed.startsWith('/')
+      ) {
+        try {
+          return encodeURI(trimmed);
+        } catch (e) {
+          return trimmed;
+        }
+      }
+      // If the backend returned a Cloudinary host without protocol, prefix https
+      if (trimmed.startsWith('res.cloudinary.com') || trimmed.startsWith('cloudinary.com')) {
+        try {
+          return encodeURI(`https://${trimmed}`);
+        } catch (e) {
+          return `https://${trimmed}`;
+        }
+      }
+      // Otherwise, return the trimmed value as-is or fallback
+      try {
+        return encodeURI(trimmed);
+      } catch (e) {
+        return trimmed || '/placeholder.png';
+      }
+    } catch (e) {
+      return '/placeholder.png';
+    }
+  };
+
  const handleSidebarNavigation = (itemId: string) => {
    setActiveTab(itemId);
 
@@ -138,20 +180,24 @@ const OrderHistory: React.FC = () => {
              <div className="orders-list">
                {orders.map((order) => {
                  const firstProduct = order.products?.[0];
+                 // Use order-level thumbnail when product list isn't provided by the API
+                 const imageSrc = getSafeImageUrl(
+                   firstProduct?.image || firstProduct?.thumbnail || firstProduct?.thumbnail_url || order.thumbnail
+                 );
                  const canTrack = canTrackOrder(order.status);
                  const trackingBadge = getTrackingBadgeInfo(order.status);
                  
                  return (
                    <div key={order.order_id} className="order-card">
-                     <div className="order-image-container">
-                       <img src={firstProduct?.image || '/placeholder.png'} alt={firstProduct?.name || 'Product'} className="order-image" />
-                     </div>
+                       <div className="order-image-container">
+                          <img src={imageSrc} alt={firstProduct?.name || 'Product'} className="order-image" />
+                        </div>
                      <div className="order-content">
                        <div className="order-header">
                          <div className="order-id">{order.order_id}</div>
                        </div>
                        <h3 className="order-product">{firstProduct?.name || 'Product'}</h3>
-                       <div className="order-date">{order.date}</div>
+                       <div className="order-date">{order.date || order.created_at}</div>
                        
                        {/* Tracking Badge */}
                        <div style={{
@@ -186,7 +232,7 @@ const OrderHistory: React.FC = () => {
                          {order.status_display || order.status}
                        </span>
                        <div className="order-price">
-                         {formatNaira(order.total_amount)}
+                         {formatNaira(Number(order.total_amount) || 0)}
                        </div>
                      </div>
                    </div>

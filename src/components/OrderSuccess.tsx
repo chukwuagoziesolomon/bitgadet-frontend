@@ -96,6 +96,8 @@ const OrderSuccess: React.FC = () => {
               <span className="detail-value">{formatNaira(order.total_amount)}</span>
             </div>
 
+              {/* (USDT shipping/discount removed here — shown only in checkout order summary) */}
+
             {/* Status */}
             <div className="detail-item">
               <span className="detail-label">Payment Status</span>

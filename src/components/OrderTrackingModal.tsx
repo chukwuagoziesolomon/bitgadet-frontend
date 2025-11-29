@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, CheckCircle, Truck, Clock, MapPin, Package, Loader2 } from 'lucide-react';
+import { X, CheckCircle, Truck, Clock, MapPin, Package, Loader2, CreditCard } from 'lucide-react';
 import { conditionalApiRequest } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './OrderTrackingModal.css';
@@ -157,9 +157,13 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
                       padding: '10px 12px',
                       color: '#065f46',
                       fontSize: '14px',
-                      fontWeight: '600'
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}>
-                      ✓ Tracking Available
+                      <CheckCircle size={16} />
+                      <span>Tracking Available</span>
                     </div>
                   ) : (
                     <div style={{
@@ -169,9 +173,13 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
                       padding: '10px 12px',
                       color: '#92400e',
                       fontSize: '14px',
-                      fontWeight: '600'
+                      fontWeight: '600',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}>
-                      ⏱ {trackingData.order.status === 'pending' ? 'Awaiting Payment' : 'Order Being Prepared'}
+                      <Clock size={16} />
+                      <span>{trackingData.order.status === 'pending' ? 'Awaiting Payment' : 'Order Being Prepared'}</span>
                     </div>
                   )}
                 </div>
@@ -180,7 +188,10 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
               {/* Tracking Information - When Shipped */}
               {trackingData.order && ['shipped', 'en_route', 'delivered'].includes(trackingData.order.status) && (
                 <div className="tracking-info" style={{ marginBottom: '20px' }}>
-                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>📦 Shipping Details</h3>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Package size={18} />
+                    <span>Shipping Details</span>
+                  </h3>
                   {trackingData.order.tracking_number && (
                     <div style={{ marginBottom: '12px', padding: '10px', background: '#f0f9ff', borderRadius: '6px' }}>
                       <strong>Tracking Number:</strong>
@@ -223,7 +234,10 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
               {/* Payment Status Section */}
               {trackingData.payment_status && (
                 <div className="payment-section" style={{ marginBottom: '20px' }}>
-                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>💳 Payment Status</h3>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CreditCard size={18} />
+                    <span>Payment Status</span>
+                  </h3>
                   <div style={{
                     padding: '12px',
                     background: trackingData.payment_status.is_paid ? '#d1fae5' : '#fef3c7',
@@ -231,8 +245,12 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
                     borderRadius: '6px',
                     color: trackingData.payment_status.is_paid ? '#065f46' : '#92400e'
                   }}>
-                    <div style={{ fontWeight: '600', marginBottom: '8px' }}>
-                      {trackingData.payment_status.is_paid ? '✓ Payment Confirmed' : '⏱ Payment Pending'}
+                    <div style={{ fontWeight: '600', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {trackingData.payment_status.is_paid ? (
+                        <><CheckCircle size={14} /> <span>Payment Confirmed</span></>
+                      ) : (
+                        <><Clock size={14} /> <span>Payment Pending</span></>
+                      )}
                     </div>
                     <div style={{ fontSize: '13px' }}>
                       Method: {trackingData.payment_status.payment_method}
@@ -249,7 +267,10 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
               {/* Bank Transfer Details - If Pending */}
               {trackingData.payment_status?.is_pending && trackingData.payment_status?.bank_transfer && (
                 <div style={{ marginBottom: '20px' }}>
-                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>🏦 Bank Transfer Details</h3>
+                  <h3 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <MapPin size={18} />
+                    <span>Bank Transfer Details</span>
+                  </h3>
                   <div style={{ 
                     padding: '14px', 
                     background: '#f8fafc', 
@@ -286,7 +307,7 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
                         color: '#991b1b',
                         fontSize: '12px'
                       }}>
-                        ⏰ Payment expires on {formatDate(trackingData.payment_status.bank_transfer.expires_at)}
+                        <Clock size={12} /> Payment expires on {formatDate(trackingData.payment_status.bank_transfer.expires_at)}
                       </div>
                     )}
                   </div>

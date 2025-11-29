@@ -176,6 +176,8 @@
    min-width: 120px;
  }
 
+/* Removed USDT/shipping/discount styles — display only in checkout summary */
+
 /* Status Badges */
 .status-badge {
   display: inline-flex;

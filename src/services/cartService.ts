@@ -1,4 +1,5 @@
 import { API_CONFIG, buildApiUrl } from '../config/api';
+import { initializeCartToken } from '../utils/tokenUtils';
 
 class CartService {
     private CART_TOKEN_KEY = 'bitgadgets_cart_token';
@@ -24,7 +25,7 @@ class CartService {
     // Add to cart
     async addToCart(productId: number, quantity: number = 1): Promise<any> {
         const authToken = localStorage.getItem('authToken');
-        const cartToken = this.getCartToken();
+        let cartToken = this.getCartToken();
         
         console.log('CartService addToCart: authToken:', !!authToken, 'cartToken:', cartToken);
 
@@ -42,8 +43,11 @@ class CartService {
             quantity: quantity,
         };
 
-        // Only include cart_token for guest users
-        if (!authToken && cartToken) {
+        // For guest users, ensure we have a cart token
+        if (!authToken) {
+            if (!cartToken) {
+                cartToken = initializeCartToken();
+            }
             body.cart_token = cartToken;
         }
 
@@ -60,6 +64,14 @@ class CartService {
         if (data.cart_token) {
             this.setCartToken(data.cart_token);
             console.log('CartService addToCart: saved cart_token:', data.cart_token);
+        } else {
+            // If this is a guest user (no auth token) and server did not return a cart_token,
+            // log a clear warning to help debug backend behavior. Do NOT overwrite existing token.
+            if (!authToken) {
+                console.warn('CartService addToCart: WARNING — server did not return a cart_token for a guest add-to-cart. This means the backend did not create/persist a guest cart token. Request body and response are logged for debugging.');
+                console.warn('CartService addToCart: request body:', body);
+                console.warn('CartService addToCart: response:', data);
+            }
         }
 
         if (!response.ok) {
@@ -71,8 +83,15 @@ class CartService {
 
     // Get cart items
     async getCart(): Promise<any> {
-        const cartToken = this.getCartToken();
+        const authToken = localStorage.getItem('authToken');
+        let cartToken = this.getCartToken();
         console.log('CartService getCart: cartToken from localStorage:', cartToken);
+
+        // For guest users, ensure we have a cart token
+        if (!authToken && !cartToken) {
+            cartToken = initializeCartToken();
+        }
+
         const url = cartToken ? buildApiUrl(`/api/cart/?cart_token=${cartToken}`) : buildApiUrl('/api/cart/');
         console.log('CartService getCart: making request to:', url);
 
@@ -96,7 +115,13 @@ class CartService {
 
     // Update cart item
     async updateCart(productId: number, quantity: number): Promise<any> {
-        const cartToken = this.getCartToken();
+        const authToken = localStorage.getItem('authToken');
+        let cartToken = this.getCartToken();
+
+        // For guest users, ensure we have a cart token
+        if (!authToken && !cartToken) {
+            cartToken = initializeCartToken();
+        }
 
         const response = await fetch(buildApiUrl('/api/cart/update/'), {
             method: 'POST',
@@ -121,7 +146,13 @@ class CartService {
 
     // Remove from cart
     async removeFromCart(productId: number): Promise<any> {
-        const cartToken = this.getCartToken();
+        const authToken = localStorage.getItem('authToken');
+        let cartToken = this.getCartToken();
+
+        // For guest users, ensure we have a cart token
+        if (!authToken && !cartToken) {
+            cartToken = initializeCartToken();
+        }
 
         const response = await fetch(buildApiUrl('/api/cart/remove/'), {
             method: 'POST',
@@ -145,7 +176,14 @@ class CartService {
 
     // Get cart summary (for cart icon badge)
     async getCartSummary(): Promise<any> {
-        const cartToken = this.getCartToken();
+        const authToken = localStorage.getItem('authToken');
+        let cartToken = this.getCartToken();
+
+        // For guest users, ensure we have a cart token
+        if (!authToken && !cartToken) {
+            cartToken = initializeCartToken();
+        }
+
         const url = cartToken ? buildApiUrl(`/api/cart/summary/?cart_token=${cartToken}`) : buildApiUrl('/api/cart/summary/');
 
         const response = await fetch(url);
@@ -166,7 +204,13 @@ class CartService {
 
     // Clear entire cart
     async clearCart(): Promise<any> {
-        const cartToken = this.getCartToken();
+        const authToken = localStorage.getItem('authToken');
+        let cartToken = this.getCartToken();
+
+        // For guest users, ensure we have a cart token
+        if (!authToken && !cartToken) {
+            cartToken = initializeCartToken();
+        }
 
         const response = await fetch(buildApiUrl('/api/cart/clear/'), {
             method: 'POST',

@@ -215,9 +215,11 @@ const ShoppingCart: React.FC = () => {
             Proceed to Checkout
           </Link>
           
-          <button className="whatsapp-btn">
-            Get help via WhatsApp
-          </button>
+          <a href="https://wa.me/2349138666111" target="_blank" rel="noopener noreferrer">
+            <button className="whatsapp-btn">
+              Get help via WhatsApp
+            </button>
+          </a>
         </div>
       </div>
     </div>

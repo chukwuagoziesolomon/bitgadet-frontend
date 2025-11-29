@@ -311,6 +311,38 @@ const Dashboard: React.FC = () => {
               ) : (
                 apiRecentOrders.slice(0, 4).map((order) => {
                   const firstProduct = order.products?.[0];
+                  // Format date to readable string
+                  let orderDate = order.date;
+                  if (orderDate) {
+                    try {
+                      const d = new Date(orderDate);
+                      if (!isNaN(d.getTime())) {
+                        orderDate = d.toLocaleDateString();
+                      }
+                    } catch {}
+                  }
+                  // Status badge logic
+                  let status = (order.status_display || order.status || '').toLowerCase();
+                  let statusLabel = order.status_display || order.status || '';
+                  let statusClass = 'status-badge';
+                  let statusIcon = null;
+                  if (status.includes('deliver')) {
+                    statusClass += ' delivered';
+                    statusIcon = <CheckCircle size={12} />;
+                    statusLabel = 'Delivered';
+                  } else if (status.includes('process')) {
+                    statusClass += ' processing';
+                    statusIcon = <Clock size={12} />;
+                    statusLabel = 'Processing';
+                  } else if (status.includes('en-route') || status.includes('en route')) {
+                    statusClass += ' en-route';
+                    statusIcon = <Truck size={12} />;
+                    statusLabel = 'En Route';
+                  } else if (status.includes('pending')) {
+                    statusClass += ' processing';
+                    statusIcon = <Clock size={12} />;
+                    statusLabel = 'Pending';
+                  }
                   return (
                     <div key={order.order_id} className="order-item">
                       <div className="order-item-content">
@@ -321,17 +353,15 @@ const Dashboard: React.FC = () => {
                           </div>
                           <div className="order-product">{firstProduct?.name || 'Product'}</div>
                           <div className="order-meta">
-                            <div className="order-date">{order.date}</div>
+                            <div className="order-date">{orderDate}</div>
                             <button onClick={() => handleTrackOrder(order)} className="track-link">Track Order</button>
                           </div>
                         </div>
                       </div>
                       <div className="order-right-section">
-                        <span className={`status-badge ${order.status}`}>
-                          {order.status === 'delivered' && <CheckCircle size={12} />}
-                          {order.status === 'processing' && <Clock size={12} />}
-                          {order.status === 'en-route' && <Truck size={12} />}
-                          {order.status_display || order.status}
+                        <span className={statusClass}>
+                          {statusIcon}
+                          {statusLabel}
                         </span>
                         <div className="order-price">{formatNaira(order.total_amount)}</div>
                       </div>

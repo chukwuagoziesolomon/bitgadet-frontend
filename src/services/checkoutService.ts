@@ -37,6 +37,10 @@ export interface CheckoutResponse {
     state: string;
     country: string;
     total_amount: number;
+    // Optional fields persisted by backend
+    discount_amount?: number;
+    coupon_code?: string | null;
+    total_amount_usdt?: number;
     payment_method: string;
     status: string;
     created_at: string;
@@ -85,6 +89,10 @@ export interface OrderStatusResponse {
   status: 'pending' | 'processing' | 'paid' | 'shipped' | 'delivered' | 'cancelled';
   payment_method: string;
   total_amount: number;
+  // Optional fields for backwards-compatibility
+  discount_amount?: number;
+  coupon_code?: string | null;
+  total_amount_usdt?: number;
   created_at: string;
   updated_at: string;
   payment_reference?: string;

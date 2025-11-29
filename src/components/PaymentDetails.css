@@ -450,6 +450,36 @@
   color: #1a202c;
   font-family: 'Outfit', sans-serif;
 }
+.wallet-address-input {
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.wallet-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: #1a202c;
+  font-family: 'Outfit', sans-serif;
+  white-space: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wallet-input::-webkit-scrollbar {
+  height: 6px;
+}
+
+.wallet-input::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 3px;
+}
 
 .crypto-info-grid {
   display: grid;
@@ -598,6 +628,28 @@
   margin: 0;
 }
 
+.copy-btn svg {
+  display: block;
+  color: inherit;
+}
+
+.copy-btn .copy-text {
+  margin-left: 8px;
+  font-size: 12px;
+  color: white;
+  display: none;
+}
+
+/* Mobile-only full-width copy button (hidden by default) */
+.copy-btn-mobile {
+  display: none;
+  width: 100%;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+}
 .account-credentials {
   display: flex;
   flex-direction: column;
@@ -1105,6 +1157,33 @@
   .copy-btn svg {
     width: 16px;
     height: 16px;
+  }
+
+  /* On very small screens hide inline copy button and show mobile copy control */
+  .wallet-address-input .copy-btn {
+    display: none;
+  }
+
+  .copy-btn-mobile {
+    display: flex;
+    align-items: center;
+    background: #00b894;
+    color: white;
+    border: none;
+  }
+
+  /* Make copy label visible on small screens to ensure affordance */
+  .copy-btn .copy-text {
+    display: inline-block;
+  }
+
+  /* Ensure copy button is above and visible */
+  .wallet-address-input {
+    position: relative;
+  }
+
+  .copy-btn {
+    z-index: 2;
   }
 
   .amount-card {

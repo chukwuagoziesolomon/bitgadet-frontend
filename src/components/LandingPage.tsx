@@ -39,7 +39,72 @@ const LandingPage: React.FC = () => {
   const [currentDealIndex, setCurrentDealIndex] = useState(0);
   const [deal, setDeal] = useState<any>(null);
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [formattedTime, setFormattedTime] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  const [formattedTime, setFormattedTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  // Helper: compute remaining seconds from an end_time value (string or number)
+  const computeRemainingSecondsFromEndTime = (endTime: any): number | null => {
+    if (!endTime && endTime !== 0) return null;
+    const nowMs = Date.now();
+    try {
+      if (typeof endTime === 'string') {
+        const parsed = Date.parse(endTime);
+        if (isNaN(parsed)) return null;
+        const remainingMs = Math.max(0, parsed - nowMs);
+        return Math.floor(remainingMs / 1000);
+      }
+
+      if (typeof endTime === 'number') {
+        // If value looks like milliseconds (very large), treat as ms
+        if (endTime > 1e12) {
+          const remainingMs = Math.max(0, endTime - nowMs);
+          return Math.floor(remainingMs / 1000);
+        }
+
+        // If value looks like epoch seconds (>= ~1e9), treat as seconds
+        if (endTime > 1e9) {
+          const nowSec = Math.floor(nowMs / 1000);
+          return Math.max(0, Math.floor(endTime - nowSec));
+        }
+
+        // Otherwise assume it's a relative seconds value
+        return Math.max(0, Math.floor(endTime));
+      }
+    } catch (e) {
+      return null;
+    }
+
+    return null;
+  };
+
+  // Unified helper: prefer `end_time` when available, otherwise fallback to `time_info.time_remaining`
+  // Returns a non-negative integer (seconds). Uses heuristic: values > 86400 likely in milliseconds.
+  const getRemainingSecondsFromDeal = (item: any, fallbackData?: any): number => {
+    if (!item && !fallbackData) return 0;
+
+    // Try end_time on the item first
+    const endCandidate = item?.end_time ?? item?.time_info?.end_time ?? fallbackData?.end_time;
+    const fromEnd = computeRemainingSecondsFromEndTime(endCandidate);
+    if (fromEnd !== null) return Math.max(0, fromEnd);
+
+    // Fallback to explicit time_remaining fields (could be seconds or milliseconds)
+    const rawTR = item?.time_info?.time_remaining ?? item?.time_remaining ?? fallbackData?.time_info?.time_remaining ?? fallbackData?.time_remaining ?? 0;
+    let tr = typeof rawTR === 'number' ? rawTR : Number(rawTR) || 0;
+
+    // Heuristic: if value seems very large, treat as milliseconds and convert to seconds
+    if (tr > 86400) tr = Math.floor(tr / 1000);
+
+    return Math.max(0, Math.floor(tr));
+  };
+
+  // Normalize fallback for time_info.time_remaining. If it's milliseconds, convert to seconds.
+  const normalizeTimeRemainingValue = (val: any): number => {
+    let tr = typeof val === 'number' ? val : Number(val) || 0;
+    // If the value is very large, assume it's milliseconds. Use 86400 (1 day in seconds) threshold as heuristic.
+    if (typeof tr === 'number' && tr > 86400) {
+      tr = Math.floor(tr / 1000);
+    }
+    return Math.max(0, Math.floor(tr));
+  };
 
   // State for banners slideshow
   const [banners, setBanners] = useState<any[]>([]);
@@ -172,32 +237,28 @@ const LandingPage: React.FC = () => {
     const fetchDeal = async () => {
       try {
         const data = await publicApiRequest<DealResponse>(API_CONFIG.ENDPOINTS.PRODUCTS_CURRENT_DEAL);
-        
+
+        // (Using component-scope helpers: computeRemainingSecondsFromEndTime and normalizeTimeRemainingValue)
+
         // Handle new API response format (deals array)
         if (data.deals && data.deals.length > 0) {
           setDeals(data.deals);
           setCurrentDealIndex(0);
           const firstDeal = data.deals[0];
           setDeal(firstDeal);
-          console.log('Deal image:', firstDeal.deal_image);
-          console.log('Product data main image:', firstDeal.product_data?.main_image);
-          
-          // Calculate time remaining if available
-          if (firstDeal.end_time) {
-            const endTime = new Date(firstDeal.end_time).getTime();
-            const now = new Date().getTime();
-            const remaining = Math.max(0, endTime - now);
-            setTimeRemaining(remaining);
-          }
-        } 
+
+          // Calculate time remaining using unified helper
+          setTimeRemaining(getRemainingSecondsFromDeal(firstDeal, data));
+        }
+
         // Handle old API response format (single deal)
         else if (data.deal) {
           setDeal(data.deal);
           setDeals([data.deal]);
           setCurrentDealIndex(0);
-          setTimeRemaining(data.time_info?.time_remaining || 0);
-        } 
-        else {
+
+          setTimeRemaining(getRemainingSecondsFromDeal(data.deal, data));
+        } else {
           setDeal(null);
           setDeals([]);
         }
@@ -217,13 +278,7 @@ const LandingPage: React.FC = () => {
     const nextIndex = (currentDealIndex + 1) % deals.length;
     setCurrentDealIndex(nextIndex);
     setDeal(deals[nextIndex]);
-    
-    if (deals[nextIndex].end_time) {
-      const endTime = new Date(deals[nextIndex].end_time).getTime();
-      const now = new Date().getTime();
-      const remaining = Math.max(0, endTime - now);
-      setTimeRemaining(remaining);
-    }
+    setTimeRemaining(getRemainingSecondsFromDeal(deals[nextIndex]));
   };
 
   const goToPrevDeal = () => {
@@ -231,13 +286,7 @@ const LandingPage: React.FC = () => {
     const prevIndex = (currentDealIndex - 1 + deals.length) % deals.length;
     setCurrentDealIndex(prevIndex);
     setDeal(deals[prevIndex]);
-    
-    if (deals[prevIndex].end_time) {
-      const endTime = new Date(deals[prevIndex].end_time).getTime();
-      const now = new Date().getTime();
-      const remaining = Math.max(0, endTime - now);
-      setTimeRemaining(remaining);
-    }
+    setTimeRemaining(getRemainingSecondsFromDeal(deals[prevIndex]));
   };
 
   // Auto-rotate deals every 5 seconds
@@ -248,13 +297,7 @@ const LandingPage: React.FC = () => {
       setCurrentDealIndex(prev => {
         const nextIndex = (prev + 1) % deals.length;
         setDeal(deals[nextIndex]);
-        
-        if (deals[nextIndex].end_time) {
-          const endTime = new Date(deals[nextIndex].end_time).getTime();
-          const now = new Date().getTime();
-          const remaining = Math.max(0, endTime - now);
-          setTimeRemaining(remaining);
-        }
+        setTimeRemaining(getRemainingSecondsFromDeal(deals[nextIndex]));
         
         return nextIndex;
       });
@@ -284,10 +327,12 @@ const LandingPage: React.FC = () => {
 
   // Update formatted time
   useEffect(() => {
-    const hours = Math.floor(timeRemaining / 3600);
-    const minutes = Math.floor((timeRemaining % 3600) / 60);
+    // timeRemaining is in seconds
+    const days = Math.floor(timeRemaining / (60 * 60 * 24));
+    const hours = Math.floor((timeRemaining % (60 * 60 * 24)) / (60 * 60));
+    const minutes = Math.floor((timeRemaining % (60 * 60)) / 60);
     const seconds = timeRemaining % 60;
-    setFormattedTime({ hours, minutes, seconds });
+    setFormattedTime({ days, hours, minutes, seconds });
   }, [timeRemaining]);
 
   // Fetch banners
@@ -638,6 +683,10 @@ const LandingPage: React.FC = () => {
                       <span className="deal-timer-label">Offer ends in:</span>
                       <div className="deal-countdown">
                         <div className="deal-time-box">
+                          <span className="deal-time-number">{formattedTime.days.toString().padStart(2, '0')}</span>
+                          <span className="deal-time-label">Days</span>
+                        </div>
+                        <div className="deal-time-box">
                           <span className="deal-time-number">{formattedTime.hours.toString().padStart(2, '0')}</span>
                           <span className="deal-time-label">Hours</span>
                         </div>
@@ -653,9 +702,9 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     <div className="deal-pricing">
-                      <div className="deal-current-price">₦{parseFloat(deal.deal_price).toLocaleString('en-US', {maximumFractionDigits: 0})}</div>
-                      <div className="deal-original-price">₦{parseFloat(deal.original_price).toLocaleString('en-US', {maximumFractionDigits: 0})}</div>
-                      <div className="deal-crypto-price">{parseFloat(deal.deal_price_usdt).toFixed(2)} USDT</div>
+                      <span className="deal-current-price">₦{parseFloat(deal.deal_price).toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
+                      <span className="deal-original-price">₦{parseFloat(deal.original_price).toLocaleString('en-US', {maximumFractionDigits: 0})}</span>
+                      <span className="deal-crypto-price">{parseFloat(deal.deal_price_usdt).toFixed(2)} USDT</span>
                     </div>
                   </div>
                 </div>
@@ -708,17 +757,11 @@ const LandingPage: React.FC = () => {
                     <button
                       key={index}
                       className={`deal-carousel-dot ${index === currentDealIndex ? 'active' : ''}`}
-                      onClick={() => {
-                        setCurrentDealIndex(index);
-                        setDeal(deals[index]);
-                        
-                        if (deals[index].end_time) {
-                          const endTime = new Date(deals[index].end_time).getTime();
-                          const now = new Date().getTime();
-                          const remaining = Math.max(0, endTime - now);
-                          setTimeRemaining(remaining);
-                        }
-                      }}
+                        onClick={() => {
+                          setCurrentDealIndex(index);
+                          setDeal(deals[index]);
+                          setTimeRemaining(getRemainingSecondsFromDeal(deals[index]));
+                        }}
                       aria-label={`Go to deal ${index + 1}`}
                     />
                   ))}

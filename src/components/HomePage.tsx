@@ -285,10 +285,15 @@ const HomePage: React.FC = () => {
     navigate('/all-products');
   };
 
+  // Format time as D:HH:MM:SS if days > 0, else HH:MM:SS
   const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
+    if (days > 0) {
+      return `${days}d ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
@@ -421,10 +426,7 @@ const HomePage: React.FC = () => {
             </div>
             <h3>Phones</h3>
               <p>Latest smart phones and mobile devices.</p>
-              <div className="category-count">
-                <span>{categoryMeta['phones']?.total_items ?? 0} items</span>
-                <span className="arrow">→</span>
-              </div>
+              
               <button className="shop-now-btn" onClick={() => navigate('/categories/phones')}>Shop Now →</button>
             </div>
             
@@ -437,10 +439,7 @@ const HomePage: React.FC = () => {
             </div>
             <h3>Laptops</h3>
             <p>High-performance laptops and notebooks</p>
-              <div className="category-count">
-                <span>{categoryMeta['laptops']?.total_items ?? 0} items</span>
-                <span className="arrow">→</span>
-              </div>
+              
               <button className="shop-now-btn" onClick={() => navigate('/categories/laptops')}>Shop Now →</button>
             </div>
             
@@ -453,10 +452,7 @@ const HomePage: React.FC = () => {
             </div>
             <h3>Tablets</h3>
             <p>iPads, Android Tablets and e-Readers</p>
-              <div className="category-count">
-                <span>{categoryMeta['tablets']?.total_items ?? 0} items</span>
-                <span className="arrow">→</span>
-              </div>
+              
               <button className="shop-now-btn" onClick={() => navigate('/categories/tablets')}>Shop Now →</button>
             </div>
             
@@ -469,10 +465,7 @@ const HomePage: React.FC = () => {
             </div>
             <h3>Games</h3>
             <p>Gaming consoles and accessories</p>
-              <div className="category-count">
-                <span>{categoryMeta['games']?.total_items ?? 0} items</span>
-                <span className="arrow">→</span>
-              </div>
+              
               <button className="shop-now-btn" onClick={() => navigate('/categories/games')}>Shop Now →</button>
             </div>
             
@@ -485,10 +478,7 @@ const HomePage: React.FC = () => {
             </div>
             <h3>Smartwatches</h3>
             <p>Smart wearables and fitness trackers</p>
-              <div className="category-count">
-                <span>{categoryMeta['smartwatches']?.total_items ?? 0} items</span>
-                <span className="arrow">→</span>
-              </div>
+              
               <button className="shop-now-btn" onClick={() => navigate('/categories/smartwatches')}>Shop Now →</button>
             </div>
             
@@ -501,10 +491,7 @@ const HomePage: React.FC = () => {
             </div>
             <h3>Accessories</h3>
             <p>Phone cases, chargers, and more</p>
-              <div className="category-count">
-                <span>{categoryMeta['accessories']?.total_items ?? 0} items</span>
-                <span className="arrow">→</span>
-              </div>
+              
               <button className="shop-now-btn" onClick={() => navigate('/categories/accessories')}>Shop Now →</button>
             </div>
           </div>

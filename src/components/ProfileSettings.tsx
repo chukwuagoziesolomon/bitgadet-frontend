@@ -364,9 +364,22 @@ const ProfileSettings: React.FC = () => {
         }),
       });
 
-      // Clear all user data
-      localStorage.clear();
-      
+      // Clear only relevant user-related keys instead of wiping all of localStorage
+      // This prevents accidental removal of unrelated data (like guest cart tokens)
+      try {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('user');
+        localStorage.removeItem('isAdmin');
+        localStorage.removeItem('loginType');
+        localStorage.removeItem('rememberedEmail');
+        // It's acceptable to remove the guest cart token when an account is deleted,
+        // but avoid blanket clears elsewhere to preserve cart persistence on auth transitions.
+        localStorage.removeItem('bitgadgets_cart_token');
+        console.log('🧹 Cleared user-related localStorage keys after account deletion');
+      } catch (e) {
+        console.warn('Failed to clear some localStorage keys during account deletion', e);
+      }
+
       showSuccess('Account deleted', 'Your account has been successfully deleted.');
       navigate('/login');
     } catch (error: any) {

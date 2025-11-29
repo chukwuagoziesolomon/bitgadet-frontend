@@ -17,26 +17,26 @@ import ShoppingCart from './components/ShoppingCart';
 import Checkout from './components/Checkout';
 import OrderConfirmation from './components/OrderConfirmation';
 import PaymentDetails from './components/PaymentDetails';
+
+import ForgotPasswordPage from './components/ForgotPasswordPage';
+import AboutUs from './components/AboutUs';
+import TermsAndConditions from './components/TermsAndConditions';
+import Footer from './components/Footer';
+import CouponSuccess from './components/CouponSuccess';
+import CouponSuccessBeautiful from './components/CouponSuccessBeautiful';
 import LoginPage from './components/LoginPage';
 import SignUpPage from './components/SignUpPage';
 import Dashboard from './components/Dashboard';
 import ProfileSettings from './components/ProfileSettings';
-import ProductDetails from './components/ProductDetails';
-import AboutUs from './components/AboutUs';
 import OrderHistory from './components/OrderHistory';
-import Wishlist from './components/Wishlist';
 import WishlistPage from './components/WishlistPage';
-import TermsAndConditions from './components/TermsAndConditions';
-import CouponSuccess from './components/CouponSuccess';
-import CouponSuccessBeautiful from './components/CouponSuccessBeautiful';
+import ProductDetails from './components/ProductDetails';
 import SearchResultsPage from './components/SearchResultsPage';
-import Footer from './components/Footer';
-import ToastContainer from './components/ToastContainer';
 import ToastDemo from './components/ToastDemo';
+import SuccessPage from './components/SuccessPage';
+import ToastContainer from './components/ToastContainer';
 import { ToastProvider, useToast } from './hooks/useToast';
 import GlobalLoadingProvider from './hooks/useGlobalLoading';
-import SuccessPage from './components/SuccessPage';
-import './App.css';
 
 const AppContent: React.FC = () => {
   const { toasts, removeToast } = useToast();
@@ -215,6 +215,7 @@ const AppContent: React.FC = () => {
             </>
           } />
           <Route path="/login" element={<LoginPage />} />
+           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile-settings" element={<ProfileSettings />} />

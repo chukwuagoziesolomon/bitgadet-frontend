@@ -229,6 +229,8 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
+                            title="Copy Account Number"
+                            aria-label="Copy Account Number"
                             onClick={() => handleCopy(paymentData.payment_info?.account_details?.account_number || paymentData.order?.dedicated_account_number || paymentData.payment_info?.account_number, 'Account Number', 'account')}
                           >
                             {copied === 'account' ? <Check /> : <Copy />}
@@ -305,11 +307,23 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
+                            title="Copy Wallet Address"
+                            aria-label="Copy Wallet Address"
                             onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
                           >
                             {copied === 'wallet' ? <Check /> : <Copy />}
+                            <span className="copy-text">Copy</span>
                           </button>
                         </div>
+                        {/* Mobile-only copy control: visible below the input on small screens */}
+                        <button
+                          className="copy-btn copy-btn-mobile"
+                          title="Copy Wallet Address"
+                          aria-label="Copy Wallet Address"
+                          onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
+                        >
+                          {copied === 'wallet' ? <Check /> : <Copy />} <span>Copy wallet address</span>
+                        </button>
                       </div>
 
                       <div className="crypto-info-grid">
@@ -412,6 +426,8 @@ const PaymentDetails: React.FC = () => {
                           />
                           <button
                             className="copy-btn"
+                            title="Copy Password"
+                            aria-label="Copy Password"
                             onClick={() => handleCopy(paymentData.account_info.generated_password, 'Password', 'password')}
                           >
                             {copied === 'password' ? <Check /> : <Copy />}

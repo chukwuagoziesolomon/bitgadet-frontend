@@ -799,21 +799,51 @@ body {
 }
 
 @media (max-width: 1200px) {
-  .our-service-features {
-    flex-wrap: wrap;
-    gap: 1.5rem;
+
+  .deal-banner-left {
+    width: 100%;
+    height: 200px;
+    border-radius: 0.75rem 0.75rem 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    padding: 8px;
+  }
+
+  .deal-banner-left img {
+    max-width: 100%;
+    max-height: 140px;
+    object-fit: contain;
+    border-radius: 4px;
+    background: #f8f9fa;
+    display: block;
+    margin: 0 auto;
+    box-shadow: none;
+  }
+
+  /* Also style the landing page deal-card image element to match product card */
+  .deal-card .deal-image {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 0.75rem 0.75rem 0 0;
+    box-sizing: border-box;
+    min-height: 140px;
+  }
+
+  .deal-card .deal-image img {
+    max-width: 100%;
+    max-height: 140px;
+    object-fit: contain;
+    border-radius: 4px;
+    display: block;
+    margin: 0 auto;
   }
   
-  .our-service-feature-item {
-    min-width: 250px;
-    max-width: 300px;
-  }
-}
-
-@media (max-width: 768px) {
-  .our-service-section {
-    padding: 1.5rem 0;
-  }
   
   .our-service-features {
     flex-direction: column;
@@ -1209,6 +1239,7 @@ body {
   line-height: 1.4;
 }
 
+
 /* Deal of the Day Banner */
 .deal-banner {
   padding: 0;
@@ -1251,14 +1282,15 @@ body {
 .deal-banner-right {
   background: #1e293b;
   color: white;
-  padding: 2rem;
+  padding: 3rem 2rem 2rem 2rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
-  flex: 1; /* Take remaining space */
+  flex: 1;
   height: 378px;
   border-radius: 0 12px 12px 0;
+  overflow: hidden;
 }
 
 .deal-tag {
@@ -1276,10 +1308,10 @@ body {
 
 .deal-offer-timer {
   margin: 0;
-  text-align: left;
+  text-align: right;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   flex-shrink: 0;
 }
 
@@ -1300,10 +1332,10 @@ body {
 .deal-time-box {
   background: #1e293b;
   color: white;
-  padding: 0.75rem 0.5rem;
+  padding: 0.5rem 0.4rem;
   border-radius: 0.5rem;
   text-align: center;
-  min-width: 60px;
+  min-width: 50px;
   border: 1px solid #334155;
   display: flex;
   flex-direction: column;
@@ -1314,7 +1346,7 @@ body {
 
 .deal-time-number {
   display: block;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 400;
   font-family: 'Open Sans', sans-serif;
   line-height: 1;
@@ -1335,18 +1367,17 @@ body {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  margin-top: 2.5rem;
   padding-bottom: 1rem;
 }
 
 .deal-product-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 400;
   color: white;
   margin: 0;
   line-height: 1.2;
   font-family: 'Open Sans', sans-serif;
-  flex: 1;
+  text-align: left;
 }
 
 .deal-title-highlight {
@@ -1370,38 +1401,48 @@ body {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
 }
 
 .deal-product-description {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.9);
-  margin: 1rem 0 0 0;
+  margin: 0.5rem 0 0 0;
   line-height: 1.5;
+  text-align: left;
 }
 
 .deal-pricing {
   margin: 0.5rem 0 0 0;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: flex-end;
 }
 
 .deal-current-price {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 400;
   color: #00C896;
-  margin-bottom: 0.5rem;
+  margin: 0;
   font-family: 'Open Sans', sans-serif;
+  display: inline-block;
 }
 
 .deal-original-price {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: line-through;
-  margin-bottom: 0.5rem;
+  margin: 0;
+  display: inline-block;
 }
 
 .deal-crypto-price {
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  display: inline-block;
 }
 
 .deal-buy-now-btn {
@@ -1526,6 +1567,7 @@ body {
     height: auto;
     min-height: 250px;
     border-radius: 0 0 0.75rem 0.75rem;
+    padding: 2rem;
   }
 
   .deal-tag {
@@ -1535,8 +1577,24 @@ body {
     font-size: 0.7rem;
   }
 
+  .deal-title-timer-pricing-row {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .deal-left-section {
+    align-items: center;
+  }
+
+  .deal-right-section {
+    align-items: center;
+  }
+
   .deal-offer-timer {
     margin: 1rem 0;
+    align-items: center;
+    text-align: center;
   }
 
   .deal-timer-label {
@@ -1558,10 +1616,17 @@ body {
 
   .deal-product-title {
     font-size: 1.5rem;
+    text-align: center;
   }
 
   .deal-product-description {
     font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .deal-pricing {
+    justify-content: center;
+    text-align: center;
   }
 
   .deal-current-price {
@@ -1605,8 +1670,6 @@ body {
   }
 }
 
-/* Large tablet styles removed - using same design as mobile */
-
 /* Mobile Styles for Deal of the Day Banner */
 @media (max-width: 768px) {
   .deal-banner {
@@ -1628,8 +1691,6 @@ body {
     height: 200px;
     border-radius: 0.75rem 0.75rem 0 0;
   }
-
-  /* Discount badge removed - using the one in the image */
 
   .deal-product-image {
     width: 100%;
@@ -1654,6 +1715,7 @@ body {
   .deal-offer-timer {
     margin: 1rem 0;
     text-align: center;
+    align-items: center;
   }
 
   .deal-timer-label {
@@ -1663,6 +1725,7 @@ body {
 
   .deal-countdown {
     gap: 0.3rem;
+    justify-content: center;
   }
 
   .deal-time-box {
@@ -1692,18 +1755,20 @@ body {
     align-items: center;
   }
 
-  .deal-offer-timer {
-    align-items: center;
-  }
-
   .deal-product-title {
     font-size: 1.8rem;
     margin-bottom: 0.8rem;
+    text-align: center;
   }
 
   .deal-product-description {
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .deal-pricing {
+    justify-content: center;
   }
 
   .deal-current-price {
@@ -1722,6 +1787,43 @@ body {
     padding: 0.8rem 1.5rem;
     font-size: 0.9rem;
   }
+
+  /* Ensure deal prices sit on a single horizontal line on mobile */
+  .deal-prices {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .deal-prices .deal-price,
+  .deal-prices .original-price,
+  .deal-prices .discount {
+    display: inline-block;
+    vertical-align: baseline;
+    white-space: nowrap;
+  }
+
+  .deal-prices .deal-price {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #00C896;
+  }
+
+  .deal-prices .original-price {
+    font-size: 0.95rem;
+    color: rgba(255,255,255,0.7);
+    text-decoration: line-through;
+    margin-left: 0.25rem;
+  }
+
+  .deal-prices .discount {
+    font-size: 0.9rem;
+    color: #FFD700;
+    margin-left: 0.25rem;
+  }
 }
 
 /* iPhone SE and smaller screens */
@@ -1735,10 +1837,8 @@ body {
   .deal-banner-left {
     padding: 1rem;
     min-height: 180px;
-    position: relative; /* Ensure proper positioning context */
+    position: relative;
   }
-
-  /* Discount badge removed - using the one in the image */
 
   .deal-product-image img {
     max-width: 120px;
