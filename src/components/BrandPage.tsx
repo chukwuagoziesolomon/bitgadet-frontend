@@ -15,13 +15,18 @@ interface Product {
   short_description: string;
   current_price: string;
   original_price: string | null;
-  brand: string;
+  current_price_usdt: string;
+  original_price_usdt: string;
+  brand_id: number;
+  brand_name: string;
+  is_coupon: boolean;
   model: string;
   main_image: string;
   is_featured: boolean;
   is_on_sale: boolean;
   discount_percentage: number;
   savings_usd: number;
+  savings_usdt: number;
   is_in_stock: boolean;
   is_out_of_stock: boolean;
   stock_status: string;
@@ -39,11 +44,10 @@ interface Product {
 }
 
 interface BrandData {
-  brand: string;
-  brand_description: string;
-  brand_logo: string;
-  total_items: number;
-  products: Product[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Product[];
 }
 
 const BrandPage: React.FC = () => {
@@ -163,13 +167,16 @@ const BrandPage: React.FC = () => {
     );
   }
 
-  if (!brandData || brandData.products.length === 0) {
+  if (!brandData) {
+    return <div className="brand-page">Loading...</div>;
+  }
+
+  if (!brandData.results || brandData.results.length === 0) {
     return (
       <div className="brand-page">
         <div className="brand-header">
-          <img src={brandData?.brand_logo} alt={brandData?.brand} className="brand-logo" />
-          <h1>{brandData?.brand || brandName}</h1>
-          <p>{brandData?.brand_description}</p>
+          <h1>{brandName}</h1>
+          <p>Products from {brandName}</p>
         </div>
         <div className="empty-state">
           <h3>No Products Available</h3>
@@ -182,28 +189,19 @@ const BrandPage: React.FC = () => {
   return (
     <div className="brand-page">
       <div className="brand-header">
-        <img
-          src={brandData.brand_logo}
-          alt={brandData.brand}
-          className="brand-logo"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = 'https://via.placeholder.com/200x150/f3f4f6/9ca3af?text=No+Logo';
-          }}
-        />
-        <h1>{brandData.brand}</h1>
-        <p>{brandData.brand_description}</p>
-        <span className="total-items">{brandData.total_items} products available</span>
+        <h1>{brandData.results?.[0]?.brand_name || brandName}</h1>
+        <p>Products from {brandData.results?.[0]?.brand_name || brandName}</p>
+        <span className="total-items">{brandData.count || 0} products available</span>
       </div>
 
       <div className="brand-products-grid">
-        {brandData.products.map((product) => (
+        {brandData.results && brandData.results.map((product: Product) => (
           <ProductCard
             key={product.id}
             id={product.id}
             slug={product.slug}
             name={product.name}
-            brand={product.brand}
+            brand={product.brand_name}
             price={parseFloat(product.current_price)}
             originalPrice={product.original_price ? parseFloat(product.original_price) : undefined}
             usdtPrice={product.current_price} // Assuming same as current_price for now
