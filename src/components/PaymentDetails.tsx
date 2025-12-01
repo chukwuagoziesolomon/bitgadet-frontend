@@ -67,14 +67,29 @@ const PaymentDetails: React.FC = () => {
     }
   }, [paymentData]);
 
-  const handleCopy = (text: string, label: string, key?: string) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    // use a short key to control which icon shows the check
-    if (key) setCopied(key);
-    else setCopied(label);
-    showSuccess('Copied!', `${label} copied to clipboard`);
-    setTimeout(() => setCopied(null), 2000);
+  const handleCopy = async (text: string, label: string, key?: string) => {
+    if (!text || text === 'N/A') {
+      showSuccess('Error', `${label} not available to copy`);
+      return;
+    }
+
+    try {
+      // Ensure we're copying the full text without any truncation
+      const fullText = text.trim();
+      await navigator.clipboard.writeText(fullText);
+      
+      // use a short key to control which icon shows the check
+      if (key) setCopied(key);
+      else setCopied(label);
+      
+      showSuccess('Copied!', `${label} copied to clipboard successfully`);
+      console.log(`Copied ${label}:`, fullText); // Debug log to verify full address
+      
+      setTimeout(() => setCopied(null), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      showSuccess('Error', `Failed to copy ${label}. Please select and copy manually.`);
+    }
   };
 
   const handleConfirmPayment = async () => {
@@ -314,6 +329,12 @@ const PaymentDetails: React.FC = () => {
                             {copied === 'wallet' ? <Check /> : <Copy />}
                             <span className="copy-text">Copy</span>
                           </button>
+                        </div>
+                        
+                        {/* Mobile wallet address display - shows full address */}
+                        <div className="wallet-address-mobile">
+                          <span>Full Address: </span>
+                          <span className="wallet-address-text">{paymentData.payment_info.wallet_address || 'N/A'}</span>
                         </div>
                         {/* Mobile-only copy control: visible below the input on small screens */}
                         <button

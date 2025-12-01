@@ -438,7 +438,7 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .wallet-input {
@@ -449,6 +449,8 @@
   font-size: 14px;
   color: #1a202c;
   font-family: 'Outfit', sans-serif;
+  width: 100%;
+  min-width: 0;
 }
 .wallet-address-input {
   display: flex;
@@ -456,7 +458,7 @@
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .wallet-input {
@@ -470,6 +472,11 @@
   white-space: nowrap;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  text-overflow: clip;
+  width: 100%;
+  min-width: 0;
+  width: 100%;
+  min-width: 0;
 }
 
 .wallet-input::-webkit-scrollbar {
@@ -645,10 +652,20 @@
   display: none;
   width: 100%;
   justify-content: center;
+  align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 12px 16px;
   font-size: 14px;
+  font-weight: 500;
   border-radius: 8px;
+  margin-top: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+/* Hide mobile wallet address display on desktop */
+.wallet-address-mobile {
+  display: none;
 }
 .account-credentials {
   display: flex;
@@ -1170,6 +1187,58 @@
     background: #00b894;
     color: white;
     border: none;
+    cursor: pointer;
+  }
+
+  .copy-btn-mobile:hover {
+    background: #00a085;
+    transform: translateY(-1px);
+  }
+
+  .copy-btn-mobile:active {
+    transform: translateY(0);
+  }
+
+  /* Ensure wallet input shows full address on mobile */
+  .wallet-input {
+    font-size: 12px;
+    padding: 10px 12px;
+    word-break: break-all;
+    white-space: normal;
+    overflow: visible;
+    height: auto;
+    min-height: 40px;
+    line-height: 1.3;
+  }
+
+  /* Make wallet address container responsive */
+  .wallet-address-input {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wallet-address-input .copy-btn {
+    align-self: stretch;
+    margin-top: 8px;
+    padding: 8px 12px;
+  }
+
+  /* Mobile wallet address display */
+  .wallet-address-mobile {
+    display: block;
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 8px;
+    padding: 8px;
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .wallet-address-text {
+    word-break: break-all;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
   }
 
   /* Make copy label visible on small screens to ensure affordance */
