@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
-import { conditionalApiRequest, checkoutApiRequest, API_CONFIG } from '../config/api';
+import { conditionalApiRequest, checkoutApiRequest, publicApiRequest, API_CONFIG } from '../config/api';
 import { handleApiError } from '../utils/errorHandler';
 import { cartService } from '../services/cartService';
 import './Checkout.css';
 
 const Checkout: React.FC = () => {
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('crypto');
   const [cryptoType, setCryptoType] = useState('btc');
   const [agree, setAgree] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
@@ -45,6 +45,35 @@ const Checkout: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Fetch enhanced order summary with state-based shipping
+  const fetchOrderSummary = async (state?: string, couponCode?: string) => {
+    try {
+      setSummaryLoading(true);
+      const cartToken = cartService.getCartToken();
+      if (!cartToken) {
+        console.error('No cart token found');
+        return;
+      }
+
+      let url = `/api/orders/summary/?cart_token=${cartToken}`;
+      if (state) {
+        url += `&state=${encodeURIComponent(state)}`;
+      }
+      if (couponCode) {
+        url += `&coupon_code=${encodeURIComponent(couponCode)}`;
+      }
+
+      const response = await publicApiRequest(url) as any;
+      if (response.success) {
+        setOrderSummary(response);
+      }
+    } catch (error) {
+      console.error('Error fetching order summary:', error);
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
   // Fetch available cryptocurrencies when crypto payment is selected
   useEffect(() => {
     if (paymentMethod === 'crypto') {
@@ -68,52 +97,6 @@ const Checkout: React.FC = () => {
         });
     }
   }, [paymentMethod, addToast]);
-
-  // Fetch order summary
-  useEffect(() => {
-    const fetchOrderSummary = async () => {
-      setSummaryLoading(true);
-      try {
-        // Get cart token for guest users
-        const cartToken = cartService.getCartToken();
-        
-        console.log('Fetching order summary with cart_token:', cartToken);
-        
-        // Build query parameters for order summary
-        const params = new URLSearchParams();
-        if (cartToken) params.append('cart_token', cartToken);
-        if (formData.state) params.append('state', formData.state);
-        params.append('payment_method', paymentMethod);
-        
-        // Use the correct endpoint for order summary (works for both guests and authenticated users)
-        const endpoint = `${API_CONFIG.ENDPOINTS.ORDER_SUMMARY_STATS}?${params.toString()}`;
-        
-        const data = await conditionalApiRequest<any>(endpoint);
-        console.log('Order summary data:', data);
-        setOrderSummary(data);
-
-        // Note: The new API doesn't include cart_items, so we can't check for coupon products here
-        // This check might need to be moved to a different endpoint or removed
-        setHasCouponProducts(false);
-      } catch (error) {
-        console.error('Error fetching order summary:', error);
-        const errorMessage = handleApiError(error as any, 'Order Summary');
-        showError('Failed to load order summary', errorMessage);
-        // Set a fallback summary for development - matching the actual API response format
-        setOrderSummary({
-          total_orders: 0,
-          total_spent: 0.0,
-          average_order_value: 0.0,
-          status_breakdown: {},
-          currency: "USD"
-        });
-      } finally {
-        setSummaryLoading(false);
-      }
-    };
-
-    fetchOrderSummary();
-  }, [addToast]);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -255,6 +238,11 @@ const Checkout: React.FC = () => {
       ...prev,
       [name]: value
     }));
+    
+    // Fetch updated order summary when state changes
+    if (name === 'state' && value.trim()) {
+      fetchOrderSummary(value.trim());
+    }
   };
 
   const handleOrder = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -300,8 +288,6 @@ const Checkout: React.FC = () => {
         terms_agreed: agree,
         // Use actual totals from order summary
         subtotal: orderSummary?.subtotal || 0,
-        tax_amount: orderSummary?.tax_amount || 0,
-        shipping_cost: orderSummary?.shipping_cost || 0,
         discount_amount: orderSummary?.discount_amount || 0,
         total_amount: orderSummary?.total || orderSummary?.total_naira || 0,
         total_amount_usdt: orderSummary?.total_usdt || 0
@@ -403,44 +389,18 @@ const Checkout: React.FC = () => {
               <div className="summary-details">
                 {summaryLoading ? (
                   <div className="summary-loading">Loading order summary...</div>
-                ) : orderSummary ? (
+                ) : orderSummary?.summary ? (
                   <>
                     <div className="summary-row">
-                      <span>Subtotal</span>
+                      <span>Subtotal ({orderSummary.total_items} items)</span>
                       <span>
-                        ₦{orderSummary.subtotal?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
-                        {orderSummary.subtotal_usdt && orderSummary.subtotal_usdt !== orderSummary.subtotal && (
-                          <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
-                            ({orderSummary.subtotal_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
-                          </span>
-                        )}
+                        {orderSummary.subtotal_formatted}
+                        <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                          ({orderSummary.subtotal_usdt?.toFixed(6)} USDT)
+                        </small>
                       </span>
                     </div>
-                    
-                    {orderSummary.tax_amount > 0 && (
-                      <div className="summary-row">
-                        <span>Tax ({(orderSummary.tax_amount / orderSummary.subtotal * 100).toFixed(1)}%)</span>
-                        <span>
-                          ₦{orderSummary.tax_amount?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
-                          {orderSummary.tax_amount_usdt && orderSummary.tax_amount_usdt !== orderSummary.tax_amount && (
-                            <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
-                              ({orderSummary.tax_amount_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {orderSummary.shipping_cost > 0 && (
-                      <div className="summary-row">
-                        <span>Shipping</span>
-                        <span>
-                          ₦{orderSummary.shipping_cost?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Display discount if coupon is applied */}
+
                     {orderSummary.coupon_applied && orderSummary.discount_amount > 0 && (
                       <>
                         <div style={{ borderTop: '1px solid #e0e0e0', margin: '12px 0', paddingTop: '12px' }}>
@@ -458,19 +418,6 @@ const Checkout: React.FC = () => {
                         </div>
                       </>
                     )}
-                    
-                    {/* Final Total */}
-                    <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
-                      <span>Total:</span>
-                      <span>
-                        ₦{(orderSummary.total_naira || orderSummary.total || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                        {orderSummary.total_usdt && (
-                          <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
-                            ({orderSummary.total_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
-                          </span>
-                        )}
-                      </span>
-                    </div>
                     
                     {orderSummary.note && (
                       <div className="summary-row note" style={{ fontSize: '0.85rem', color: '#666', marginTop: '8px' }}>
@@ -614,13 +561,13 @@ const Checkout: React.FC = () => {
           <section className="checkout-section">
             <div className="section-title"><span className="section-number">3</span> Payment Method</div>
             <div className="payment-options">
-              <label className={`payment-option${paymentMethod === 'card' ? ' selected' : ''}`}>
+              {/* <label className={`payment-option${paymentMethod === 'card' ? ' selected' : ''}`}>
                 <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
                 <div>
                   <div>Credit/Debit Card</div>
                   <small>Pay with Visa, Mastercard, or Verve</small>
                 </div>
-              </label>
+              </label> */}
               <label className={`payment-option${paymentMethod === 'crypto' ? ' selected' : ''}`}>
                 <input type="radio" name="payment" value="crypto" checked={paymentMethod === 'crypto'} onChange={() => setPaymentMethod('crypto')} />
                 <div>
@@ -745,6 +692,172 @@ const Checkout: React.FC = () => {
                 Subscribe to our newsletter for exclusive deals and updates
               </label>
             </div>
+            
+            {/* Mobile Checkout Summary - appears before checkout button */}
+            {isMobile && (
+              <div className="mobile-checkout-summary">
+                <div className="summary-box">
+                  <div className="summary-title">Order Summary</div>
+                  <div className="coupon-row">
+                    <input
+                      type="text"
+                      placeholder="Enter coupon code"
+                      className="coupon-input"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      disabled={!!appliedCoupon}
+                    />
+                    {appliedCoupon ? (
+                      <button className="apply-btn remove" onClick={handleRemoveCoupon}>
+                        Remove
+                      </button>
+                    ) : (
+                      <button
+                        className="apply-btn"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponCode.trim()}
+                      >
+                        {couponLoading ? 'Applying...' : 'Apply'}
+                      </button>
+                    )}
+                  </div>
+                  {appliedCoupon && (
+                    <div className="applied-coupon">
+                      <div className="coupon-success">
+                        <span className="coupon-check">✓</span>
+                        <span className="coupon-text">
+                          {appliedCoupon.code}: {appliedCoupon.discount_type === 'percentage' ? `${appliedCoupon.discount_value}%` : `₦${appliedCoupon.discount_value?.toLocaleString()}`} off
+                        </span>
+                      </div>
+                      <div className="coupon-details">
+                        <div className="coupon-detail-row">
+                          <span>Discount:</span>
+                          <span className="discount-amount">-₦{appliedCoupon.discount_amount?.toLocaleString()}</span>
+                        </div>
+                        <div className="coupon-detail-row final">
+                          <span>Final Amount:</span>
+                          <span className="final-amount">₦{appliedCoupon.final_amount?.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="summary-details">
+                    {summaryLoading ? (
+                      <div className="summary-loading">Loading order summary...</div>
+                    ) : orderSummary ? (
+                      <>
+                        {summaryLoading ? (
+                          <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
+                            Loading order summary...
+                          </div>
+                        ) : orderSummary ? (
+                          <>
+                            <div className="summary-row">
+                              <span>Subtotal ({orderSummary.total_items} items)</span>
+                              <span>
+                                {orderSummary.subtotal_formatted}
+                                <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                                  ({orderSummary.subtotal_usdt?.toFixed(6)} USDT)
+                                </small>
+                              </span>
+                            </div>
+
+                            {orderSummary.coupon_applied && orderSummary.discount_amount > 0 && (
+                              <div className="summary-row" style={{ color: '#10b981' }}>
+                                <span>Discount</span>
+                                <span>
+                                  {orderSummary.discount_formatted}
+                                  <small style={{ display: 'block', color: '#10b981', fontSize: '12px' }}>
+                                    ({orderSummary.discount_amount_secondary?.toFixed(6)} USDT)
+                                  </small>
+                                </span>
+                              </div>
+                            )}
+
+                            <div className="summary-row">
+                              <span>Tax</span>
+                              <span>
+                                {orderSummary.tax_formatted}
+                                <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                                  ({orderSummary.tax_amount_usdt?.toFixed(6)} USDT)
+                                </small>
+                              </span>
+                            </div>
+
+                            <div className="summary-row">
+                              <span>Shipping</span>
+                              <span>
+                                {orderSummary.shipping_cost_formatted}
+                                <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                                  ({orderSummary.shipping_cost_usdt?.toFixed(6)} USDT)
+                                </small>
+                                {orderSummary.shipping_note && (
+                                  <small style={{ display: 'block', color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
+                                    {orderSummary.shipping_note}
+                                  </small>
+                                )}
+                              </span>
+                            </div>
+
+                            {!orderSummary.is_free_shipping && orderSummary.free_shipping_remaining && (
+                              <div style={{ fontSize: '12px', color: '#f59e0b', fontStyle: 'italic', marginTop: '8px', padding: '8px', backgroundColor: '#fffbeb', borderRadius: '4px', border: '1px solid #fbbf24' }}>
+                                Add ₦{orderSummary.free_shipping_remaining?.toLocaleString()} more for FREE SHIPPING!
+                              </div>
+                            )}
+
+                            <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
+                              <span>Total</span>
+                              <span>
+                                {orderSummary.total_formatted}
+                                <small style={{ display: 'block', color: '#059669', fontSize: '14px', fontWeight: '500' }}>
+                                  ({orderSummary.total_usdt?.toFixed(6)} USDT)
+                                </small>
+                              </span>
+                            </div>
+
+
+                          </>
+                        ) : (
+                          <div className="summary-row">
+                            <span>Subtotal</span>
+                            <span>₦0.00</span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="summary-error">Unable to load order summary</div>
+                    )}
+                  </div>
+                  
+                  {/* Coupon notice */}
+                  {hasCouponProducts && (
+                    <div className="coupon-notice">
+                      <div className="coupon-notice-icon">🎁</div>
+                      <div className="coupon-notice-text">
+                        <strong>Gift Coupon Purchase</strong><br/>
+                        Your coupon code will be sent to your email after successful payment.
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="shipping-info">
+                    <div className="shipping-title">Shipping Information</div>
+                    <ul>
+                      <li>Lagos: 1-3 business days</li>
+                      <li>Other states: 4-5 business days</li>
+                      <li>Free shipping on orders above ₦1,000,000</li>
+                    </ul>
+                  </div>
+                  <div className="trust-badges">
+                    <span>Secure Payment</span>
+                    <span>Authentic Products</span>
+                    <span>7-Day Returns</span>
+                    <span>24/7 Support</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             <button
               className="complete-order-btn"
               type="submit"
@@ -803,77 +916,85 @@ const Checkout: React.FC = () => {
               )}
               <div className="summary-details">
                 {summaryLoading ? (
-                  <div className="summary-loading">Loading order summary...</div>
-                ) : orderSummary ? (
+                  <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
+                    Loading order summary...
+                  </div>
+                ) : orderSummary?.summary ? (
                   <>
                     <div className="summary-row">
-                      <span>Subtotal</span>
+                      <span>Subtotal ({orderSummary.total_items} items)</span>
                       <span>
-                        ₦{orderSummary.subtotal?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
-                        {orderSummary.subtotal_usdt && orderSummary.subtotal_usdt !== orderSummary.subtotal && (
-                          <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
-                            ({orderSummary.subtotal_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
-                          </span>
+                        {orderSummary.summary.subtotal}
+                        {orderSummary.subtotal_usdt && (
+                          <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                            ({orderSummary.subtotal_secondary_formatted})
+                          </small>
                         )}
                       </span>
                     </div>
-                    {orderSummary.tax_amount > 0 && (
-                      <div className="summary-row">
-                        <span>Tax ({(orderSummary.tax_amount / orderSummary.subtotal * 100).toFixed(1)}%)</span>
-                        <span>
-                          ₦{orderSummary.tax_amount?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
-                          {orderSummary.tax_amount_usdt && orderSummary.tax_amount_usdt !== orderSummary.tax_amount && (
-                            <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
-                              ({orderSummary.tax_amount_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
-                            </span>
+
+                    {orderSummary.coupon_applied && orderSummary.summary.discount && (
+                      <div className="summary-row discount-row">
+                        <span style={{ color: '#10b981' }}>Discount</span>
+                        <span style={{ color: '#10b981' }}>
+                          {orderSummary.summary.discount}
+                          {orderSummary.discount_amount_secondary && (
+                            <small style={{ display: 'block', color: '#10b981', fontSize: '12px' }}>
+                              (-{orderSummary.discount_amount_secondary.toFixed(6)} USDT)
+                            </small>
                           )}
                         </span>
                       </div>
                     )}
-                    {orderSummary.shipping_cost > 0 && (
-                      <div className="summary-row">
-                        <span>Shipping</span>
-                        <span>
-                          ₦{orderSummary.shipping_cost?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) || '0.00'}
-                        </span>
-                      </div>
-                    )}
-                    {orderSummary.coupon_applied && orderSummary.discount_amount > 0 && (
-                      <>
-                        <div style={{ borderTop: '1px solid #e0e0e0', margin: '12px 0', paddingTop: '12px' }}>
-                          <div className="summary-row discount-row">
-                            <span style={{ color: '#10b981', fontWeight: '600' }}>Discount:</span>
-                            <span style={{ color: '#10b981', fontWeight: '700' }}>
-                              -₦{(orderSummary.discount_amount || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                              {orderSummary.discount_amount_usdt && orderSummary.discount_amount_usdt !== orderSummary.discount_amount && (
-                                <span style={{ fontSize: '0.9rem', marginLeft: '8px' }}>
-                                  ({orderSummary.discount_amount_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                    <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
-                      <span>Total:</span>
+
+                    <div className="summary-row">
+                      <span>Tax</span>
                       <span>
-                        ₦{(orderSummary.total_naira || orderSummary.total || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                        {orderSummary.total_usdt && (
-                          <span style={{ fontSize: '0.9rem', color: '#666', marginLeft: '8px' }}>
-                            ({orderSummary.total_usdt?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USDT)
-                          </span>
+                        {orderSummary.summary.tax}
+                        {orderSummary.tax_amount_usdt && (
+                          <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                            ({orderSummary.tax_amount_usdt.toFixed(6)} USDT)
+                          </small>
                         )}
                       </span>
                     </div>
-                    {orderSummary.note && (
-                      <div className="summary-row note" style={{ fontSize: '0.85rem', color: '#666', marginTop: '8px' }}>
-                        <span>{orderSummary.note}</span>
+
+                    <div className="summary-row">
+                      <span>Shipping</span>
+                      <span>
+                        {orderSummary.summary.shipping}
+                        <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                          ({orderSummary.shipping_cost_usdt?.toFixed(6) || '0.000000'} USDT)
+                        </small>
+                        {orderSummary.shipping_note && (
+                          <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                            {orderSummary.shipping_note}
+                          </small>
+                        )}
+                      </span>
+                    </div>
+
+                    {!orderSummary.is_free_shipping && orderSummary.free_shipping_remaining && (
+                      <div style={{ fontSize: '12px', color: '#f59e0b', fontStyle: 'italic', marginTop: '8px', padding: '8px', backgroundColor: '#fffbeb', borderRadius: '4px' }}>
+                        Add ₦{orderSummary.free_shipping_remaining?.toLocaleString()} more for FREE SHIPPING!
                       </div>
                     )}
+
+                    <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
+                      <span>Total</span>
+                      <span>
+                        {orderSummary.summary.total}
+                        <small style={{ display: 'block', color: '#059669', fontSize: '14px', fontWeight: '500' }}>
+                          ({orderSummary.summary.total_secondary})
+                        </small>
+                      </span>
+                    </div>
                   </>
                 ) : (
-                  <div className="summary-error">Unable to load order summary</div>
+                  <div className="summary-row">
+                    <span>Subtotal</span>
+                    <span>₦0.00</span>
+                  </div>
                 )}
               </div>
               

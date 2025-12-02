@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { cartService } from '../services/cartService';
+import { publicApiRequest } from '../config/api';
 import './ShoppingCart.css';
 
 interface CartItem {
@@ -22,10 +23,39 @@ const ShoppingCart: React.FC = () => {
   const [orderSummary, setOrderSummary] = useState<any>(null);
   const [itemCount, setItemCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [summaryLoading, setSummaryLoading] = useState(false);
 
   useEffect(() => {
     fetchCart();
   }, []);
+
+  // Fetch enhanced order summary with state-based shipping
+  const fetchOrderSummary = async (state?: string) => {
+    try {
+      setSummaryLoading(true);
+      const cartToken = cartService.getCartToken();
+      if (!cartToken) {
+        console.error('No cart token found');
+        return;
+      }
+
+      let url = `/api/orders/summary/?cart_token=${cartToken}`;
+      if (state) {
+        url += `&state=${encodeURIComponent(state)}`;
+      }
+
+      const response = await publicApiRequest(url) as any;
+      if (response.success) {
+        setOrderSummary(response);
+      }
+    } catch (error) {
+      console.error('Error fetching order summary:', error);
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
+
 
   const fetchCart = async () => {
     try {
@@ -51,9 +81,10 @@ const ShoppingCart: React.FC = () => {
         subtotal: cartData.total_amount || 0,
         total: cartData.total_amount || 0,
         total_usdt: cartData.total_amount_usdt || 0,
-        shipping: 0, // Assuming shipping is calculated elsewhere
-        tax: 0, // Assuming tax is calculated elsewhere
       });
+
+      // Fetch enhanced order summary
+      fetchOrderSummary();
     } catch (error) {
       console.error('Failed to fetch cart:', error);
       setCartItems([]);
@@ -189,26 +220,97 @@ const ShoppingCart: React.FC = () => {
         <div className="order-summary">
           <h2>Order Summary</h2>
           
+
+          
           <div className="summary-details">
-            <div className="summary-row">
-              <span>Subtotal ({itemCount} items)</span>
-              <span>{formatNaira(orderSummary?.subtotal || 0)}</span>
-            </div>
-            <div className="summary-row">
-              <span>Shipping</span>
-              <span>{formatNaira(orderSummary?.shipping || 0)}</span>
-            </div>
-            <div className="summary-row">
-              <span>Tax</span>
-              <span>{formatNaira(orderSummary?.tax || 0)}</span>
-            </div>
-            <div className="summary-total">
-              <span>Total</span>
-              <div className="total-amount">
-                <div className="total-naira">{formatNaira(orderSummary?.total || 0)}</div>
-                <div className="total-usd">{formatUSD(orderSummary?.total_usdt || 0)}</div>
+            {summaryLoading ? (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
+                Loading order summary...
               </div>
-            </div>
+            ) : orderSummary ? (
+              <>
+                <div className="summary-row">
+                  <span>Subtotal ({orderSummary.total_items} items)</span>
+                  <span>
+                    {orderSummary.subtotal_formatted}
+                    <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                      ({orderSummary.subtotal_usdt?.toFixed(6)} USDT)
+                    </small>
+                  </span>
+                </div>
+
+                {orderSummary.coupon_applied && orderSummary.discount_amount > 0 && (
+                  <div className="summary-row" style={{ color: '#10b981' }}>
+                    <span>Discount</span>
+                    <span>
+                      {orderSummary.discount_formatted}
+                      <small style={{ display: 'block', color: '#10b981', fontSize: '12px' }}>
+                        ({orderSummary.discount_amount_secondary?.toFixed(6)} USDT)
+                      </small>
+                    </span>
+                  </div>
+                )}
+
+                <div className="summary-row">
+                  <span>Tax</span>
+                  <span>
+                    {orderSummary.tax_formatted}
+                    <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                      ({orderSummary.tax_amount_usdt?.toFixed(6)} USDT)
+                    </small>
+                  </span>
+                </div>
+
+                <div className="summary-row">
+                  <span>Shipping</span>
+                  <span>
+                    {orderSummary.shipping_cost_formatted}
+                    <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
+                      ({orderSummary.shipping_cost_usdt?.toFixed(6)} USDT)
+                    </small>
+                    {orderSummary.shipping_note && (
+                      <small style={{ display: 'block', color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
+                        {orderSummary.shipping_note}
+                      </small>
+                    )}
+                  </span>
+                </div>
+
+                {!orderSummary.is_free_shipping && orderSummary.free_shipping_remaining && (
+                  <div style={{ fontSize: '12px', color: '#f59e0b', fontStyle: 'italic', marginTop: '8px', padding: '8px', backgroundColor: '#fffbeb', borderRadius: '4px' }}>
+                    Add ₦{orderSummary.free_shipping_remaining?.toLocaleString()} more for FREE SHIPPING!
+                  </div>
+                )}
+
+                <div className="summary-total">
+                  <span>Total</span>
+                  <div className="total-amount">
+                    <div className="total-naira">{orderSummary.total_formatted}</div>
+                    <div className="total-usd">({orderSummary.total_usdt?.toFixed(6)} USDT)</div>
+                  </div>
+                </div>
+
+                {orderSummary.shipping_info && (
+                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+                    Delivery: {orderSummary.state?.toLowerCase() === 'lagos' ? orderSummary.shipping_info.lagos_days : orderSummary.shipping_info.other_states_days}
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="summary-row">
+                  <span>Subtotal ({itemCount} items)</span>
+                  <span>{formatNaira(orderSummary?.subtotal || 0)}</span>
+                </div>
+                <div className="summary-total">
+                  <span>Total</span>
+                  <div className="total-amount">
+                    <div className="total-naira">{formatNaira(orderSummary?.total || 0)}</div>
+                    <div className="total-usd">{formatUSD(orderSummary?.total_usdt || 0)}</div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           
           <Link to="/checkout" className="checkout-btn">

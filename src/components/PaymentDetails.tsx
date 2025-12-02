@@ -216,7 +216,12 @@ const PaymentDetails: React.FC = () => {
                   </div>
                   <div className="order-amount">
                     <span className="amount-label">Total Amount</span>
-                    <span className="amount-value">₦{paymentData.payment_info.total_amount?.toLocaleString()}</span>
+                    <span className="amount-value">
+                      {paymentMethod === 'crypto' 
+                        ? `${paymentData.payment_info.expected_amount?.toFixed(6) || '0.000000'} ${paymentData.payment_info.currency || 'USDT'}`
+                        : `₦${paymentData.payment_info.total_amount?.toLocaleString() || '0'}`
+                      }
+                    </span>
                   </div>
                 </div>
 
