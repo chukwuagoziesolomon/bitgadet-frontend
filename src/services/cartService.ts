@@ -1,4 +1,5 @@
-import { API_CONFIG, buildApiUrl } from '../config/api';
+import { buildApiUrl } from '../config/api';
+// ...existing code...
 import { initializeCartToken } from '../utils/tokenUtils';
 
 class CartService {

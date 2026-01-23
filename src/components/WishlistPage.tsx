@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heart, ShoppingBag, Trash2, Share2, ArrowRight, Filter } from 'lucide-react';
+import { Heart, Share2, ArrowRight } from 'lucide-react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import ProductCard from './ProductCard';
@@ -62,7 +62,7 @@ const WishlistPage: React.FC = () => {
   // Fetch wishlist items on component mount
   useEffect(() => {
     fetchWishlist();
-  }, [showError]);
+  }, [showError, fetchWishlist]);
 
   const formatNaira = (amount: number) => {
     return `₦${amount.toLocaleString()}`;
@@ -81,15 +81,16 @@ const WishlistPage: React.FC = () => {
       }
 
       // Use appropriate request function
-      const response = token
-        ? await conditionalApiRequest<any>('/api/wishlist/remove/', {
+      await (token
+        ? conditionalApiRequest<any>('/api/wishlist/remove/', {
             method: 'POST',
             body: JSON.stringify(payload),
           })
-        : await publicApiRequest<any>('/api/wishlist/remove/', {
+        : publicApiRequest<any>('/api/wishlist/remove/', {
             method: 'POST',
             body: JSON.stringify(payload),
-          });
+          })
+      );
 
       setWishlistItems(prev => prev.filter(item => item.product_id !== productId || item.id !== productId));
       showSuccess('Removed from wishlist', 'Item has been removed from your wishlist.');
@@ -111,15 +112,16 @@ const WishlistPage: React.FC = () => {
     }
 
     try {
-      const response = token
-        ? await conditionalApiRequest<any>('/api/cart/add/', {
+      await (token
+        ? conditionalApiRequest<any>('/api/cart/add/', {
             method: 'POST',
             body: JSON.stringify(payload),
           })
-        : await publicApiRequest<any>('/api/cart/add/', {
+        : publicApiRequest<any>('/api/cart/add/', {
             method: 'POST',
             body: JSON.stringify(payload),
-          });
+          })
+      );
 
       showSuccess('Added to cart', 'Item has been added to your cart.');
     } catch (error: any) {
