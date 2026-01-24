@@ -34,7 +34,7 @@ interface ProductImage {
   order: number;
 }
 
-interface ProductDetails {
+interface Product {
   id: number;
   name: string;
   slug: string;
@@ -113,10 +113,9 @@ interface Recommendation {
 const ProductDetails: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const { setLoading: setGlobalLoading } = useGlobalLoading();
-  const [product, setProduct] = useState<ProductDetails | null>(null);
+  const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedSpec, setSelectedSpec] = useState<string>('');
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -126,7 +125,7 @@ const ProductDetails: React.FC = () => {
   const [selectedStorage, setSelectedStorage] = useState('');
   const [selectedRAM, setSelectedRAM] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -150,7 +149,7 @@ const ProductDetails: React.FC = () => {
         setError(null);
 
         // Fetch product details
-        const productData = await publicApiRequest<ProductDetails>(`/api/products/${slug}/`);
+        const productData = await publicApiRequest<Product>(`/api/products/${slug}/`);
         setProduct(productData);
 
         // Set default selections
@@ -194,7 +193,7 @@ const ProductDetails: React.FC = () => {
     };
 
     fetchProductData();
-  }, [slug]);
+  }, [slug, setGlobalLoading]);
 
   // Auto-rotate images every 5 seconds
   useEffect(() => {
@@ -294,7 +293,7 @@ const ProductDetails: React.FC = () => {
     try {
       setIsAddingToCart(true);
       setAddedToCart(false);
-      const result = await cartService.addToCart(product.id, quantity);
+      await cartService.addToCart(product.id, quantity);
       setAddedToCart(true);
       // Reset the added state after a short delay
       setTimeout(() => setAddedToCart(false), 2000);
@@ -305,47 +304,6 @@ const ProductDetails: React.FC = () => {
     }
   };
 
-  const handleWhatsAppEnquiry = () => {
-    const message = `Hi, I'm interested in the ${product?.name}. Can you provide more information?`;
-    const whatsappUrl = `https://wa.me/2347043567844?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
-  const toggleWishlist = async () => {
-    const authToken = localStorage.getItem('authToken');
-    
-    // Only allow wishlist functionality for authenticated users
-    if (!authToken) {
-      alert('Please log in to add items to your wishlist');
-      return;
-    }
-
-    try {
-      const headers = {
-        'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json',
-      };
-
-      const endpoint = isWishlisted 
-        ? `/api/wishlist/${product?.id}/remove/`
-        : `/api/wishlist/add/`;
-
-      const response = await fetch(endpoint, {
-        method: isWishlisted ? 'DELETE' : 'POST',
-        headers,
-        body: !isWishlisted ? JSON.stringify({ product_id: product?.id }) : undefined
-      });
-
-      if (response.ok) {
-        setIsWishlisted(!isWishlisted);
-      } else {
-        alert('Failed to update wishlist');
-      }
-    } catch (error) {
-      console.error('Wishlist error:', error);
-      alert('Error updating wishlist');
-    }
-  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -446,7 +404,7 @@ const ProductDetails: React.FC = () => {
       // Refresh reviews and product stats after successful submission
       try {
         const [updatedProduct, updatedReviews] = await Promise.all([
-          publicApiRequest<ProductDetails>(`/api/products/${slug}/`),
+          publicApiRequest<Product>(`/api/products/${slug}/`),
           publicApiRequest<Review[]>(`/api/products/${slug}/reviews/`),
         ]);
         setProduct(updatedProduct);

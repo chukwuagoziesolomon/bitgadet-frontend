@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Share2, ArrowRight } from 'lucide-react';
 import Navbar from './Navbar';
@@ -26,7 +26,7 @@ const WishlistPage: React.FC = () => {
     );
   };
 
-  const fetchWishlist = async () => {
+  const fetchWishlist = useCallback(async () => {
     const token = localStorage.getItem('authToken');
     const cartToken = getCartToken();
 
@@ -57,12 +57,12 @@ const WishlistPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError, showSuccess]);
 
   // Fetch wishlist items on component mount
   useEffect(() => {
     fetchWishlist();
-  }, [showError, fetchWishlist]);
+  }, [fetchWishlist]);
 
   const formatNaira = (amount: number) => {
     return `₦${amount.toLocaleString()}`;

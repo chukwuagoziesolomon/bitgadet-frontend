@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { cartService } from '../services/cartService';
@@ -25,39 +25,7 @@ const ShoppingCart: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  // Fetch enhanced order summary with state-based shipping
-  const fetchOrderSummary = async (state?: string) => {
-    try {
-      setSummaryLoading(true);
-      const cartToken = cartService.getCartToken();
-      if (!cartToken) {
-        console.error('No cart token found');
-        return;
-      }
-
-      let url = `/api/orders/summary/?cart_token=${cartToken}`;
-      if (state) {
-        url += `&state=${encodeURIComponent(state)}`;
-      }
-
-      const response = await publicApiRequest(url) as any;
-      if (response.success) {
-        setOrderSummary(response);
-      }
-    } catch (error) {
-      console.error('Error fetching order summary:', error);
-    } finally {
-      setSummaryLoading(false);
-    }
-  };
-
-
-
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async () => {
     try {
       const cartData = await cartService.getCart();
       const products = cartData.products || [];
@@ -93,7 +61,41 @@ const ShoppingCart: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+
+  // Fetch enhanced order summary with state-based shipping
+  const fetchOrderSummary = async (state?: string) => {
+    try {
+      setSummaryLoading(true);
+      const cartToken = cartService.getCartToken();
+      if (!cartToken) {
+        console.error('No cart token found');
+        return;
+      }
+
+      let url = `/api/orders/summary/?cart_token=${cartToken}`;
+      if (state) {
+        url += `&state=${encodeURIComponent(state)}`;
+      }
+
+      const response = await publicApiRequest(url) as any;
+      if (response.success) {
+        setOrderSummary(response);
+      }
+    } catch (error) {
+      console.error('Error fetching order summary:', error);
+    } finally {
+      setSummaryLoading(false);
+    }
   };
+
+
+
+  
 
   const updateQuantity = async (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;
