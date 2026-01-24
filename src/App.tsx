@@ -1,4 +1,5 @@
 import React from 'react';
+import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import ScrollToTop from './components/ScrollToTop';
@@ -260,7 +261,9 @@ function App() {
   return (
     <ToastProvider>
       <GlobalLoadingProvider>
-        <AppContent />
+        <HelmetProvider>
+          <AppContent />
+        </HelmetProvider>
       </GlobalLoadingProvider>
     </ToastProvider>
   );
