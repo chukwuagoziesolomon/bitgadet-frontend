@@ -20,7 +20,7 @@ const CategoryPage: React.FC = () => {
       try {
         setLoading(true);
         // Use single-category endpoint which includes products array
-        const endpoint = `/api/categories/${encodeURIComponent(categoryName)}/`;
+        const endpoint = `/api/shop/categories/${encodeURIComponent(categoryName)}/`;
         const data = await publicApiRequest<any>(endpoint);
         const items = Array.isArray(data?.products) ? data.products : [];
         setProducts(items);
