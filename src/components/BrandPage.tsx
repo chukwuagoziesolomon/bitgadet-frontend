@@ -204,7 +204,8 @@ const BrandPage: React.FC = () => {
             brand={product.brand_name}
             price={parseFloat(product.current_price)}
             originalPrice={product.original_price ? parseFloat(product.original_price) : undefined}
-            usdtPrice={product.current_price} // Assuming same as current_price for now
+            usdtPrice={product.current_price_usdt}
+            originalUsdtPrice={product.original_price_usdt}
             rating={4.5} // Default rating
             reviews={0} // Default reviews
             image={product.main_image}
@@ -221,6 +222,7 @@ const BrandPage: React.FC = () => {
             is_new_arrival={product.is_new_arrival}
             is_best_seller={product.is_best_seller}
             stock_quantity={product.stock_quantity}
+            is_coupon={product.is_coupon}
           />
         ))}
       </div>
