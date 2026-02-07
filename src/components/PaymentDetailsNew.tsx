@@ -352,7 +352,21 @@ const PaymentDetails: React.FC = () => {
                   </div>
                 )}
 
-                {paymentMethod === 'crypto' && (
+                {paymentMethod === 'crypto' && paymentData.payment_info?.error && (
+                  <div className="payment-method-card error-payment">
+                    <div className="method-header">
+                      <div className="method-icon">
+                        <AlertTriangle />
+                      </div>
+                      <div className="method-info">
+                        <h2>Payment Unavailable</h2>
+                        <p>{paymentData.payment_info.error}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === 'crypto' && !paymentData.payment_info?.error && (
                   <div className="payment-method-card crypto-payment">
                     <div className="method-header">
                       <div className="method-icon">

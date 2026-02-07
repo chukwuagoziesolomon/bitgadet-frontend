@@ -41,12 +41,17 @@ interface Product {
   category: Category;
   description: string;
   short_description: string;
-  price: string;
-  price_usdt: string;
+  // Support both field name variations
+  price?: string;
+  price_usdt?: string;
+  current_price?: string;
+  original_price?: string;
+  current_price_usdt?: string;
+  original_price_usdt?: string;
   discount_percentage: number;
   stock_quantity: number;
   sku: string;
-  brand: string;
+  brand: string | number;
   model: string;
   colors: string[];
   storage_options: string[];
@@ -79,6 +84,10 @@ interface Product {
   is_available: boolean;
   is_new: boolean;
   is_bestseller: boolean;
+  product_condition?: string;
+  condition_display?: string;
+  is_coupon?: boolean;
+  coupon_value?: number;
 }
 
 interface Review {
@@ -102,8 +111,10 @@ interface Recommendation {
   name: string;
   slug: string;
   main_image: string;
-  price: string;
-  price_usdt: string;
+  current_price: string;
+  original_price: string;
+  current_price_usdt: string;
+  original_price_usdt: string;
   discount_percentage: number;
   is_on_sale: boolean;
   is_new: boolean;
@@ -150,6 +161,7 @@ const ProductDetails: React.FC = () => {
 
         // Fetch product details
         const productData = await publicApiRequest<Product>(`/api/products/${slug}/`);
+        console.log('Product data received:', productData);
         setProduct(productData);
 
         // Set default selections
@@ -540,11 +552,15 @@ const ProductDetails: React.FC = () => {
 
             <div className="product-pricing">
               <div className="price-main">
-                <span className="current-price">{formatNaira(parseFloat(product.price))}</span>
+                <span className="current-price">
+                  {formatNaira(parseFloat(product.current_price || product.price || '0'))}
+                </span>
                 {product.discount_percentage > 0 && (
                   <>
                     <span className="original-price">
-                      {formatNaira(parseFloat(product.price) / (1 - product.discount_percentage / 100))}
+                      {product.original_price 
+                        ? formatNaira(parseFloat(product.original_price))
+                        : formatNaira(parseFloat(product.current_price || product.price || '0') / (1 - product.discount_percentage / 100))}
                     </span>
                     <div className="discount-badge">
                       {product.discount_percentage}% OFF
@@ -554,7 +570,15 @@ const ProductDetails: React.FC = () => {
               </div>
               <div className="price-usdt-bar">
                 <span className="crypto-icon">₿</span>
-                <span className="usdt-text">USDT: {product.price_usdt}</span>
+                <span className="usdt-text">
+                  USDT: {product.current_price_usdt || product.price_usdt || '0'}
+                </span>
+                {product.discount_percentage > 0 && (
+                  <span className="usdt-original">
+                    ({product.original_price_usdt || 
+                      (parseFloat(product.current_price_usdt || product.price_usdt || '0') / (1 - product.discount_percentage / 100)).toFixed(6)})
+                  </span>
+                )}
               </div>
             </div>
 
@@ -1029,13 +1053,16 @@ const ProductDetails: React.FC = () => {
                   <div className="related-product-info">
                     <h3>{relatedProduct.name}</h3>
                     <div className="related-product-pricing">
-                      <span className="current-price">{formatNaira(parseFloat(relatedProduct.price))}</span>
-                      {relatedProduct.is_on_sale && relatedProduct.discount_percentage > 0 && (
+                      <span className="current-price">{formatNaira(parseFloat(relatedProduct.current_price))}</span>
+                      {parseFloat(relatedProduct.original_price) > parseFloat(relatedProduct.current_price) && (
                         <span className="original-price">
-                          {formatNaira(parseFloat(relatedProduct.price) / (1 - relatedProduct.discount_percentage / 100))}
+                          {formatNaira(parseFloat(relatedProduct.original_price))}
                         </span>
                       )}
-                      <span className="usdt-price">{relatedProduct.price_usdt} USDT</span>
+                      <span className="usdt-price">{relatedProduct.current_price_usdt} USDT</span>
+                      {parseFloat(relatedProduct.original_price_usdt) > parseFloat(relatedProduct.current_price_usdt) && (
+                        <span className="usdt-original">({relatedProduct.original_price_usdt})</span>
+                      )}
                     </div>
                   </div>
                 </Link>

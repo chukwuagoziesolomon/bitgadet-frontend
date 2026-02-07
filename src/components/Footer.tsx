@@ -78,7 +78,7 @@ const Footer: React.FC = () => {
 
             <li><Link to="/phone-tracking">Phone Tracking</Link></li>
   
-            <li><Link to="/terms-conditions">Terms & Conditions</Link></li>
+            <li><Link to="/terms">Terms & Conditions</Link></li>
           </ul>
         </div>
 

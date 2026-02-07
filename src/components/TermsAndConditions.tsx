@@ -70,11 +70,55 @@ const TermsAndConditions: React.FC = () => {
 
           <section className="terms-section">
             <h2>6. Returns and Refunds</h2>
+            
+            <h3>6.1 General</h3>
+            <p>
+              All returns, refunds, and exchanges are subject to Bitgadgetz's Refund & Return Policy, which forms an integral 
+              part of these Terms and Conditions. By placing an order, you acknowledge that you have read and agreed to this policy.
+            </p>
+
+            <h3>6.2 New Gadgets</h3>
+            <p>New gadgets may be eligible for return only if:</p>
             <ul>
-              <li>Customers may return products within a specified period if the item is faulty or does not match the description.</li>
-              <li>Returns must comply with our return policy, and products should be in original condition and packaging.</li>
-              <li>Refunds will be processed after we receive and inspect the returned product.</li>
+              <li>The product is unused, unopened, and in its original sealed packaging</li>
+              <li>The return request is made within the timeframe stated in the Refund & Return Policy</li>
+              <li>Proof of purchase is provided</li>
             </ul>
+            <p>Any new gadget that has been activated, unsealed, or shows signs of use shall not be eligible for a refund.</p>
+
+            <h3>6.3 Used Gadgets</h3>
+            <ul>
+              <li>All used gadgets are sold after testing and condition disclosure.</li>
+              <li>Used gadgets are non-refundable once sold, except where a verified functional defect exists that was not 
+                  disclosed at the time of sale and is reported within the stated inspection period.</li>
+            </ul>
+
+            <h3>6.4 Inspection and Approval</h3>
+            <p>
+              All returned items are subject to inspection by Bitgadgetz. Refunds, replacements, or store credit will only be 
+              issued after verification that the return meets policy requirements.
+            </p>
+
+            <h3>6.5 Refund Method</h3>
+            <p>
+              Approved refunds will be processed via the original payment method or store credit, at Bitgadgetz's discretion. 
+              Processing times may vary depending on the payment method used.
+            </p>
+
+            <h3>6.6 Non-Refundable Circumstances</h3>
+            <p>Refunds will not be issued for:</p>
+            <ul>
+              <li>Change-of-mind purchases</li>
+              <li>Compatibility or software-related issues</li>
+              <li>Damage caused by misuse, accidents, or unauthorized repairs</li>
+              <li>Clearance, promotional, or "as-is" items (where stated)</li>
+            </ul>
+
+            <h3>6.7 Return Shipping</h3>
+            <p>
+              Customers are responsible for return shipping costs unless the item is confirmed to be faulty or incorrectly 
+              supplied by Bitgadgetz.
+            </p>
           </section>
 
           <section className="terms-section">
@@ -135,9 +179,9 @@ const TermsAndConditions: React.FC = () => {
             If you have any questions about these Terms and Conditions, please contact us at:
           </p>
           <div className="contact-details">
-            <p><strong>Email:</strong> info@bitgadgetz.com</p>
-            <p><strong>Phone:</strong> +234 123 000 0000</p>
-            <p><strong>WhatsApp:</strong> +234 123 000 0000</p>
+            <p><strong>Email:</strong> support@bitgadgetz.store</p>
+            <p><strong>Phone:</strong> +2349138666111</p>
+            <p><strong>WhatsApp:</strong> +2349061728949</p>
           </div>
         </div>
       </div>

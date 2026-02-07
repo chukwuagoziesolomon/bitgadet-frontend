@@ -146,28 +146,28 @@ const LandingPage: React.FC = () => {
       rating: 5,
       review:"I bought my first smartphone from Bitgadgetz and the experience was amazing. The delivery was fast and the phone was exactly as described. I will definitely order again!"
       ,
-      date: "August 14, 2025"
+      date: "january 14, 2026"
     },
     {
       name: "Tunde K., Abuja",
       avatar: "/customer-avatar2.png",
       rating: 5,
       review:  "Swapping my old phone was so easy and safe. Bitgadgetz made the whole process stress-free, and their customer support was very helpful whenever I had questions.",
-      date: "September 2, 2025"
+      date: "December 2, 2025"
     },
     {
       name: "Chinwe A., Enugu",
       avatar: "/customer-avatar3.png",
       rating: 5,
       review: "I love that I could pay with crypto. The process was simple and secure, and my gadget arrived quickly. Bitgadgetz is now my go-to store for gadgets!",
-      date: "September 15, 2025"
+      date: "November 15, 2025"
     },
     {
       name: "Emeka J., Port Harcourt",
       avatar: "/customer-avatar4.png",
       rating: 5,
       review:  "The team at Bitgadgetz really cares about their customers. They guided me through choosing the right phone and even helped me track my device till it got delivered. Highly recommended!",
-      date: "October 1, 2023"
+      date: "january 1, 2026"
     }
   ];
 

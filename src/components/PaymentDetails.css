@@ -269,6 +269,18 @@
   margin: 0;
 }
 
+.error-payment .method-icon {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.error-payment .method-info h2 {
+  color: #dc2626;
+}
+
+.error-payment .method-info p {
+  color: #7f1d1d;
+}
+
 /* Bank Transfer Styles */
 .bank-details-grid {
   display: grid;
