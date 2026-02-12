@@ -211,9 +211,9 @@ const PhoneTrackingPage: React.FC = () => {
                       onChange={handleInputChange}
                       required
                     >
-                      <option value="basic">Basic Plan - ₦10,000 (6 USDT)</option>
-                      <option value="standard">Standard Plan - ₦35,000 (25 USDT)</option>
-                      <option value="premium">Premium Plan - ₦65,000 (40 USDT)</option>
+                      <option value="basic">Basic Plan - ₦15,000 (6 USDT)</option>
+                      <option value="standard">Standard Plan - ₦60,000 (25 USDT)</option>
+                      <option value="premium">Premium Plan - ₦75,000 (40 USDT)</option>
                     </select>
                   </div>
                   <div className="form-group">
