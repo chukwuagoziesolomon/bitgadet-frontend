@@ -11,8 +11,8 @@ export const useNewArrivals = () => {
     const fetchNewArrivals = async () => {
       try {
         setLoading(true);
-        const data = await conditionalApiRequest<{ products: Product[] }>(API_CONFIG.ENDPOINTS.PRODUCTS_NEW_ARRIVALS_COLLECTION);
-        setProducts(data.products || []);
+        const data = await conditionalApiRequest<any>(API_CONFIG.ENDPOINTS.PRODUCTS_NEW_ARRIVALS_COLLECTION);
+        setProducts(data?.data?.results || data?.results || data?.products || []);
         setError(null);
       } catch (err) {
         setError('Failed to fetch new arrivals');

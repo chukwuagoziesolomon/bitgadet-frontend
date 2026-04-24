@@ -15,7 +15,7 @@ const API_BASE_URL = normalizeBaseUrl(process.env.REACT_APP_API_URL || '');
 export const productService = {
   getFeaturedProducts: async (): Promise<Product[]> => {
     try {
-      const url = API_BASE_URL ? `${API_BASE_URL}/api/products/featured/` : '/api/products/featured/';
+      const url = API_BASE_URL ? `${API_BASE_URL}/api/v1/products/featured/` : '/api/v1/products/featured/';
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch featured products');

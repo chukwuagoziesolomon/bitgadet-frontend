@@ -53,17 +53,18 @@ export const useAllProducts = (options: UseAllProductsOptions = {}) => {
         if (options.sort_by) params.append('sort_by', options.sort_by);
         if (options.product_filter) params.append('product_filter', options.product_filter);
 
-        const endpoint = `/api/products/filter/?${params.toString()}`;
-        const data: AllProductsResponse = await conditionalApiRequest(endpoint);
+        const endpoint = `/api/v1/products/filter/?${params.toString()}`;
+        const response: any = await conditionalApiRequest(endpoint);
 
-        // Handle both old and new API response formats
-        const productsList = data.results || data.products || [];
-        const totalProducts = data.count || data.total_products || 0;
+        // Envelope response: { success, data: { count, results } }
+        const envelope = response?.data || response;
+        const productsList = envelope.results || envelope.products || [];
+        const totalProducts = envelope.count || envelope.total_products || 0;
 
         setProducts(productsList);
         setTotalCount(totalProducts);
-        setNextPage(data.next || null);
-        setPreviousPage(data.previous || null);
+        setNextPage(envelope.next || null);
+        setPreviousPage(envelope.previous || null);
 
       } catch (err) {
         setError('Failed to fetch products');

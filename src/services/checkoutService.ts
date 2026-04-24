@@ -107,7 +107,7 @@ class CheckoutService {
    * Create checkout order
    */
   async createOrder(formData: CheckoutFormData): Promise<CheckoutResponse> {
-    const response = await fetch(buildApiUrl('/api/checkout/create/'), {
+    const response = await fetch(buildApiUrl('/api/v1/checkout/create/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ class CheckoutService {
    * Get order status
    */
   async getOrderStatus(orderId: string, email?: string): Promise<OrderStatusResponse> {
-    let url = buildApiUrl(`/api/checkout/${orderId}/status/`);
+    let url = buildApiUrl(`/api/v1/checkout/${orderId}/status/`);
     if (email) {
       url += `?email=${encodeURIComponent(email)}`;
     }
@@ -149,7 +149,7 @@ class CheckoutService {
    * Apply coupon code
    */
   async applyCoupon(couponCode: string, cartToken: string | null): Promise<any> {
-    const response = await fetch(buildApiUrl('/api/coupons/apply/'), {
+    const response = await fetch(buildApiUrl('/api/v1/coupons/apply/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -174,7 +174,7 @@ class CheckoutService {
    * Remove coupon
    */
   async removeCoupon(cartToken: string | null): Promise<any> {
-    const response = await fetch(buildApiUrl('/api/coupons/remove/'), {
+    const response = await fetch(buildApiUrl('/api/v1/coupons/remove/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -198,7 +198,7 @@ class CheckoutService {
    * Validate email before checkout
    */
   async validateEmail(email: string): Promise<{ valid: boolean; message?: string }> {
-    const response = await fetch(buildApiUrl('/api/checkout/validate-email/'), {
+    const response = await fetch(buildApiUrl('/api/v1/checkout/validate-email/'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

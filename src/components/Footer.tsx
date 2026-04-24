@@ -22,7 +22,7 @@ const Footer: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await publicApiRequest<any>('/api/waitlist/join/', {
+      const response = await publicApiRequest<any>('/api/v1/waitlist/join/', {
         method: 'POST',
         body: JSON.stringify({ email: email.trim() }),
       });

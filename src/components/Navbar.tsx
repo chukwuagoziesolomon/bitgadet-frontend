@@ -84,7 +84,7 @@ const Navbar: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const response = await conditionalApiRequest<any>(`/api/search/?q=${encodeURIComponent(query)}`);
+      const response = await conditionalApiRequest<any>(`/api/v1/search/?q=${encodeURIComponent(query)}`);
       setSearchResults(response);
       setIsSearchDropdownOpen(true);
     } catch (error) {

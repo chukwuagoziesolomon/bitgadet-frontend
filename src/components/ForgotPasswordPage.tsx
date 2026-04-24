@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { publicApiRequest } from '../config/api';
+import { publicApiRequest, API_CONFIG } from '../config/api';
 import { useToast } from '../hooks/useToast';
 import './ForgotPasswordPage.css';
 
@@ -14,19 +14,12 @@ const ForgotPasswordPage: React.FC = () => {
     setIsLoading(true);
     setSubmitted(false);
     try {
-      const response = await publicApiRequest<any>('/api/auth/forgot-password/', {
+      const response = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_FORGOT_PASSWORD, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-      if (response.success) {
-        showSuccess('Success', response.message || 'A new password has been sent to your email.');
-        setSubmitted(true);
-      } else if (response.error) {
-        showError('Error', response.error);
-      } else {
-        showError('Error', 'An unexpected error occurred.');
-      }
+      showSuccess('Email Sent', response.message || 'If that email exists, a reset link has been sent.');
+      setSubmitted(true);
     } catch (error: any) {
       showError('Error', error.message || 'Failed to send reset email.');
     } finally {
@@ -38,7 +31,7 @@ const ForgotPasswordPage: React.FC = () => {
     <div className="forgot-password-page">
       <div className="forgot-password-container">
         <h2>Forgot Password</h2>
-        <p>Enter your registered email address. If found, a new password will be sent to your email.</p>
+        <p>Enter your email address and we'll send you a link to reset your password.</p>
         <form onSubmit={handleSubmit} className="forgot-password-form">
           <input
             type="email"
@@ -54,8 +47,7 @@ const ForgotPasswordPage: React.FC = () => {
         </form>
         {submitted && (
           <div className="success-message">
-            <p>A new password has been sent to your email. Please check your inbox and spam folder.</p>
-            <p>After logging in, change your password for security.</p>
+            <p>If an account exists for <strong>{email}</strong>, a password reset link has been sent. Please check your inbox and spam folder.</p>
           </div>
         )}
       </div>

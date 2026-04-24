@@ -22,7 +22,7 @@ export const dashboardService = {
    */
   async getOrderSummaryStats(): Promise<OrderSummaryStats> {
     try {
-      const response = await conditionalApiRequest<OrderSummaryStats>('/api/orders/summary/');
+      const response = await conditionalApiRequest<OrderSummaryStats>('/api/v1/orders/summary/');
       return response;
     } catch (error) {
       console.error('Failed to fetch order summary stats:', error);

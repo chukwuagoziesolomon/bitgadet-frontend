@@ -20,7 +20,7 @@ const CategoryPage: React.FC = () => {
       try {
         setLoading(true);
         // Use single-category endpoint which includes products array
-        const endpoint = `/api/shop/categories/${encodeURIComponent(categoryName)}/`;
+        const endpoint = `/api/v1/shop/categories/${encodeURIComponent(categoryName)}/`;
         const data = await publicApiRequest<any>(endpoint);
         const items = Array.isArray(data?.products) ? data.products : [];
         setProducts(items);
@@ -53,16 +53,20 @@ const CategoryPage: React.FC = () => {
       }
 
       try {
-        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/wishlist/';
-        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/cart/';
+        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/v1/wishlist/';
+        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/v1/cart/';
 
         const [wishlistRes, cartRes] = await Promise.all([
           token ? conditionalApiRequest<any>(wishlistUrl) : publicApiRequest<any>(wishlistUrl),
           token ? conditionalApiRequest<any>(cartUrl) : publicApiRequest<any>(cartUrl)
         ]);
 
-        setWishlist(wishlistRes.wishlist || []);
-        setCart(cartRes.cart || {});
+        const wishlistData = wishlistRes?.data || wishlistRes;
+        setWishlist((wishlistData.products || wishlistData.wishlist_items || []).map((p: any) => typeof p === 'number' ? p : (p.product_id || p.id)));
+        const cartData = cartRes?.data || cartRes;
+        const cartMap: Record<number, number> = {};
+        (cartData.products || []).forEach((p: any) => { cartMap[p.id] = p.quantity; });
+        setCart(cartMap);
       } catch (error) {
         // Silent failure - don't show error toast to user
         console.error('Failed to fetch wishlist/cart:', error);
@@ -108,11 +112,11 @@ const CategoryPage: React.FC = () => {
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
 
     try {
-      const res = await publicApiRequest<any>('/api/cart/add/', {
+      const res = await publicApiRequest<any>('/api/v1/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
-      setCart(res.cart || {});
+      // optimistic update already applied above
     } catch (error) {
       console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
@@ -136,7 +140,7 @@ const CategoryPage: React.FC = () => {
   // Toggle wishlist on single click
   const handleToggleWishlist = async (productId: number, willBeInWishlist?: boolean) => {
     const token = localStorage.getItem('authToken');
-    const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
+    const endpoint = willBeInWishlist ? '/api/v1/wishlist/add/' : '/api/v1/wishlist/remove/';
 
     // Optimistic update
     setWishlist(prev => willBeInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
@@ -146,7 +150,7 @@ const CategoryPage: React.FC = () => {
         method: 'POST',
         body: JSON.stringify({ product_id: productId }),
       });
-      setWishlist(res.wishlist || []);
+      // optimistic update already applied above
     } catch (error) {
       console.error('❌ Wishlist update failed:', error);
       // Revert optimistic update

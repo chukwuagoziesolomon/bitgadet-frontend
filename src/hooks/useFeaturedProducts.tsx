@@ -5,6 +5,10 @@ export interface Product {
   id: number;
   name: string;
   slug: string;
+  image?: string;
+  price?: string | number;
+  price_usdt?: string | number;
+  discounted_price?: string | number;
   category_name: string;
   short_description: string;
   current_price: string;
@@ -45,8 +49,8 @@ export const useFeaturedProducts = () => {
     const fetchFeaturedProducts = async () => {
       try {
         setLoading(true);
-        const data = await conditionalApiRequest<{ products: Product[] }>(API_CONFIG.ENDPOINTS.PRODUCTS_FEATURED_COLLECTION);
-        setProducts(data.products || []);
+        const data = await conditionalApiRequest<any>(API_CONFIG.ENDPOINTS.PRODUCTS_FEATURED_COLLECTION);
+        setProducts(data?.data?.results || data?.results || data?.products || []);
         setError(null);
       } catch (err) {
         setError('Failed to fetch featured products');

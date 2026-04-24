@@ -49,7 +49,8 @@ const WishlistPage: React.FC = () => {
         ? await conditionalApiRequest<any>(url)
         : await publicApiRequest<any>(url);
 
-      setWishlistItems(response.products || []);
+      const wishlistData = response?.data || response;
+      setWishlistItems(wishlistData.products || wishlistData.wishlist_items || []);
     } catch (error: any) {
       console.error('Failed to fetch wishlist:', error);
       showError('Failed to load wishlist', error.message || 'Please try again later.');
@@ -82,11 +83,11 @@ const WishlistPage: React.FC = () => {
 
       // Use appropriate request function
       await (token
-        ? conditionalApiRequest<any>('/api/wishlist/remove/', {
+        ? conditionalApiRequest<any>('/api/v1/wishlist/remove/', {
             method: 'POST',
             body: JSON.stringify(payload),
           })
-        : publicApiRequest<any>('/api/wishlist/remove/', {
+        : publicApiRequest<any>('/api/v1/wishlist/remove/', {
             method: 'POST',
             body: JSON.stringify(payload),
           })
@@ -113,11 +114,11 @@ const WishlistPage: React.FC = () => {
 
     try {
       await (token
-        ? conditionalApiRequest<any>('/api/cart/add/', {
+        ? conditionalApiRequest<any>('/api/v1/cart/add/', {
             method: 'POST',
             body: JSON.stringify(payload),
           })
-        : publicApiRequest<any>('/api/cart/add/', {
+        : publicApiRequest<any>('/api/v1/cart/add/', {
             method: 'POST',
             body: JSON.stringify(payload),
           })

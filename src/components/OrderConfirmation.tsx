@@ -12,7 +12,6 @@ const OrderConfirmation = () => {
   // Get from state passed by PaymentDetails after payment is confirmed
   const orderId = location.state?.orderId;
   const userEmail = location.state?.userEmail;
-  const cartTokenFromState = location.state?.cartToken;
   const paymentStatusFromPolling = location.state?.paymentStatus;
 
   const [downloading, setDownloading] = useState(false);
@@ -51,7 +50,7 @@ const OrderConfirmation = () => {
       setLoading(true);
       try {
         // Build URL for confirmation endpoint
-        let confirmationUrl = `/api/orders/confirmation/${orderId}/`;
+        let confirmationUrl = `/api/v1/orders/confirmation/${orderId}/`;
         if (userEmail) {
           confirmationUrl += `?email=${encodeURIComponent(userEmail)}`;
         }
@@ -90,21 +89,22 @@ const OrderConfirmation = () => {
     };
   }, [orderId, userEmail]);
 
-  // Fetch order summary statistics
+  // Fetch order summary after order is created
   useEffect(() => {
     const fetchOrderSummary = async () => {
+      if (!orderId) {
+        setOrderStatsData(null);
+        return;
+      }
+
       setSummaryLoading(true);
       try {
-        // Use the correct endpoint for order statistics
-        const endpoint = '/api/user/order-stats/';
-        
-        console.log('Fetching order summary from:', endpoint);
-        const data = await conditionalApiRequest<any>(endpoint);
+        console.log('Fetching created order summary for order:', orderId);
+        const data = await cartService.getCreatedOrderSummary(orderId);
         console.log('Order summary data:', data);
         setOrderStatsData(data);
       } catch (error) {
         console.error('Error fetching order summary:', error);
-        // Use fallback data on error
         setOrderStatsData(null);
       } finally {
         setSummaryLoading(false);
@@ -112,7 +112,7 @@ const OrderConfirmation = () => {
     };
 
     fetchOrderSummary();
-  }, [cartTokenFromState]);
+  }, [orderId]);
 
   // Fetch tracking data for the order
   useEffect(() => {
@@ -122,7 +122,7 @@ const OrderConfirmation = () => {
       setTrackingLoading(true);
       try {
         console.log('📍 Fetching tracking data for order:', orderId);
-        const data = await conditionalApiRequest<any>(`/api/checkout/status/${orderId}/`);
+        const data = await conditionalApiRequest<any>(`/api/v1/checkout/status/${orderId}/`);
         console.log('✅ Tracking data received:', data);
         setTrackingData(data);
       } catch (error) {
@@ -143,7 +143,7 @@ const OrderConfirmation = () => {
   const downloadReceipt = async () => {
     setDownloading(true);
     try {
-      const downloadUrl = buildApiUrl(`/api/orders/${orderId}/receipt/download/`);
+      const downloadUrl = buildApiUrl(`/api/v1/orders/${orderId}/receipt/download/`);
       const response = await fetch(downloadUrl, {
         credentials: 'include',
       });
@@ -218,7 +218,26 @@ const OrderConfirmation = () => {
 
   // Destructure confirmationData
   const orderObj = confirmationData.order || {};
-  const cartItems = confirmationData.cart_items || [];
+  const summaryItems = Array.isArray(orderStatsData?.items)
+    ? orderStatsData.items.map((item: any, index: number) => {
+        const quantity = Number(item.quantity || 0);
+        const unitPrice = Number(item.unit_price || 0);
+        const discountPercentage = Number(item.discount_percentage || 0);
+        const subtotal = quantity * unitPrice * (1 - discountPercentage / 100);
+
+        return {
+          id: item.id || `${item.name || 'item'}-${index}`,
+          name: item.name || 'Product',
+          image: item.image || '',
+          price: unitPrice,
+          quantity,
+          subtotal,
+        };
+      })
+    : [];
+  const cartItems = (confirmationData.cart_items && confirmationData.cart_items.length)
+    ? confirmationData.cart_items
+    : summaryItems;
   const orderSummaryData = confirmationData.order_summary || {};
   const customerInfo = confirmationData.customer_info || {};
   const actions = confirmationData.actions || {};
@@ -226,10 +245,10 @@ const OrderConfirmation = () => {
 
   const status = orderObj.status || 'pending';
   const statusDisplay = orderObj.status_display || status;
-  const paymentMethod = orderSummaryData.payment_method || 'Unknown';
+  const paymentMethod = orderStatsData?.payment_method || orderSummaryData.payment_method || 'Unknown';
   const isPaid = status === 'paid';
   const isProcessing = status === 'payment_processing' || status === 'processing';
-  const orderDate = orderObj.created_at || new Date().toISOString();
+  const orderDate = orderStatsData?.created_at || orderObj.created_at || new Date().toISOString();
 
   // Enhanced Order Tracking steps based on actual order status
   const getTrackingSteps = (orderStatus: string) => {
@@ -500,31 +519,44 @@ const OrderConfirmation = () => {
             <div className={styles.sectionTitle}>Order Summary</div>
             {summaryLoading ? (
               <div className={styles.summaryRow} style={{ textAlign: 'center', padding: '20px' }}>
-                Loading statistics...
+                Loading order summary...
               </div>
             ) : orderStatsData ? (
               <>
                 <div className={styles.summaryRow}>
-                  <span>Total Orders</span>
-                  <span className={styles.bold}>{orderStatsData.total_orders || 0}</span>
+                  <span>Order ID</span>
+                  <span className={styles.bold}>{orderStatsData.order_id || orderId}</span>
                 </div>
                 <div className={styles.summaryRow}>
-                  <span>Total Revenue</span>
-                  <span className={styles.bold}>{orderStatsData.currency || 'USD'} {orderStatsData.total_revenue?.toLocaleString() || '0.00'}</span>
+                  <span>Items</span>
+                  <span className={styles.bold}>{orderStatsData.items_count || cartItems.length || 0}</span>
                 </div>
                 <div className={styles.summaryRow}>
-                  <span>Shipping Fees</span>
-                  <span className={styles.success}>{orderStatsData.currency || 'USD'} {orderStatsData.total_shipping_fee?.toLocaleString() || '0.00'}</span>
+                  <span>Status</span>
+                  <span className={styles.success}>{orderStatsData.status || statusDisplay}</span>
                 </div>
-                <div className={styles.summaryTotal}>
-                  <span>Average Order Value</span>
-                  <span className={styles.boldTotal}>{orderStatsData.currency || 'USD'} {orderStatsData.average_order_value?.toLocaleString() || '0.00'}</span>
+                <div className={styles.summaryRow}>
+                  <span>Subtotal</span>
+                  <span className={styles.bold}>{formatNaira(orderStatsData.subtotal_ngn || orderSummaryData.subtotal || 0)}</span>
                 </div>
-                {orderStatsData.note && (
-                  <div className={styles.summaryRow} style={{ fontSize: '0.85rem', color: '#666', marginTop: '8px' }}>
-                    <span>{orderStatsData.note}</span>
+                {!!(orderStatsData.discount_ngn || 0) && (
+                  <div className={styles.summaryRow}>
+                    <span>Discount</span>
+                    <span className={styles.success}>-{formatNaira(orderStatsData.discount_ngn || 0)}</span>
                   </div>
                 )}
+                <div className={styles.summaryRow}>
+                  <span>Tax</span>
+                  <span className={styles.success}>{formatNaira(orderStatsData.tax_ngn || orderSummaryData.tax || 0)}</span>
+                </div>
+                <div className={styles.summaryRow}>
+                  <span>Shipping</span>
+                  <span className={styles.success}>{formatNaira(orderStatsData.shipping_cost_ngn || orderSummaryData.shipping || 0)}</span>
+                </div>
+                <div className={styles.summaryTotal}>
+                  <span>Total</span>
+                  <span className={styles.boldTotal}>{formatNaira(orderStatsData.total_ngn || orderStatsData.total_amount || orderSummaryData.total || orderObj.total_amount || 0)}</span>
+                </div>
               </>
             ) : (
               <>

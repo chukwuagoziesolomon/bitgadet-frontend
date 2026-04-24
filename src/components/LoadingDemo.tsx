@@ -116,7 +116,7 @@ export function MyComponent() {
   const handleLoadData = async () => {
     setLoading(true);
     try {
-      const data = await fetch('/api/data');
+      const data = await fetch('/api/v1/data');
       // Use data...
     } finally {
       setLoading(false);

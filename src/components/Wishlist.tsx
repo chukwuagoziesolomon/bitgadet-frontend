@@ -75,7 +75,7 @@ const Wishlist: React.FC = () => {
 
   const handleRemoveFromWishlist = async (productId: number) => {
     try {
-      await publicApiRequest<any>('/api/wishlist/remove/', {
+      await publicApiRequest<any>('/api/v1/wishlist/remove/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId }),
       });
@@ -92,7 +92,7 @@ const Wishlist: React.FC = () => {
   const handleAddToCart = async (productId: number) => {
     const token = localStorage.getItem('authToken');
     try {
-      await (token ? apiRequest : publicApiRequest)<any>('/api/cart/add/', {
+      await (token ? apiRequest : publicApiRequest)<any>('/api/v1/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });

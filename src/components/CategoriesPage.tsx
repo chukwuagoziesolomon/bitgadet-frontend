@@ -30,8 +30,9 @@ const CategoriesPage: React.FC = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const data = await publicApiRequest<any>('/api/shop/categories/');
-        const categoriesArray = Array.isArray(data.categories) ? data.categories : [];
+        const data = await publicApiRequest<any>('/api/v1/shop/categories/');
+        // Raw array response (no envelope)
+        const categoriesArray = Array.isArray(data) ? data : (data.categories || []);
         setCategories(categoriesArray);
         setError(null);
       } catch (err: any) {
@@ -53,13 +54,12 @@ const CategoriesPage: React.FC = () => {
       try {
         setLoading(true);
         if (searchTerm.trim().length === 0) {
-          const data = await publicApiRequest<any>('/api/shop/categories/');
-          setCategories(Array.isArray(data.categories) ? data.categories : []);
+          const data = await publicApiRequest<any>('/api/v1/shop/categories/');
+          const arr = Array.isArray(data) ? data : (data.categories || []);
+          setCategories(arr);
         } else {
-          // For now, fetch all categories and filter locally
-          // You can update this to use a search endpoint if available
-          const data = await publicApiRequest<any>('/api/shop/categories/');
-          const allCategories = Array.isArray(data.categories) ? data.categories : [];
+          const data = await publicApiRequest<any>('/api/v1/shop/categories/');
+          const allCategories = Array.isArray(data) ? data : (data.categories || []);
           const filteredCategories = allCategories.filter((category: Category) =>
             category.display_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

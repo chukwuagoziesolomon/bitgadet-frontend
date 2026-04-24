@@ -160,9 +160,9 @@ const ProductDetails: React.FC = () => {
         setError(null);
 
         // Fetch product details
-        const productData = await publicApiRequest<Product>(`/api/products/${slug}/`);
+        const productData = await publicApiRequest<any>(`/api/v1/products/${slug}/`);
         console.log('Product data received:', productData);
-        setProduct(productData);
+        setProduct(productData.data || productData);
 
         // Set default selections
         if (productData.colors.length > 0) {
@@ -177,7 +177,7 @@ const ProductDetails: React.FC = () => {
 
         // Fetch reviews
         try {
-          const reviewsData = await publicApiRequest<Review[]>(`/api/products/${slug}/reviews/`);
+          const reviewsData = await publicApiRequest<Review[]>(`/api/v1/products/${slug}/reviews/`);
           setReviews(reviewsData);
         } catch (reviewError) {
           console.warn('Failed to fetch reviews:', reviewError);
@@ -186,7 +186,7 @@ const ProductDetails: React.FC = () => {
 
         // Fetch recommendations
         try {
-          const recommendationsData = await publicApiRequest<any>(`/api/products/recommendations/?category=${productData.category.name}&limit=6`);
+          const recommendationsData = await publicApiRequest<any>(`/api/v1/products/recommendations/?category=${productData.category.name}&limit=6`);
           // Handle both direct array and object with products property
           const productsArray = Array.isArray(recommendationsData) ? recommendationsData : (recommendationsData?.products || []);
           setRecommendations(productsArray);
@@ -408,7 +408,7 @@ const ProductDetails: React.FC = () => {
         is_verified_purchase: reviewVerified,
       } as any;
 
-      await publicApiRequest<any>(`/api/products/reviews/submit/`, {
+      await publicApiRequest<any>(`/api/v1/products/reviews/submit/`, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
@@ -416,8 +416,8 @@ const ProductDetails: React.FC = () => {
       // Refresh reviews and product stats after successful submission
       try {
         const [updatedProduct, updatedReviews] = await Promise.all([
-          publicApiRequest<Product>(`/api/products/${slug}/`),
-          publicApiRequest<Review[]>(`/api/products/${slug}/reviews/`),
+          publicApiRequest<Product>(`/api/v1/products/${slug}/`),
+          publicApiRequest<Review[]>(`/api/v1/products/${slug}/reviews/`),
         ]);
         setProduct(updatedProduct);
         setReviews(updatedReviews);

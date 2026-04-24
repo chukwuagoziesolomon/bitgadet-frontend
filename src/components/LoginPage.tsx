@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff } from 'lucide-react';
 import { publicApiRequest, API_CONFIG } from '../config/api';
+import { cartService } from '../services/cartService';
 import { useToast } from '../hooks/useToast';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import { handleApiError } from '../utils/errorHandler';
@@ -118,19 +119,24 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
+      const cartToken = cartService.getCartToken();
       const response = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.AUTH_LOGIN, {
         method: 'POST',
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
+          ...(cartToken && { cartToken }),
         }),
       });
 
+      // Extract from response.data
+      const { token, user, isAdmin } = response.data;
+
       // Store token and user data
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      localStorage.setItem('isAdmin', response.is_admin.toString());
-      localStorage.setItem('loginType', response.login_type || 'user');
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
+      localStorage.setItem('loginType', 'user');
 
       // Store email if remember me is checked
       if (rememberMe) {
@@ -139,7 +145,7 @@ const LoginPage: React.FC = () => {
         localStorage.removeItem('rememberedEmail');
       }
 
-      showSuccess('Login successful', `Welcome back, ${response.user.first_name}!`);
+      showSuccess('Login successful', `Welcome back, ${user.firstName || user.first_name || ''}!`);
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login failed:', error);

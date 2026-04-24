@@ -39,7 +39,7 @@ const ContactPage: React.FC = () => {
         message: formData.message
       };
 
-      const response = await publicApiRequest<any>('/api/contact/submit/', {
+      const response = await publicApiRequest<any>('/api/v1/contact/submit/', {
         method: 'POST',
         body: JSON.stringify(payload),
       });

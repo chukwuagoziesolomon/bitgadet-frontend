@@ -62,10 +62,10 @@ const PaymentDetails: React.FC = () => {
 
   // Auto-redirect for card payments
   useEffect(() => {
-    if (paymentData && paymentData.payment_details?.payment_method === 'card' && paymentData.payment_details.authorization_url) {
-      window.open(paymentData.payment_details.authorization_url, '_blank');
+    if (paymentMethod === 'paystack' && paymentData?.payment_info?.authorization_url) {
+      window.open(paymentData.payment_info.authorization_url, '_blank');
     }
-  }, [paymentData]);
+  }, [paymentData, paymentMethod]);
 
   const handleCopy = async (text: string, label: string, key?: string) => {
     if (!text || text === 'N/A') {
@@ -118,8 +118,8 @@ const PaymentDetails: React.FC = () => {
     try {
       const apiUrl = normalizeBaseUrl(process.env.REACT_APP_API_URL || '');
       const statusUrl = apiUrl 
-        ? `${apiUrl}/api/checkout/status/${orderId}/`
-        : `/api/checkout/status/${orderId}/`;
+        ? `${apiUrl}/api/v1/checkout/status/${orderId}/`
+        : `/api/v1/checkout/status/${orderId}/`;
       
       console.log('🔄 Polling payment status - Attempt', pollingAttempts + 1);
       
@@ -218,8 +218,8 @@ const PaymentDetails: React.FC = () => {
                     <span className="amount-label">Total Amount</span>
                     <span className="amount-value">
                       {paymentMethod === 'crypto' 
-                        ? `${paymentData.payment_info.expected_amount?.toFixed(6) || '0.000000'} ${paymentData.payment_info.currency || 'USDT'}`
-                        : `₦${paymentData.payment_info.total_amount?.toLocaleString() || '0'}`
+                        ? `${(paymentData.payment_info.amount_crypto || paymentData.payment_info.expected_amount || 0)} ${paymentData.payment_info.currency || 'USDT'}`
+                        : `₦${paymentData.payment_info.total_amount?.toLocaleString() || paymentData.order?.total?.toLocaleString() || '0'}`
                       }
                     </span>
                   </div>
@@ -275,7 +275,7 @@ const PaymentDetails: React.FC = () => {
                       <div className="bank-detail-card amount-card">
                         <label>Amount to Transfer</label>
                         <div className="amount-display">
-                          ₦{paymentData.payment_info.total_amount?.toLocaleString()}
+                          ₦{(paymentData.payment_info.total_amount || paymentData.order?.total || 0).toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -335,7 +335,7 @@ const PaymentDetails: React.FC = () => {
                         <div className="wallet-address-input">
                           <input
                             type="text"
-                            value={paymentData.payment_info.wallet_address || 'N/A'}
+                            value={paymentData.payment_info.payment_address || paymentData.payment_info.wallet_address || 'N/A'}
                             readOnly
                             className="wallet-input"
                           />
@@ -343,7 +343,7 @@ const PaymentDetails: React.FC = () => {
                             className="copy-btn"
                             title="Copy Wallet Address"
                             aria-label="Copy Wallet Address"
-                            onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
+                            onClick={() => handleCopy(paymentData.payment_info.payment_address || paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
                           >
                             {copied === 'wallet' ? <Check /> : <Copy />}
                             <span className="copy-text">Copy</span>
@@ -353,14 +353,14 @@ const PaymentDetails: React.FC = () => {
                         {/* Mobile wallet address display - shows full address */}
                         <div className="wallet-address-mobile">
                           <span>Full Address: </span>
-                          <span className="wallet-address-text">{paymentData.payment_info.wallet_address || 'N/A'}</span>
+                          <span className="wallet-address-text">{paymentData.payment_info.payment_address || paymentData.payment_info.wallet_address || 'N/A'}</span>
                         </div>
                         {/* Mobile-only copy control: visible below the input on small screens */}
                         <button
                           className="copy-btn copy-btn-mobile"
                           title="Copy Wallet Address"
                           aria-label="Copy Wallet Address"
-                          onClick={() => handleCopy(paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
+                            onClick={() => handleCopy(paymentData.payment_info.payment_address || paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
                         >
                           {copied === 'wallet' ? <Check /> : <Copy />} <span>Copy wallet address</span>
                         </button>
@@ -385,8 +385,16 @@ const PaymentDetails: React.FC = () => {
                       <div className="crypto-amount-section">
                         <div className="amount-card">
                           <span className="amount-label">Expected Amount</span>
-                          <span className="amount-value">{paymentData.payment_info.expected_amount?.toFixed(6)} {paymentData.payment_info.currency}</span>
+                          <span className="amount-value">{paymentData.payment_info.amount_crypto || paymentData.payment_info.expected_amount || '0'} {paymentData.payment_info.currency || 'USDT'}</span>
                         </div>
+                        {paymentData.payment_info.expires_at && (
+                          <div className="amount-card" style={{ marginTop: '8px', backgroundColor: '#fff7ed', borderColor: '#fed7aa' }}>
+                            <span className="amount-label" style={{ color: '#c2410c' }}>Payment Expires</span>
+                            <span className="amount-value" style={{ color: '#c2410c', fontSize: '14px' }}>
+                              {new Date(paymentData.payment_info.expires_at).toLocaleString()}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="crypto-instructions">
@@ -413,7 +421,7 @@ const PaymentDetails: React.FC = () => {
                   </div>
                 )}
 
-                {paymentMethod === 'card' && (
+                {paymentMethod === 'paystack' && (
                   <div className="payment-method-card card-payment">
                     <div className="method-header">
                       <div className="method-icon">

@@ -39,7 +39,7 @@ const OrderTracking = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await publicApiRequest<any>(`/api/orders/track/${orderId}/?email=${encodeURIComponent(email)}`);
+      const data = await publicApiRequest<any>(`/api/v1/orders/track/${orderId}/?email=${encodeURIComponent(email)}`);
       setOrderData(data);
     } catch (err: any) {
       const message = err?.response?.data?.message || err?.message || 'Network error. Please try again.';

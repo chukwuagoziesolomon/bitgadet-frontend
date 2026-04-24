@@ -151,24 +151,31 @@ const ProfileSettings: React.FC = () => {
         setLoading(true);
         const response = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_PROFILE_SETTINGS);
 
-        // Extract user data from nested structure
-        const userData = response.user || {};
-        const profileData_api = response.profile || {};
+        // Support both enveloped ({ data: { user } }) and flat response shapes
+        const profilePayload = response?.data || response || {};
+        const userData = profilePayload.user || {};
+        const profileData_api = profilePayload.profile || {};
 
         // Check if shipping fields are empty and need fallback from checkout
-        let phone_number = response.phone_number || '';
-        let address = response.address || '';
-        let city = response.city || '';
-        let state = response.state || '';
-        let country = response.country || '';
+        let phone_number = userData.phone_number || profilePayload.phone_number || '';
+        let address = userData.address || profilePayload.address || '';
+        let city = userData.city || profilePayload.city || '';
+        let state = userData.state || profilePayload.state || '';
+        let country = userData.country || profilePayload.country || '';
 
         // If key shipping fields are empty, look up most recent checkout order
         if (!phone_number || !address || !city || !state) {
           try {
             // Assuming there's an endpoint to get recent orders, or we can use existing order history
             const ordersResponse = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_RECENT_ORDERS);
-            if (ordersResponse && ordersResponse.length > 0) {
-              const latestOrder = ordersResponse[0];
+            const recentOrders =
+              ordersResponse?.recent_orders ||
+              ordersResponse?.orders ||
+              ordersResponse?.data?.recent_orders ||
+              (Array.isArray(ordersResponse) ? ordersResponse : []);
+
+            if (recentOrders.length > 0) {
+              const latestOrder = recentOrders[0];
               if (latestOrder.shipping_address) {
                 if (!phone_number) phone_number = latestOrder.phone_number || '';
                 if (!address) address = latestOrder.shipping_address.street_address || '';
@@ -192,8 +199,8 @@ const ProfileSettings: React.FC = () => {
           city: city,
           state: state,
           country: country,
-          date_of_birth: response.date_of_birth || null,
-          agree_to_terms: response.agree_to_terms || false,
+          date_of_birth: userData.date_of_birth || profilePayload.date_of_birth || null,
+          agree_to_terms: userData.agree_to_terms || profilePayload.agree_to_terms || false,
           date_joined: userData.date_joined || ''
         });
       } catch (error: any) {

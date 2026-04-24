@@ -203,7 +203,7 @@ const Dashboard: React.FC = () => {
 
   const handleRemoveFromWishlist = async (productId: number) => {
     try {
-      await apiRequest<any>('/api/wishlist/remove/', {
+      await apiRequest<any>('/api/v1/wishlist/remove/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId }),
       });
@@ -220,7 +220,7 @@ const Dashboard: React.FC = () => {
 
   const handleAddToCart = async (productId: number) => {
     try {
-      await apiRequest<any>('/api/cart/add/', {
+      await apiRequest<any>('/api/v1/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });

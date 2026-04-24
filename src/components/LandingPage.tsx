@@ -340,9 +340,8 @@ const LandingPage: React.FC = () => {
     const fetchBanners = async () => {
       try {
         const data = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.BANNERS_ACTIVE);
-        // New response structure: { banners: { hero: [...], ... }, total_banners, banner_types }
-        const heroBanners = data?.banners?.hero || [];
-        const items = Array.isArray(heroBanners) ? heroBanners : [];
+        // API returns raw array (no envelope)
+        const items = Array.isArray(data) ? data : [];
         setBanners(items);
       } catch (error: any) {
         console.error('Failed to load banners:', error);
@@ -363,11 +362,12 @@ const LandingPage: React.FC = () => {
     return () => clearInterval(autoRotateInterval);
   }, [banners]);
 
-  // Handle banner click - navigate to product_url
+  // Handle banner click - navigate to link_url or cta_button_url
   const handleBannerClick = () => {
     const banner = banners[currentBannerIndex];
-    if (banner?.product_url) {
-      navigate(banner.product_url);
+    const url = banner?.cta_button_url || banner?.link_url;
+    if (url) {
+      navigate(url);
       return;
     }
     // Default to all products if no URL specified

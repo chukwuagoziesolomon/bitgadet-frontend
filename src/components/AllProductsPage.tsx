@@ -83,11 +83,12 @@ const AllProductsPage: React.FC = () => {
     // Fetch wishlist on mount (silent - no error toasts)
     (async () => {
       try {
-        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/wishlist/';
+        const wishlistUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.WISHLIST_ALL}?cart_token=${cartToken}` : '/api/v1/wishlist/';
         const wishlistRes = token
           ? await conditionalApiRequest<any>(wishlistUrl)
           : await publicApiRequest<any>(wishlistUrl);
-        setWishlist(wishlistRes.wishlist || []);
+        const wishlistData = wishlistRes?.data || wishlistRes;
+        setWishlist((wishlistData.products || wishlistData.wishlist_items || []).map((p: any) => typeof p === 'number' ? p : (p.product_id || p.id)));
       } catch (error) {
         if (token) console.error('Failed to fetch wishlist:', error);
       }
@@ -96,11 +97,14 @@ const AllProductsPage: React.FC = () => {
     // Fetch cart on mount (silent - no error toasts)
     (async () => {
       try {
-        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/cart/';
+        const cartUrl = !token && cartToken ? `${API_CONFIG.ENDPOINTS.CART_GET}?cart_token=${cartToken}` : '/api/v1/cart/';
         const cartRes = token
           ? await conditionalApiRequest<any>(cartUrl)
           : await publicApiRequest<any>(cartUrl);
-        setCart(cartRes.cart || {});
+        const cartData = cartRes?.data || cartRes;
+        const cartMap: Record<number, number> = {};
+        (cartData.products || []).forEach((p: any) => { cartMap[p.id] = p.quantity; });
+        setCart(cartMap);
       } catch (error) {
         if (token) console.error('Failed to fetch cart:', error);
       }
@@ -165,10 +169,10 @@ const AllProductsPage: React.FC = () => {
       slug: product.slug,
       name: product.name,
       brand: product.brand_name || product.brand,
-      image: product.main_image,
-      price: parseFloat(product.current_price),
-      originalPrice: parseFloat(product.original_price),
-      usdtPrice: product.current_price_usdt,
+      image: product.image || product.main_image,
+      price: parseFloat(product.discounted_price ?? product.current_price ?? product.price),
+      originalPrice: parseFloat(product.original_price ?? product.price),
+      usdtPrice: product.price_usdt ?? product.current_price_usdt,
       originalUsdtPrice: product.original_price_usdt,
       rating: 4.5,
       reviews: 0,
@@ -192,11 +196,11 @@ const AllProductsPage: React.FC = () => {
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
 
     try {
-      const res = await (token ? apiRequest : publicApiRequest)<any>('/api/cart/add/', {
+      const res = await (token ? apiRequest : publicApiRequest)<any>('/api/v1/cart/add/', {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
-      setCart(res.cart || {});
+      // optimistic update already applied above
     } catch (error) {
       console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
@@ -220,7 +224,7 @@ const AllProductsPage: React.FC = () => {
   // Toggle wishlist on single click
   const handleToggleWishlist = async (productId: number, willBeInWishlist?: boolean) => {
     const token = localStorage.getItem('authToken');
-    const endpoint = willBeInWishlist ? '/api/wishlist/add/' : '/api/wishlist/remove/';
+    const endpoint = willBeInWishlist ? '/api/v1/wishlist/add/' : '/api/v1/wishlist/remove/';
 
     // Optimistic update
     setWishlist(prev => willBeInWishlist ? [...prev, productId] : prev.filter(id => id !== productId));
@@ -230,7 +234,7 @@ const AllProductsPage: React.FC = () => {
         method: 'POST',
         body: JSON.stringify({ product_id: productId }),
       });
-      setWishlist(res.wishlist || []);
+      // optimistic update already applied above
     } catch (error) {
       console.error('❌ Wishlist update failed:', error);
       // Revert optimistic update

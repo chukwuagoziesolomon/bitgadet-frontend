@@ -63,7 +63,7 @@ const PhoneTrackingPage: React.FC = () => {
         agree_to_terms: formData.agreeToTerms
       };
 
-      const response = await publicApiRequest<any>('/api/phone-tracking/submit/', {
+      const response = await publicApiRequest<any>('/api/v1/phone-tracking/submit/', {
         method: 'POST',
         body: JSON.stringify(payload),
       });

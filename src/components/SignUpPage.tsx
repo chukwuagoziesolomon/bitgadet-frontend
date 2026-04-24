@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { publicApiRequest, API_CONFIG } from '../config/api';
+import { cartService } from '../services/cartService';
 import { useToast } from '../hooks/useToast';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import { handleApiError } from '../utils/errorHandler';
@@ -58,13 +59,17 @@ const SignUpPage: React.FC = () => {
           email: formData.email,
           password: formData.password,
           password_confirm: formData.confirmPassword,
+          agree_to_terms: agreedToTerms,
         }),
       });
 
+      // Extract from response.data
+      const { token, user, isAdmin } = response.data;
+
       // Store token and user data
-      localStorage.setItem('authToken', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      localStorage.setItem('isAdmin', response.is_admin.toString());
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
 
       showSuccess('Account Created', response.message || 'Welcome to BitGadgetz!');
       navigate('/dashboard');

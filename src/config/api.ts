@@ -29,64 +29,65 @@ export const API_CONFIG = {
   // Use environment variable for production, proxy for development
   BASE_URL: process.env.REACT_APP_API_URL || '',
   ENDPOINTS: {
-    CATEGORIES_TREND: '/api/categories/trend-indicators/',
-    PRODUCTS: '/api/products/',
-    PRODUCTS_NEW_ARRIVALS: '/api/products/?is_new_arrival=true&limit=5',
-    PRODUCTS_NEW_ARRIVALS_ALL: '/api/products/?is_new_arrival=true',
-    PRODUCTS_FEATURED: '/api/products/?featured=true',
-    PRODUCTS_BEST_SELLERS: '/api/products/best-sellers/?limit=5',
-    PRODUCTS_BEST_SELLERS_ALL: '/api/products/best-sellers/',
-    PRODUCTS_DETAIL: '/api/products/{slug}/',
-    PRODUCTS_REVIEWS: '/api/products/{slug}/reviews/',
-    PRODUCTS_RECOMMENDATIONS: '/api/products/recommendations/',
-    PRODUCTS_FEATURED_COLLECTION: '/api/products/featured/',
-    PRODUCTS_BEST_SELLERS_COLLECTION: '/api/products/best-sellers/',
-    PRODUCTS_NEW_ARRIVALS_COLLECTION: '/api/products/new-arrivals/',
-    PRODUCTS_CURRENT_DEAL: '/api/deals/current/',
-    PRODUCTS_COUPONS: '/api/products/?is_coupon=true',
-    CATEGORIES: '/api/categories/',
-    BANNERS_ACTIVE: '/api/banners/active/',
-    BANNERS_CTA: '/api/banners/cta/',
-    PHONE_SWAP_SUBMIT: '/api/phone-swap/submit/',
-    BRANDS: '/api/brands/',
-    AUTH_LOGIN: '/api/auth/login/',
-    AUTH_SIGNUP: '/api/auth/signup/',
-    AUTH_LOGOUT: '/api/auth/logout/',
-    AUTH_ME: '/api/auth/me/',
+    CATEGORIES_TREND: '/api/v1/categories/trend-indicators/',
+    PRODUCTS: '/api/v1/products/',
+    PRODUCTS_NEW_ARRIVALS: '/api/v1/products/?is_new_arrival=true&limit=5',
+    PRODUCTS_NEW_ARRIVALS_ALL: '/api/v1/products/?is_new_arrival=true',
+    PRODUCTS_FEATURED: '/api/v1/products/?featured=true',
+    PRODUCTS_BEST_SELLERS: '/api/v1/products/best-sellers/?limit=5',
+    PRODUCTS_BEST_SELLERS_ALL: '/api/v1/products/best-sellers/',
+    PRODUCTS_DETAIL: '/api/v1/products/{slug}/',
+    PRODUCTS_REVIEWS: '/api/v1/products/{slug}/reviews/',
+    PRODUCTS_RECOMMENDATIONS: '/api/v1/products/recommendations/',
+    PRODUCTS_FEATURED_COLLECTION: '/api/v1/products/featured/',
+    PRODUCTS_BEST_SELLERS_COLLECTION: '/api/v1/products/best-sellers/',
+    PRODUCTS_NEW_ARRIVALS_COLLECTION: '/api/v1/products/new-arrivals/',
+    PRODUCTS_CURRENT_DEAL: '/api/v1/deals/current/',
+    PRODUCTS_COUPONS: '/api/v1/products/?is_coupon=true',
+    CATEGORIES: '/api/v1/shop/categories/',
+    BANNERS_ACTIVE: '/api/v1/banners/active/',
+    BANNERS_CTA: '/api/v1/banners/cta/',
+    PHONE_SWAP_SUBMIT: '/api/v1/phone-swap/submit/',
+    BRANDS: '/api/v1/brands/',
+    AUTH_LOGIN: '/api/v1/auth/login/',
+    AUTH_SIGNUP: '/api/v1/auth/signup/',
+    AUTH_LOGOUT: '/api/v1/auth/logout/',
+    AUTH_ME: '/api/v1/auth/me/',
+    AUTH_FORGOT_PASSWORD: '/api/v1/auth/forgot-password/',
     // Order Statistics Endpoints
-    USER_ORDER_STATS: '/api/user/order-stats/', // Authenticated user order statistics
-    ORDER_SUMMARY_STATS: '/api/orders/summary/', // Guest or aggregate order summary (total_orders, total_revenue, etc.)
-    USER_RECENT_ORDERS: '/api/user/recent-orders/',
-    USER_ORDER_HISTORY: '/api/user/order-history/',
-    USER_RECENT_WISHLIST: '/api/user/recent-wishlist/',
-    WISHLIST_ALL: '/api/wishlist/all/',
-    AUTH_PROFILE_SETTINGS: '/api/auth/profile-settings/',
-    AUTH_PASSWORD_REQUIREMENTS: '/api/auth/profile-settings/?info=password-requirements',
-    AUTH_CHANGE_PASSWORD: '/api/auth/password/change/',
+    USER_ORDER_STATS: '/api/v1/user/order-stats/',
+    ORDER_SUMMARY_STATS: '/api/v1/orders/summary/',
+    USER_RECENT_ORDERS: '/api/v1/user/recent-orders/',
+    USER_ORDER_HISTORY: '/api/v1/user/order-history/',
+    USER_RECENT_WISHLIST: '/api/v1/user/recent-wishlist/',
+    WISHLIST_ALL: '/api/v1/wishlist/all/',
+    AUTH_PROFILE_SETTINGS: '/api/v1/auth/profile-settings/',
+    AUTH_PASSWORD_REQUIREMENTS: '/api/v1/auth/profile-settings/?info=password-requirements',
+    AUTH_CHANGE_PASSWORD: '/api/v1/auth/password/change/',
     // New User Profile Management Endpoints
-    USER_PROFILE: '/api/user/profile/',
-    USER_PROFILE_SETTINGS: '/api/user/profile/settings/',
-    USER_PROFILE_UPDATE: '/api/user/profile/update/',
-    USER_CHANGE_PASSWORD: '/api/auth/password/change/',
-    USER_DELETE_ACCOUNT: '/api/user/delete-account/',
+    USER_PROFILE: '/api/v1/user/profile/',
+    USER_PROFILE_SETTINGS: '/api/v1/user/profile/settings/',
+    USER_PROFILE_UPDATE: '/api/v1/user/profile/update/',
+    USER_CHANGE_PASSWORD: '/api/v1/auth/password/change/',
+    USER_DELETE_ACCOUNT: '/api/v1/user/delete-account/',
     // Checkout and Payment Endpoints
-    CHECKOUT_CREATE: '/api/checkout/create/',
-    CHECKOUT_ORDER_STATUS: '/api/checkout/{order_id}/status/',
-    CHECKOUT_VALIDATE_EMAIL: '/api/checkout/validate-email/',
-    COUPONS_VALIDATE: '/api/coupons/validate/',
-    COUPONS_APPLY: '/api/coupons/apply/',
-    COUPONS_REMOVE: '/api/coupons/remove/',
+    CHECKOUT_CREATE: '/api/v1/checkout/create/',
+    CHECKOUT_ORDER_STATUS: '/api/v1/checkout/{order_id}/status/',
+    CHECKOUT_VALIDATE_EMAIL: '/api/v1/checkout/validate-email/',
+    COUPONS_VALIDATE: '/api/v1/coupons/validate/',
+    COUPONS_APPLY: '/api/v1/coupons/apply/',
+    COUPONS_REMOVE: '/api/v1/coupons/remove/',
     // Cart Endpoints (JWT Token Based)
-    CART_ADD: '/api/cart/add/',
-    CART_GET: '/api/cart/',
-    CART_UPDATE: '/api/cart/update/',
-    CART_REMOVE: '/api/cart/remove/',
-    CART_CLEAR: '/api/cart/clear/',
-    CART_SUMMARY: '/api/cart/summary/',
+    CART_ADD: '/api/v1/cart/add/',
+    CART_GET: '/api/v1/cart/',
+    CART_UPDATE: '/api/v1/cart/update/',
+    CART_REMOVE: '/api/v1/cart/remove/',
+    CART_CLEAR: '/api/v1/cart/clear/',
+    CART_SUMMARY: '/api/v1/cart/summary/',
     // Payment Verification Endpoints
-    PAYMENT_PAYSTACK_VERIFY: '/api/payments/paystack/{reference}/verify/',
-    PAYMENT_CRYPTO_STATUS: '/api/crypto/payments/{payment_id}/status/',
-    PAYMENT_DVA_VERIFY: '/api/payments/dva/{order_id}/verify/',
+    PAYMENT_PAYSTACK_VERIFY: '/api/v1/payments/paystack/{reference}/verify/',
+    PAYMENT_CRYPTO_STATUS: '/api/v1/crypto/payments/{payment_id}/status/',
+    PAYMENT_DVA_VERIFY: '/api/v1/payments/dva/{order_id}/verify/',
   },
   TIMEOUT: 10000, // 10 seconds
 };
@@ -96,9 +97,20 @@ const normalizeBaseUrl = (url: string): string => {
   if (!url) return url;
   // Convert https://127.0.0.1 or https://localhost to http://
   if (url.startsWith('https://127.0.0.1') || url.startsWith('https://localhost')) {
-    return url.replace('https://', 'http://');
+    url = url.replace('https://', 'http://');
   }
+  // If env accidentally includes API path, strip it to prevent /api/v1/api/v1 duplication.
+  url = url.replace(/\/api\/v1\/?$/i, '');
+  url = url.replace(/\/api\/?$/i, '');
   return url;
+};
+
+// Helper to unwrap standard/nested API envelopes
+const getResponsePayload = (responseData: any): any => {
+  if (!responseData) return responseData;
+  if (responseData?.data?.data !== undefined) return responseData.data.data;
+  if (responseData?.data !== undefined) return responseData.data;
+  return responseData;
 };
 
 // Helper function to build full API URLs
@@ -113,22 +125,22 @@ export const buildApiUrl = (endpoint: string): string => {
 
 // Helper function to check if endpoint is a cart endpoint
 const isCartEndpoint = (endpoint: string): boolean => {
-  return endpoint.includes('/api/cart/') || endpoint.includes('/api/user/order-stats/') || endpoint.includes('/api/checkout/create/');
+  return endpoint.includes('/api/v1/cart/') || endpoint.includes('/api/v1/user/order-stats/') || endpoint.includes('/api/v1/checkout/create/');
 };
 
 // Helper function to check if endpoint is a wishlist endpoint
 const isWishlistEndpoint = (endpoint: string): boolean => {
-  return endpoint.includes('/api/wishlist/');
+  return endpoint.includes('/api/v1/wishlist/');
 };
 
 // Helper function to check if endpoint needs credentials removed
 const needsNoCredentials = (endpoint: string): boolean => {
   // These endpoints use JWT cart_token instead of Django sessions
-  return endpoint.includes('/api/cart/') || 
-         endpoint.includes('/api/wishlist/') || 
-         endpoint.includes('/api/orders/summary/') ||
-         endpoint.includes('/api/user/order-stats/') ||
-         endpoint.includes('/api/checkout/create/');
+  return endpoint.includes('/api/v1/cart/') || 
+         endpoint.includes('/api/v1/wishlist/') || 
+         endpoint.includes('/api/v1/orders/summary/') ||
+         endpoint.includes('/api/v1/user/order-stats/') ||
+         endpoint.includes('/api/v1/checkout/create/');
 };
 
 // Helper function to handle cart_token in request body
@@ -158,9 +170,12 @@ const addCartTokenToUrl = (url: string, cartToken: string | null): string => {
 
 // Helper function to save cart_token from response
 const saveCartTokenFromResponse = (responseData: any): void => {
-  if (responseData && responseData.cart_token) {
-    cartService.setCartToken(responseData.cart_token);
-    console.log('🛒 Saved cart_token from response:', responseData.cart_token);
+  const payload = getResponsePayload(responseData);
+  const cartToken = payload?.cart_token;
+
+  if (cartToken) {
+    cartService.setCartToken(cartToken);
+    console.log('🛒 Saved cart_token from response:', cartToken);
   }
 };
 
@@ -171,6 +186,8 @@ export const apiRequest = async <T>(
 ): Promise<T> => {
   // Use direct backend URL instead of proxy for proper cookie handling
   let baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  // Normalize base URL to avoid duplicated API path segments
+  baseUrl = normalizeBaseUrl(baseUrl);
   // Remove trailing slash from base URL
   baseUrl = baseUrl.replace(/\/$/, '');
   // Ensure endpoint starts with slash
@@ -279,6 +296,8 @@ export const publicApiRequest = async <T>(
 ): Promise<T> => {
   // Use direct backend URL instead of proxy for proper cookie handling
   let baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  // Normalize base URL to avoid duplicated API path segments
+  baseUrl = normalizeBaseUrl(baseUrl);
   // Remove trailing slash from base URL
   baseUrl = baseUrl.replace(/\/$/, '');
   // Ensure endpoint starts with slash
@@ -402,6 +421,8 @@ export const checkoutApiRequest = async <T>(
 ): Promise<T> => {
   // Use direct backend URL instead of proxy
   let baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  // Normalize base URL to avoid duplicated API path segments
+  baseUrl = normalizeBaseUrl(baseUrl);
   baseUrl = baseUrl.replace(/\/$/, '');
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   let url = `${baseUrl}${cleanEndpoint}`;

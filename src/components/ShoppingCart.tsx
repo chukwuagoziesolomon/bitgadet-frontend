@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Trash2, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { cartService } from '../services/cartService';
-import { publicApiRequest } from '../config/api';
 import './ShoppingCart.css';
 
 interface CartItem {
@@ -49,6 +48,7 @@ const ShoppingCart: React.FC = () => {
         subtotal: cartData.total_amount || 0,
         total: cartData.total_amount || 0,
         total_usdt: cartData.total_amount_usdt || 0,
+        total_items: cartData.total_items || 0,
       });
 
       // Fetch enhanced order summary
@@ -71,20 +71,14 @@ const ShoppingCart: React.FC = () => {
   const fetchOrderSummary = async (state?: string) => {
     try {
       setSummaryLoading(true);
-      const cartToken = cartService.getCartToken();
-      if (!cartToken) {
-        console.error('No cart token found');
-        return;
-      }
-
-      let url = `/api/orders/summary/?cart_token=${cartToken}`;
-      if (state) {
-        url += `&state=${encodeURIComponent(state)}`;
-      }
-
-      const response = await publicApiRequest(url) as any;
-      if (response.success) {
-        setOrderSummary(response);
+      const summaryData = await cartService.getCartSummary({ state });
+      if (summaryData && (
+        summaryData.total_ngn !== undefined ||
+        summaryData.subtotal_ngn !== undefined ||
+        summaryData.total_amount !== undefined ||
+        summaryData.subtotal !== undefined
+      )) {
+        setOrderSummary(summaryData);
       }
     } catch (error) {
       console.error('Error fetching order summary:', error);
@@ -229,86 +223,77 @@ const ShoppingCart: React.FC = () => {
               <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>
                 Loading order summary...
               </div>
-            ) : orderSummary ? (
-              <>
-                <div className="summary-row">
-                  <span>Subtotal ({orderSummary.total_items} items)</span>
-                  <span>
-                    {orderSummary.subtotal_formatted}
-                    <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                      ({orderSummary.subtotal_usdt?.toFixed(6)} USDT)
-                    </small>
-                  </span>
-                </div>
-
-                {orderSummary.coupon_applied && orderSummary.discount_amount > 0 && (
-                  <div className="summary-row" style={{ color: '#10b981' }}>
-                    <span>Discount</span>
+            ) : orderSummary ? (() => {
+              const subNgn = orderSummary.subtotal_ngn ?? orderSummary.subtotal ?? 0;
+              const discNgn = orderSummary.discount_ngn ?? orderSummary.discount_amount ?? 0;
+              const taxNgn  = orderSummary.tax_ngn    ?? orderSummary.tax             ?? 0;
+              const shipNgn = orderSummary.shipping_cost_ngn ?? orderSummary.shipping_cost ?? 0;
+              const totNgn  = orderSummary.total_ngn  ?? orderSummary.total_amount     ?? orderSummary.total ?? 0;
+              const subUsdt = orderSummary.subtotal_usdt ?? 0;
+              const discUsdt= orderSummary.discount_usdt ?? 0;
+              const taxUsdt = orderSummary.tax_usdt    ?? 0;
+              const shipUsdt= orderSummary.shipping_cost_usdt ?? 0;
+              const totUsdt = orderSummary.total_usdt  ?? 0;
+              const fmt     = (n: number) => `₦${Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+              return (
+                <>
+                  <div className="summary-row">
+                    <span>Subtotal ({orderSummary.items_count || orderSummary.total_items || itemCount} items)</span>
                     <span>
-                      {orderSummary.discount_formatted}
-                      <small style={{ display: 'block', color: '#10b981', fontSize: '12px' }}>
-                        ({orderSummary.discount_amount_secondary?.toFixed(6)} USDT)
-                      </small>
+                      {fmt(subNgn)}
+                      <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>({subUsdt.toFixed(2)} USDT)</small>
                     </span>
                   </div>
-                )}
 
-                <div className="summary-row">
-                  <span>Tax</span>
-                  <span>
-                    {orderSummary.tax_formatted}
-                    <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                      ({orderSummary.tax_amount_usdt?.toFixed(6)} USDT)
-                    </small>
-                  </span>
-                </div>
+                  {orderSummary.coupon_applied && discNgn > 0 && (
+                    <div className="summary-row" style={{ color: '#10b981' }}>
+                      <span>Discount</span>
+                      <span>
+                        -{fmt(discNgn)}
+                        <small style={{ display: 'block', color: '#10b981', fontSize: '12px' }}>({discUsdt.toFixed(2)} USDT)</small>
+                      </span>
+                    </div>
+                  )}
 
-                <div className="summary-row">
-                  <span>Shipping</span>
-                  <span>
-                    {orderSummary.shipping_cost_formatted}
-                    <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                      ({orderSummary.shipping_cost_usdt?.toFixed(6)} USDT)
-                    </small>
-                    {orderSummary.shipping_note && (
-                      <small style={{ display: 'block', color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
-                        {orderSummary.shipping_note}
-                      </small>
-                    )}
-                  </span>
-                </div>
-
-                {!orderSummary.is_free_shipping && orderSummary.free_shipping_remaining && (
-                  <div style={{ fontSize: '12px', color: '#f59e0b', fontStyle: 'italic', marginTop: '8px', padding: '8px', backgroundColor: '#fffbeb', borderRadius: '4px' }}>
-                    Add ₦{orderSummary.free_shipping_remaining?.toLocaleString()} more for FREE SHIPPING!
+                  <div className="summary-row">
+                    <span>Tax</span>
+                    <span>
+                      {fmt(taxNgn)}
+                      <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>({taxUsdt.toFixed(2)} USDT)</small>
+                    </span>
                   </div>
-                )}
 
-                <div className="summary-total">
-                  <span>Total</span>
-                  <div className="total-amount">
-                    <div className="total-naira">{orderSummary.total_formatted}</div>
-                    <div className="total-usd">({orderSummary.total_usdt?.toFixed(6)} USDT)</div>
+                  <div className="summary-row">
+                    <span>Shipping</span>
+                    <span>
+                      {fmt(shipNgn)}
+                      <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>({shipUsdt.toFixed(2)} USDT)</small>
+                      {orderSummary.shipping_note && (
+                        <small style={{ display: 'block', color: '#64748b', fontSize: '11px', marginTop: '2px' }}>{orderSummary.shipping_note}</small>
+                      )}
+                    </span>
                   </div>
-                </div>
 
-                {orderSummary.shipping_info && (
-                  <div style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-                    Delivery: {orderSummary.state?.toLowerCase() === 'lagos' ? orderSummary.shipping_info.lagos_days : orderSummary.shipping_info.other_states_days}
+                  <div className="summary-total">
+                    <span>Total</span>
+                    <div className="total-amount">
+                      <div className="total-naira">{fmt(totNgn)}</div>
+                      <div className="total-usd">({totUsdt.toFixed(2)} USDT)</div>
+                    </div>
                   </div>
-                )}
-              </>
-            ) : (
+                </>
+              );
+            })() : (
               <>
                 <div className="summary-row">
                   <span>Subtotal ({itemCount} items)</span>
-                  <span>{formatNaira(orderSummary?.subtotal || 0)}</span>
+                  <span>{formatNaira(0)}</span>
                 </div>
                 <div className="summary-total">
                   <span>Total</span>
                   <div className="total-amount">
-                    <div className="total-naira">{formatNaira(orderSummary?.total || 0)}</div>
-                    <div className="total-usd">{formatUSD(orderSummary?.total_usdt || 0)}</div>
+                    <div className="total-naira">{formatNaira(0)}</div>
+                    <div className="total-usd">0 USDT</div>
                   </div>
                 </div>
               </>

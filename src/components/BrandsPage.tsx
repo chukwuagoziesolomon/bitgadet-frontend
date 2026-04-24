@@ -30,10 +30,10 @@ const BrandsPage: React.FC = () => {
     const fetchBrands = async () => {
       try {
         setLoading(true);
-        const data = await publicApiRequest<Brand[] | { results: Brand[] }>(API_CONFIG.ENDPOINTS.BRANDS);
+        const data = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.BRANDS);
 
-        // Handle both direct array response and paginated response
-        const brandsArray = Array.isArray(data) ? data : (data as any).results || [];
+        // Envelope response: { success, data: [...] }
+        const brandsArray = Array.isArray(data) ? data : (data?.data || data?.results || []);
         setBrands(brandsArray);
         setError(null);
       } catch (err: any) {

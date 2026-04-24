@@ -43,7 +43,7 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
     setError(null);
 
     try {
-      const response = await conditionalApiRequest<any>(`/api/checkout/status/${id}/`);
+      const response = await conditionalApiRequest<any>(`/api/v1/checkout/status/${id}/`);
       console.log('📍 Tracking data received:', response);
       setTrackingData(response);
     } catch (err: any) {
