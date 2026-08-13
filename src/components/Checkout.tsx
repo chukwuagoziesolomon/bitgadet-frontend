@@ -67,9 +67,7 @@ const Checkout: React.FC = () => {
   const fetchOrderSummary = async (state?: string, couponCode?: string) => {
     try {
       setSummaryLoading(true);
-      const apiPaymentMethod = paymentMethod === 'crypto' ? 'nowpayments'
-        : paymentMethod === 'bank' ? 'bank_transfer'
-        : 'paystack';
+      const apiPaymentMethod = paymentMethod === 'crypto' ? 'nowpayments' : 'paystack';
       const summaryData = await cartService.getCartSummary({
         ...(state ? { state } : {}),
         ...(couponCode ? { coupon_code: couponCode } : {}),
@@ -288,9 +286,7 @@ const Checkout: React.FC = () => {
 
       // Use actual order summary data instead of hardcoded values
       // Map UI payment method to API values
-      const apiPaymentMethod = paymentMethod === 'crypto' ? 'nowpayments'
-        : paymentMethod === 'bank' ? 'bank_transfer'
-        : 'paystack';
+      const apiPaymentMethod = paymentMethod === 'crypto' ? 'nowpayments' : 'paystack';
       const apiCurrency = paymentMethod === 'crypto' ? 'USDT' : 'NGN';
 
       const orderPayload: any = {
@@ -379,17 +375,6 @@ const Checkout: React.FC = () => {
               expires_at: cryptoData.expires_at,
               currency: 'USDT',
             }
-          }
-        });
-      } else {
-        // Bank transfer: navigate to payment details with order info
-        navigate('/payment-details', {
-          state: {
-            paymentMethod: 'bank',
-            cartToken,
-            orderData: { ...createdOrder, email: formData.email },
-            paymentInfo: { order_id: orderId },
-            accountInfo: null,
           }
         });
       }
@@ -671,13 +656,6 @@ const Checkout: React.FC = () => {
                   <small>Pay with Visa, Mastercard, or Verve</small>
                 </div>
               </label> */}
-              <label className={`payment-option${paymentMethod === 'crypto' ? ' selected' : ''}`}>
-                <input type="radio" name="payment" value="crypto" checked={paymentMethod === 'crypto'} onChange={() => setPaymentMethod('crypto')} />
-                <div>
-                  <div>Cryptocurrency <span className="recommended">Recommended</span></div>
-                  <small>Pay with Bitcoin or Ethereum</small>
-                </div>
-              </label>
               <label className={`payment-option${paymentMethod === 'paystack' ? ' selected' : ''}`}>
                 <input type="radio" name="payment" value="paystack" checked={paymentMethod === 'paystack'} onChange={() => setPaymentMethod('paystack')} />
                 <div>
@@ -685,11 +663,11 @@ const Checkout: React.FC = () => {
                   <small>Pay with debit card or bank transfer via Paystack</small>
                 </div>
               </label>
-              <label className={`payment-option${paymentMethod === 'bank' ? ' selected' : ''}`}>
-                <input type="radio" name="payment" value="bank" checked={paymentMethod === 'bank'} onChange={() => setPaymentMethod('bank')} />
+              <label className={`payment-option${paymentMethod === 'crypto' ? ' selected' : ''}`}>
+                <input type="radio" name="payment" value="crypto" checked={paymentMethod === 'crypto'} onChange={() => setPaymentMethod('crypto')} />
                 <div>
-                  <div>Bank Transfer</div>
-                  <small>Direct bank transfer</small>
+                  <div>Cryptocurrency <span className="recommended">Recommended</span></div>
+                  <small>Pay with USDT</small>
                 </div>
               </label>
             </div>
