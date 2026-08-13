@@ -105,24 +105,10 @@ const Checkout: React.FC = () => {
   // Fetch available cryptocurrencies when crypto payment is selected
   useEffect(() => {
     if (paymentMethod === 'crypto') {
-      setCryptoLoading(true);
-      conditionalApiRequest<any>('/api/v1/payments/crypto/currencies/')
-        .then(data => {
-          const cryptoData = data?.data || data;
-          if (cryptoData.currencies) {
-            setCryptoCurrencies(cryptoData.currencies);
-            if (cryptoData.currencies.length > 0 && !cryptoData.currencies.find((c: any) => c.id === cryptoType)) {
-              setCryptoType(cryptoData.currencies[0].id);
-            }
-          }
-        })
-        .catch(error => {
-          console.error('Error fetching crypto currencies:', error);
-          showError('Failed to load cryptocurrency options');
-        })
-        .finally(() => {
-          setCryptoLoading(false);
-        });
+      // We only accept USDT on BEP20 for now; provide a static option instead of calling the unused endpoint
+      const usdtOption = { id: 'usdt_bep20', name: 'USDT (BEP20)', symbol: 'USDT', network: 'BEP20' };
+      setCryptoCurrencies([usdtOption]);
+      setCryptoType(prev => prev || usdtOption.id);
     }
   }, [paymentMethod, addToast]);
 

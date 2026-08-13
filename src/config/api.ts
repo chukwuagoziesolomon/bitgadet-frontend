@@ -282,7 +282,9 @@ export const apiRequest = async <T>(
     }
 
     console.log('📦 Response data:', responseData);
-    return responseData;
+    // Unwrap common API envelope { success, status, message, data }
+    const payload = getResponsePayload(responseData);
+    return payload;
   } catch (error) {
     console.error(`❌ API request failed for ${url}:`, error);
     throw error;
@@ -376,7 +378,8 @@ export const publicApiRequest = async <T>(
     }
 
     console.log('📦 Response data:', responseData);
-    return responseData;
+    const payload = getResponsePayload(responseData);
+    return payload;
   } catch (error) {
     console.error(`❌ Public API request failed for ${url}:`, error);
     throw error;
@@ -473,7 +476,8 @@ export const checkoutApiRequest = async <T>(
     }
 
     console.log('📦 Checkout response data:', responseData);
-    return responseData;
+    const payload = getResponsePayload(responseData);
+    return payload;
   } catch (error) {
     console.error(`❌ Checkout request failed for ${url}:`, error);
     throw error;

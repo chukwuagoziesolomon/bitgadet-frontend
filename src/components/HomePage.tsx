@@ -33,6 +33,22 @@ const HomePage: React.FC = () => {
   const { products: bestSellers, loading: bestSellersLoading, error: bestSellersError } = useBestSellers();
   const { products: newArrivals, loading: newArrivalsLoading, error: newArrivalsError } = useNewArrivals();
 
+  const normalizeDeal = (rawDeal: any) => {
+    if (!rawDeal) return null;
+
+    return {
+      ...rawDeal,
+      title: rawDeal.title || rawDeal.product?.name || 'Deal of the Day',
+      subtitle: rawDeal.subtitle || rawDeal.product?.description || '',
+      deal_image: rawDeal.deal_image || rawDeal.product_image || rawDeal.product?.image || '/logo.png',
+      original_price: rawDeal.original_price || rawDeal.product?.price || '0',
+      product_slug: rawDeal.product_slug || rawDeal.product?.slug || '',
+      availability_percentage: rawDeal.availability_percentage || 0,
+      sold_quantity: rawDeal.sold_quantity || 0,
+      max_quantity: rawDeal.max_quantity || 0,
+    };
+  };
+
   // Fetch banners for hero slideshow
   useEffect(() => {
     const fetchBanners = async () => {
@@ -59,9 +75,12 @@ const HomePage: React.FC = () => {
       try {
         setDealLoading(true);
         const data = await publicApiRequest<any>('/api/v1/deals/current/');
-        if (data.success && data.deal) {
-          setDeal(data.deal);
-          const remaining = new Date(data.deal.end_time).getTime() - Date.now();
+        const rawDeal = data?.deal || data?.data?.deal || data?.data || data;
+
+        if (rawDeal && (rawDeal.id || rawDeal.product?.id)) {
+          const normalizedDeal = normalizeDeal(rawDeal);
+          setDeal(normalizedDeal);
+          const remaining = new Date(normalizedDeal.end_time).getTime() - Date.now();
           setTimeLeft(Math.max(0, Math.floor(remaining / 1000)));
           setDealError(null);
         } else {
@@ -380,7 +399,7 @@ const HomePage: React.FC = () => {
           <div className="container">
             <div className="deal-card">
               <div className="deal-image">
-                <img src={deal.deal_image || deal.product_image} alt={deal.title} />
+                <img src={deal.deal_image || deal.product_image || deal.product?.image} alt={deal.title} />
                 <div className="deal-badge">Deal of the Day</div>
               </div>
               <div className="deal-content">
@@ -395,13 +414,15 @@ const HomePage: React.FC = () => {
                   <Clock size={20} />
                   <span>{formatTime(timeLeft)}</span>
                 </div>
-                <div className="deal-availability">
-                  <div className="availability-bar">
-                    <div className="availability-fill" style={{width: `${deal.availability_percentage}%`}}></div>
+                {deal.max_quantity > 0 && (
+                  <div className="deal-availability">
+                    <div className="availability-bar">
+                      <div className="availability-fill" style={{width: `${deal.availability_percentage}%`}}></div>
+                    </div>
+                    <span>{deal.sold_quantity}/{deal.max_quantity} sold</span>
                   </div>
-                  <span>{deal.sold_quantity}/{deal.max_quantity} sold</span>
-                </div>
-                <button className="deal-btn" onClick={() => deal.product_url ? navigate(deal.product_url) : navigate(`/products/${deal.product_slug}`)}>Shop Now</button>
+                )}
+                <button className="deal-btn" onClick={() => deal.product_url ? navigate(deal.product_url) : navigate(`/product/${deal.product_slug || deal.product?.slug}`)}>Shop Now</button>
               </div>
             </div>
           </div>

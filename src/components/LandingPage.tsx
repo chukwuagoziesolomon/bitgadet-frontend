@@ -19,6 +19,20 @@ interface DealResponse {
   };
 }
 
+const normalizeDeal = (rawDeal: any) => {
+  if (!rawDeal) return null;
+
+  return {
+    ...rawDeal,
+    title: rawDeal.title || rawDeal.product?.name || 'Deal of the Day',
+    subtitle: rawDeal.subtitle || rawDeal.product?.name || 'Limited Time',
+    deal_description: rawDeal.deal_description || rawDeal.product?.description || 'Limited time offer on premium products.',
+    original_price: rawDeal.original_price || rawDeal.product?.price || '0',
+    deal_image: rawDeal.deal_image || rawDeal.product?.image || '/logo.png',
+    product_data: rawDeal.product_data || rawDeal.product || null,
+  };
+};
+
 const LandingPage: React.FC = () => {
   const { showSuccess, showError } = useToast();
   const navigate = useNavigate();
@@ -242,9 +256,10 @@ const LandingPage: React.FC = () => {
 
         // Handle new API response format (deals array)
         if (data.deals && data.deals.length > 0) {
-          setDeals(data.deals);
+          const normalizedDeals = data.deals.map(normalizeDeal).filter(Boolean);
+          setDeals(normalizedDeals);
           setCurrentDealIndex(0);
-          const firstDeal = data.deals[0];
+          const firstDeal = normalizedDeals[0];
           setDeal(firstDeal);
 
           // Calculate time remaining using unified helper
@@ -253,11 +268,22 @@ const LandingPage: React.FC = () => {
 
         // Handle old API response format (single deal)
         else if (data.deal) {
-          setDeal(data.deal);
-          setDeals([data.deal]);
+          const normalizedDeal = normalizeDeal(data.deal);
+          setDeal(normalizedDeal);
+          setDeals([normalizedDeal]);
           setCurrentDealIndex(0);
 
-          setTimeRemaining(getRemainingSecondsFromDeal(data.deal, data));
+          setTimeRemaining(getRemainingSecondsFromDeal(normalizedDeal, data));
+        }
+
+        // Handle raw single-deal object response
+        else if ((data as any)?.id || (data as any)?.product?.id) {
+          const normalizedDeal = normalizeDeal(data);
+          setDeal(normalizedDeal);
+          setDeals([normalizedDeal]);
+          setCurrentDealIndex(0);
+
+          setTimeRemaining(getRemainingSecondsFromDeal(normalizedDeal, data));
         } else {
           setDeal(null);
           setDeals([]);
@@ -383,17 +409,14 @@ const LandingPage: React.FC = () => {
     }
 
     // Fallback: construct URL from product data (old API compatibility)
-    const productId = deal?.product || deal?.product?.id;
-    if (!productId) {
+    const productSlug = deal?.product_data?.slug || deal?.product?.slug || deal?.slug;
+    if (!productSlug) {
       showError('Error', 'Product ID not found');
       return;
     }
-
-    // Get product slug for URL
-    const productSlug = deal?.product_data?.slug || deal?.product?.slug || 'product';
     
     // Navigate to product details page
-    navigate(`/product/${productId}/${productSlug}`);
+    navigate(`/product/${productSlug}`);
   };
 
   return (

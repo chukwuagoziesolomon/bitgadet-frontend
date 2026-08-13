@@ -188,16 +188,7 @@ const PhoneTrackingPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="lastKnownLocation">Last Known Location</label>
-                  <input
-                    type="text"
-                    id="lastKnownLocation"
-                    name="lastKnownLocation"
-                    value={formData.lastKnownLocation}
-                    onChange={handleInputChange}
-                  />
-                </div>
+                {/* Single Last Known Location field retained above in the form row */}
 
 
 

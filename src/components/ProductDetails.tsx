@@ -20,18 +20,24 @@ import { useGlobalLoading } from '../hooks/useGlobalLoading';
 import './ProductDetails.css';
 
 interface Category {
-  id: number;
+  id: string;
   name: string;
-  display_name: string;
-  description: string;
+  display_name?: string;
+  description?: string;
 }
 
 interface ProductImage {
-  id: number;
+  id: string;
   image: string;
-  alt_text: string;
+  alt_text: string | null;
   is_primary: boolean;
   order: number;
+}
+
+interface Brand {
+  id: string;
+  name: string;
+  display_name?: string;
 }
 
 interface Product {
@@ -51,7 +57,7 @@ interface Product {
   discount_percentage: number;
   stock_quantity: number;
   sku: string;
-  brand: string | number;
+  brand: string | number | Brand;
   model: string;
   colors: string[];
   storage_options: string[];
@@ -159,26 +165,55 @@ const ProductDetails: React.FC = () => {
         setGlobalLoading(true);
         setError(null);
 
-        // Fetch product details
+        // Fetch product details and unwrap API envelope if present
         const productData = await publicApiRequest<any>(`/api/v1/products/${slug}/`);
         console.log('Product data received:', productData);
-        setProduct(productData.data || productData);
+        const payload = productData?.data ?? productData;
+        const normalized: Product = {
+          ...payload,
+          colors: Array.isArray(payload?.colors) ? payload.colors : [],
+          storage_options: Array.isArray(payload?.storage_options) ? payload.storage_options : [],
+          ram_options: Array.isArray(payload?.ram_options) ? payload.ram_options : [],
+          images: Array.isArray(payload?.images) ? payload.images : [],
+          features: Array.isArray(payload?.features) ? payload.features : [],
+          main_image: payload?.main_image ?? '',
+          short_description: payload?.short_description ?? '',
+          has_colors: payload?.has_colors ?? false,
+          has_storage_options: payload?.has_storage_options ?? false,
+          has_ram_options: payload?.has_ram_options ?? false,
+          color_count: payload?.color_count ?? 0,
+          storage_count: payload?.storage_count ?? 0,
+          ram_count: payload?.ram_count ?? 0,
+          average_rating: payload?.average_rating ?? 0,
+          review_count: payload?.review_count ?? 0,
+          is_new: payload?.is_new ?? false,
+          is_bestseller: payload?.is_bestseller ?? false,
+          is_on_sale: payload?.is_on_sale ?? false,
+          specifications: payload?.specifications ?? '',
+          camera_specs: payload?.camera_specs ?? '',
+          storage_specs: payload?.storage_specs ?? '',
+          battery_specs: payload?.battery_specs ?? '',
+          operating_system: payload?.operating_system ?? '',
+          weight: payload?.weight ?? '',
+        };
+        setProduct(normalized);
 
-        // Set default selections
-        if (productData.colors.length > 0) {
-          setSelectedColor(productData.colors[0]);
+        // Set default selections (guard against missing arrays)
+        if (Array.isArray(normalized.colors) && normalized.colors.length > 0) {
+          setSelectedColor(normalized.colors[0]);
         }
-        if (productData.storage_options.length > 0) {
-          setSelectedStorage(productData.storage_options[0]);
+        if (Array.isArray(normalized.storage_options) && normalized.storage_options.length > 0) {
+          setSelectedStorage(normalized.storage_options[0]);
         }
-        if (productData.ram_options.length > 0) {
-          setSelectedRAM(productData.ram_options[0]);
+        if (Array.isArray(normalized.ram_options) && normalized.ram_options.length > 0) {
+          setSelectedRAM(normalized.ram_options[0]);
         }
 
         // Fetch reviews
         try {
-          const reviewsData = await publicApiRequest<Review[]>(`/api/v1/products/${slug}/reviews/`);
-          setReviews(reviewsData);
+          const reviewsData = await publicApiRequest<any>(`/api/v1/products/${slug}/reviews/`);
+          const reviewsPayload = Array.isArray(reviewsData) ? reviewsData : (reviewsData?.data ?? reviewsData);
+          setReviews(reviewsPayload || []);
         } catch (reviewError) {
           console.warn('Failed to fetch reviews:', reviewError);
           setReviews([]);
@@ -186,10 +221,11 @@ const ProductDetails: React.FC = () => {
 
         // Fetch recommendations
         try {
-          const recommendationsData = await publicApiRequest<any>(`/api/v1/products/recommendations/?category=${productData.category.name}&limit=6`);
-          // Handle both direct array and object with products property
-          const productsArray = Array.isArray(recommendationsData) ? recommendationsData : (recommendationsData?.products || []);
-          setRecommendations(productsArray);
+          const recommendationsData = await publicApiRequest<any>(`/api/v1/products/recommendations/?product_id=${encodeURIComponent(String(normalized.id ?? ''))}&limit=6`);
+          // Unwrap envelope and handle both direct array and object with products property
+          const recInner = Array.isArray(recommendationsData) ? recommendationsData : (recommendationsData?.data ?? recommendationsData);
+          const productsArray = Array.isArray(recInner) ? recInner : (recInner?.recommended_products || []);
+          setRecommendations(productsArray || []);
         } catch (recError) {
           console.warn('Failed to fetch recommendations:', recError);
           setRecommendations([]);
@@ -296,6 +332,14 @@ const ProductDetails: React.FC = () => {
     return <div className="interactive-stars">{stars}</div>;
   };
 
+  const getBrandDisplay = (b: string | number | Brand | undefined): string => {
+    if (b === undefined || b === null) return '';
+    if (typeof b === 'object') {
+      return (b.display_name || b.name || '').toString();
+    }
+    return String(b);
+  };
+
   const formatNaira = (amount: number) => {
     return `₦${amount.toLocaleString()}`;
   };
@@ -400,12 +444,10 @@ const ProductDetails: React.FC = () => {
     try {
       const payload = {
         product_slug: slug,
-        customer_name: reviewName.trim(),
-        customer_email: reviewEmail.trim(),
         rating: reviewRating,
         title: reviewTitle.trim(),
-        review_text: reviewText.trim(),
-        is_verified_purchase: reviewVerified,
+        comment: reviewText.trim(),
+        email: reviewEmail.trim() || undefined,
       } as any;
 
       await publicApiRequest<any>(`/api/v1/products/reviews/submit/`, {
@@ -415,12 +457,18 @@ const ProductDetails: React.FC = () => {
 
       // Refresh reviews and product stats after successful submission
       try {
-        const [updatedProduct, updatedReviews] = await Promise.all([
-          publicApiRequest<Product>(`/api/v1/products/${slug}/`),
-          publicApiRequest<Review[]>(`/api/v1/products/${slug}/reviews/`),
+        const [updatedProductRaw, updatedReviewsRaw] = await Promise.all([
+          publicApiRequest<any>(`/api/v1/products/${slug}/`),
+          publicApiRequest<any>(`/api/v1/products/${slug}/reviews/`),
         ]);
+
+        const updatedProduct = updatedProductRaw?.data ?? updatedProductRaw;
+        const updatedReviews = Array.isArray(updatedReviewsRaw)
+          ? updatedReviewsRaw
+          : (updatedReviewsRaw?.data ?? updatedReviewsRaw);
+
         setProduct(updatedProduct);
-        setReviews(updatedReviews);
+        setReviews(updatedReviews || []);
       } catch (refreshErr) {
         console.warn('Review submitted but failed to refresh product/reviews:', refreshErr);
       }
@@ -436,8 +484,11 @@ const ProductDetails: React.FC = () => {
       setActiveTab('review');
     } catch (err: any) {
       const respData = err?.response?.data;
+      // Backend may return `errors` object or single `error` message
       if (respData?.errors && typeof respData.errors === 'object') {
         setReviewErrors(respData.errors as Record<string, string[]>);
+      } else if (typeof respData?.error === 'string') {
+        setReviewErrors({ general: [respData.error] });
       } else {
         setReviewErrors({ general: ['Failed to submit review. Please try again.'] });
       }
@@ -482,8 +533,8 @@ const ProductDetails: React.FC = () => {
         <div className="product-images">
           <div className="main-image">
             <img
-              src={product.images[currentImageIndex]?.image || product.main_image || 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image+Available'}
-              alt={product.images[currentImageIndex]?.alt_text || product.name}
+              src={product.images[currentImageIndex]?.image ?? product.main_image ?? 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image+Available'}
+              alt={product.images[currentImageIndex]?.alt_text ?? product.name}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.src = 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image+Available'; // Fallback placeholder
@@ -520,7 +571,7 @@ const ProductDetails: React.FC = () => {
               >
                 <img
                   src={image.image}
-                  alt={image.alt_text}
+                  alt={image.alt_text ?? ''}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = 'https://via.placeholder.com/150x150/f3f4f6/9ca3af?text=No+Image'; // Cloudinary-style fallback
@@ -834,7 +885,9 @@ const ProductDetails: React.FC = () => {
                   {product.brand && (
                     <div className="spec-item">
                       <span className="spec-label">Brand:</span>
-                      <span className="spec-value">{product.brand}</span>
+                          <span className="spec-value">
+                            {getBrandDisplay(product.brand)}
+                          </span>
                     </div>
                   )}
                   {product.model && (
@@ -894,10 +947,10 @@ const ProductDetails: React.FC = () => {
                         <div className="review-header">
                           <div className="reviewer-info">
                             <div className="reviewer-avatar">
-                              {review.customer_name.charAt(0).toUpperCase()}
+                              {String(review.customer_name || '?').charAt(0).toUpperCase()}
                             </div>
                             <div className="reviewer-details">
-                              <span className="reviewer-name">{review.customer_name}</span>
+                              <span className="reviewer-name">{review.customer_name || 'Anonymous'}</span>
                               <div className="review-rating">
                                 {renderStars(review.rating)}
                               </div>

@@ -62,12 +62,24 @@ const BrandPage: React.FC = () => {
     const fetchBrandProducts = async () => {
       if (!brandName) return;
       try {
-        setLoading(true);
-        const endpoint = `/api/v1/brands/${encodeURIComponent(brandName)}/products/`;
-        const data = await publicApiRequest<BrandData>(endpoint);
-        setBrandData(data);
-        setError(null);
-      } catch (err: any) {
+          setLoading(true);
+          const endpoint = `/api/v1/brands/${encodeURIComponent(brandName)}/products/`;
+          const dataRaw = await publicApiRequest<any>(endpoint);
+
+          // Normalize backend pagination shape: support { products, total_count } and DRF style { results, count }
+          const normalized: BrandData = {
+            count: dataRaw?.total_count ?? dataRaw?.count ?? (Array.isArray(dataRaw?.products) ? dataRaw.products.length : 0),
+            next: dataRaw?.next ?? null,
+            previous: dataRaw?.previous ?? null,
+            results: Array.isArray(dataRaw?.products) ? dataRaw.products : (Array.isArray(dataRaw?.results) ? dataRaw.results : []),
+          };
+
+          // Attach original brand info if present for header rendering
+          (normalized as any).brand = dataRaw?.brand ?? null;
+
+          setBrandData(normalized);
+          setError(null);
+        } catch (err: any) {
         setError('Failed to load products for this brand');
         setBrandData(null);
       } finally {
@@ -193,26 +205,26 @@ const BrandPage: React.FC = () => {
   return (
     <div className="brand-page">
       <div className="brand-header">
-        <h1>{brandData.results?.[0]?.brand_name || brandName}</h1>
-        <p>Products from {brandData.results?.[0]?.brand_name || brandName}</p>
+        <h1>{(brandData as any).brand?.display_name || brandData.results?.[0]?.brand_name || brandName}</h1>
+        <p>Products from {(brandData as any).brand?.display_name || brandData.results?.[0]?.brand_name || brandName}</p>
         <span className="total-items">{brandData.count || 0} products available</span>
       </div>
 
       <div className="brand-products-grid">
-        {brandData.results && brandData.results.map((product: Product) => (
+        {brandData.results && brandData.results.map((product: any) => (
           <ProductCard
             key={product.id}
             id={product.id}
             slug={product.slug}
             name={product.name}
-            brand={product.brand_name}
-            price={parseFloat(product.current_price)}
-            originalPrice={product.original_price ? parseFloat(product.original_price) : undefined}
-            usdtPrice={product.current_price_usdt}
+            brand={product.brand_name || product.brand}
+            price={Number(product.current_price ?? product.price ?? 0)}
+            originalPrice={product.original_price ? Number(product.original_price) : undefined}
+            usdtPrice={product.current_price_usdt ?? product.price_usdt}
             originalUsdtPrice={product.original_price_usdt}
             rating={4.5} // Default rating
             reviews={0} // Default reviews
-            image={product.main_image}
+            image={product.main_image ?? product.image}
             inStock={product.is_in_stock}
             onAddToCart={handleAddToCart}
             isInCart={cart[product.id] > 0}
