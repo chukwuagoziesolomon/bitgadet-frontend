@@ -34,6 +34,9 @@ const Checkout: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSummary, setOrderSummary] = useState<any>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [itemCount, setItemCount] = useState(0);
+  const [cartLoading, setCartLoading] = useState(false);
   const [hasCouponProducts, setHasCouponProducts] = useState(false);
   const [shippingRate, setShippingRate] = useState<{ shipping_cost: number; available: boolean } | null>(null);
 
@@ -79,7 +82,10 @@ const Checkout: React.FC = () => {
         summaryData.total_amount !== undefined ||
         summaryData.subtotal !== undefined
       )) {
-        setOrderSummary(summaryData);
+        // Only update if the summary has items, otherwise keep the fallback from fetchCart
+        if (summaryData.total_items === undefined || summaryData.total_items > 0) {
+          setOrderSummary(summaryData);
+        }
       }
     } catch (error) {
       console.error('Error fetching order summary:', error);
@@ -88,9 +94,53 @@ const Checkout: React.FC = () => {
     }
   };
 
+  // Fetch actual cart items and fallback summary
+  const fetchCart = async () => {
+    try {
+      setCartLoading(true);
+      const cartData = await cartService.getCart();
+      const products = cartData.products || [];
+
+      const transformedProducts = products.map((product: any) => ({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: parseFloat(product.discounted_price || product.price) || 0,
+        quantity: product.quantity || 1,
+        item_total: product.subtotal || (parseFloat(product.discounted_price || product.price) || 0) * product.quantity,
+        brand: product.brand_name || product.brand,
+        image: product.main_image,
+        usdPrice: parseFloat(product.price_usdt) || undefined,
+        discount: product.discount_percentage || undefined,
+      }));
+
+      setCartItems(transformedProducts);
+      setItemCount(cartData.total_items || 0);
+
+      // Set order summary from cart data as fallback
+      setOrderSummary((prev: any) => ({
+        ...prev,
+        subtotal: cartData.total_amount || 0,
+        total: cartData.total_amount || 0,
+        total_usdt: cartData.total_amount_usdt || 0,
+        total_items: cartData.total_items || 0,
+      }));
+    } catch (error) {
+      console.error('Failed to fetch cart:', error);
+      setCartItems([]);
+      setItemCount(0);
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
   // Fetch summary on initial load
   useEffect(() => {
-    fetchOrderSummary();
+    const load = async () => {
+      await fetchCart();
+      await fetchOrderSummary();
+    };
+    load();
   }, []);
 
   // Re-fetch when payment method changes (if state already entered)
@@ -265,8 +315,9 @@ const Checkout: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Validate cart is not empty
-      if (!orderSummary || orderSummary.total_items === 0) {
+      // Validate cart is not empty (use actual cart items as source of truth)
+      const effectiveItemCount = itemCount || orderSummary?.total_items || cartItems.length || 0;
+      if (effectiveItemCount === 0) {
         showError('Empty Cart', 'Your cart is empty. Please add items before checking out.');
         setIsSubmitting(false);
         return;
