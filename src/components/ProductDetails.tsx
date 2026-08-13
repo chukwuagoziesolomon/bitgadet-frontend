@@ -17,6 +17,7 @@ import {
 import { publicApiRequest, conditionalApiRequest } from '../config/api';
 import { cartService } from '../services/cartService';
 import { useGlobalLoading } from '../hooks/useGlobalLoading';
+import ProductCard from './ProductCard';
 import './ProductDetails.css';
 
 interface Category {
@@ -1080,43 +1081,27 @@ const ProductDetails: React.FC = () => {
           <div className="related-products-container">
             <h2>You may also like</h2>
             <div className="related-products-grid">
-              {recommendations.map((relatedProduct) => {
-                const currentPrice = relatedProduct.discounted_price ?? relatedProduct.price ?? 0;
-                const originalPrice = relatedProduct.price ?? 0;
-                const currentPriceUsdt = relatedProduct.price_usdt ?? '0';
-                const isOnSale = (relatedProduct.discount_percentage || 0) > 0;
-                return (
-                  <Link key={relatedProduct.id} to={`/product/${relatedProduct.slug}`} className="related-product-card">
-                    <div className="related-product-image">
-                      <img
-                        src={relatedProduct.image || 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image+Available'}
-                        alt={relatedProduct.name}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image+Available';
-                        }}
-                      />
-                      <div className="related-product-badges">
-                        {isOnSale && (
-                          <span className="badge discount">{relatedProduct.discount_percentage}% OFF</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="related-product-info">
-                      <h3>{relatedProduct.name}</h3>
-                      <div className="related-product-pricing">
-                        <span className="current-price">{formatNaira(parseFloat(String(currentPrice)))}</span>
-                        {parseFloat(String(originalPrice)) > parseFloat(String(currentPrice)) && (
-                          <span className="original-price">
-                            {formatNaira(parseFloat(String(originalPrice)))}
-                          </span>
-                        )}
-                        <span className="usdt-price">{parseFloat(String(currentPriceUsdt)).toFixed(6)} USDT</span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
+              {recommendations.map((relatedProduct) => (
+                <ProductCard
+                  key={relatedProduct.id}
+                  id={relatedProduct.id}
+                  slug={relatedProduct.slug}
+                  name={relatedProduct.name}
+                  brand={relatedProduct.brand || ''}
+                  image={relatedProduct.image || ''}
+                  price={Number(relatedProduct.discounted_price ?? relatedProduct.price ?? 0)}
+                  originalPrice={Number(relatedProduct.price ?? 0)}
+                  usdtPrice={relatedProduct.price_usdt ? String(relatedProduct.price_usdt) : undefined}
+                  rating={0}
+                  reviews={0}
+                  inStock={relatedProduct.is_in_stock}
+                  showBadges={false}
+                  showWishlist={false}
+                  showActions={false}
+                  is_on_sale={(relatedProduct.discount_percentage || 0) > 0}
+                  discount_percentage={relatedProduct.discount_percentage}
+                />
+              ))}
             </div>
           </div>
         </div>
