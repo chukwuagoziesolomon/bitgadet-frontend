@@ -116,15 +116,11 @@ interface Recommendation {
   id: number;
   name: string;
   slug: string;
-  main_image: string;
-  current_price: string;
-  original_price: string;
-  current_price_usdt: string;
-  original_price_usdt: string;
+  image: string;
+  price: number | string;
+  price_usdt: number | string;
+  discounted_price: number | string;
   discount_percentage: number;
-  is_on_sale: boolean;
-  is_new: boolean;
-  is_bestseller: boolean;
 }
 
 const ProductDetails: React.FC = () => {
