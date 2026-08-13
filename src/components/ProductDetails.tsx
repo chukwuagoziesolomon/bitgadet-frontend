@@ -118,10 +118,13 @@ interface Recommendation {
   name: string;
   slug: string;
   image: string;
+  brand?: string;
+  category?: string;
   price: number | string;
   price_usdt: number | string;
   discounted_price: number | string;
   discount_percentage: number;
+  is_in_stock?: boolean;
 }
 
 const ProductDetails: React.FC = () => {
