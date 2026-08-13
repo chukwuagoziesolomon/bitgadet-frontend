@@ -1084,42 +1084,43 @@ const ProductDetails: React.FC = () => {
           <div className="related-products-container">
             <h2>You may also like</h2>
             <div className="related-products-grid">
-              {recommendations.map((relatedProduct) => (
-                <Link key={relatedProduct.id} to={`/product/${relatedProduct.slug}`} className="related-product-card">
-                  <div className="related-product-image">
-                    <img
-                      src={relatedProduct.main_image || 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image+Available'}
-                      alt={relatedProduct.name}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image+Available'; // Fallback placeholder
-                      }}
-                    />
-                    <div className="related-product-badges">
-                      {relatedProduct.is_on_sale && (
-                        <span className="badge discount">{relatedProduct.discount_percentage}% OFF</span>
-                      )}
-                      {relatedProduct.is_new && <span className="badge new-arrival">New</span>}
-                      {relatedProduct.is_bestseller && <span className="badge bestseller">Bestseller</span>}
+              {recommendations.map((relatedProduct) => {
+                const currentPrice = relatedProduct.discounted_price ?? relatedProduct.price ?? 0;
+                const originalPrice = relatedProduct.price ?? 0;
+                const currentPriceUsdt = relatedProduct.price_usdt ?? '0';
+                const isOnSale = (relatedProduct.discount_percentage || 0) > 0;
+                return (
+                  <Link key={relatedProduct.id} to={`/product/${relatedProduct.slug}`} className="related-product-card">
+                    <div className="related-product-image">
+                      <img
+                        src={relatedProduct.image || 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image+Available'}
+                        alt={relatedProduct.name}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = 'https://via.placeholder.com/250x250/f3f4f6/9ca3af?text=No+Image+Available';
+                        }}
+                      />
+                      <div className="related-product-badges">
+                        {isOnSale && (
+                          <span className="badge discount">{relatedProduct.discount_percentage}% OFF</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="related-product-info">
-                    <h3>{relatedProduct.name}</h3>
-                    <div className="related-product-pricing">
-                      <span className="current-price">{formatNaira(parseFloat(relatedProduct.current_price))}</span>
-                      {parseFloat(relatedProduct.original_price) > parseFloat(relatedProduct.current_price) && (
-                        <span className="original-price">
-                          {formatNaira(parseFloat(relatedProduct.original_price))}
-                        </span>
-                      )}
-                      <span className="usdt-price">{relatedProduct.current_price_usdt} USDT</span>
-                      {parseFloat(relatedProduct.original_price_usdt) > parseFloat(relatedProduct.current_price_usdt) && (
-                        <span className="usdt-original">({relatedProduct.original_price_usdt})</span>
-                      )}
+                    <div className="related-product-info">
+                      <h3>{relatedProduct.name}</h3>
+                      <div className="related-product-pricing">
+                        <span className="current-price">{formatNaira(parseFloat(String(currentPrice)))}</span>
+                        {parseFloat(String(originalPrice)) > parseFloat(String(currentPrice)) && (
+                          <span className="original-price">
+                            {formatNaira(parseFloat(String(originalPrice)))}
+                          </span>
+                        )}
+                        <span className="usdt-price">{parseFloat(String(currentPriceUsdt)).toFixed(6)} USDT</span>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
