@@ -363,13 +363,13 @@ const Checkout: React.FC = () => {
 
       console.log('Order creation response:', result);
 
-      if (!result.success) {
-        showError('Error creating order', result.message || 'Order creation failed');
+      const createdOrder = result || {};
+      const orderId = createdOrder.order_id;
+
+      if (!orderId) {
+        showError('Error creating order', 'Order creation failed');
         return;
       }
-
-      const createdOrder = result.data || result;
-      const orderId = createdOrder.order_id;
 
       showSuccess('Order created!', 'Initiating payment...');
 
