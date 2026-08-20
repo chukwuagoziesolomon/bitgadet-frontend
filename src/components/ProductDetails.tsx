@@ -55,6 +55,7 @@ interface Product {
   original_price?: string;
   current_price_usdt?: string;
   original_price_usdt?: string;
+  discounted_price?: string;
   discount_percentage: number;
   stock_quantity: number;
   sku: string;
@@ -604,14 +605,14 @@ const ProductDetails: React.FC = () => {
             <div className="product-pricing">
               <div className="price-main">
                 <span className="current-price">
-                  {formatNaira(parseFloat(product.current_price || product.price || '0'))}
+                  {formatNaira(parseFloat(product.discounted_price || product.current_price || product.price || '0'))}
                 </span>
                 {product.discount_percentage > 0 && (
                   <>
                     <span className="original-price">
                       {product.original_price 
                         ? formatNaira(parseFloat(product.original_price))
-                        : formatNaira(parseFloat(product.current_price || product.price || '0') / (1 - product.discount_percentage / 100))}
+                        : formatNaira(parseFloat(product.discounted_price || product.current_price || product.price || '0') / (1 - product.discount_percentage / 100))}
                     </span>
                     <div className="discount-badge">
                       {product.discount_percentage}% OFF
