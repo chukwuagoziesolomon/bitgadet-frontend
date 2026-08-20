@@ -43,7 +43,7 @@ class CartService {
 
         // Add authorization header for authenticated users
         if (authToken) {
-            headers['Authorization'] = `Bearer ${authToken}`;
+            headers['Authorization'] = `Token ${authToken}`;
         }
 
         const body: any = {
@@ -104,7 +104,12 @@ class CartService {
         const url = cartToken ? buildApiUrl(`/api/v1/cart/?cart_token=${cartToken}`) : buildApiUrl('/api/v1/cart/');
         console.log('CartService getCart: making request to:', url);
 
-        const response = await fetch(url);
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Token ${authToken}` } : {}),
+        };
+
+        const response = await fetch(url, { headers });
 
         if (!response.ok) {
             throw new Error('Failed to load cart');
@@ -135,15 +140,18 @@ class CartService {
             cartToken = initializeCartToken();
         }
 
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Token ${authToken}` } : {}),
+        };
+
         const response = await fetch(buildApiUrl('/api/v1/cart/update/'), {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify({
                 product_id: productId,
                 quantity: quantity,
-                cart_token: cartToken
+                ...(cartToken ? { cart_token: cartToken } : {}),
             })
         });
 
@@ -151,6 +159,12 @@ class CartService {
 
         if (!response.ok) {
             throw new Error(data.error || 'Failed to update cart');
+        }
+
+        // Save cart_token if returned by server
+        const unwrapped = this.unwrapResponse(data);
+        if (unwrapped?.cart_token) {
+            this.setCartToken(unwrapped.cart_token);
         }
 
         return data;
@@ -166,14 +180,17 @@ class CartService {
             cartToken = initializeCartToken();
         }
 
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+            ...(authToken ? { 'Authorization': `Token ${authToken}` } : {}),
+        };
+
         const response = await fetch(buildApiUrl('/api/v1/cart/remove/'), {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify({
                 product_id: productId,
-                cart_token: cartToken
+                ...(cartToken ? { cart_token: cartToken } : {}),
             })
         });
 
@@ -181,6 +198,12 @@ class CartService {
 
         if (!response.ok) {
             throw new Error(data.error || 'Failed to remove from cart');
+        }
+
+        // Save cart_token if returned by server
+        const unwrapped = this.unwrapResponse(data);
+        if (unwrapped?.cart_token) {
+            this.setCartToken(unwrapped.cart_token);
         }
 
         return data;
@@ -209,6 +232,7 @@ class CartService {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                ...(authToken ? { 'Authorization': `Token ${authToken}` } : {}),
                 ...(cartToken ? { 'X-Cart-Token': cartToken } : {}),
             }
         });
@@ -244,9 +268,10 @@ class CartService {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                ...(authToken ? { 'Authorization': `Token ${authToken}` } : {}),
             },
             body: JSON.stringify({
-                cart_token: cartToken
+                ...(cartToken ? { cart_token: cartToken } : {}),
             })
         });
 
