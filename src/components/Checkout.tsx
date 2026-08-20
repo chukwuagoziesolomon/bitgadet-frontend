@@ -411,7 +411,17 @@ const Checkout: React.FC = () => {
             currency: 'USDT',
           })
         });
-        const cryptoData = cryptoRes.data || cryptoRes;
+        const cryptoData = cryptoRes?.data || cryptoRes || {};
+
+        const paymentAddress = cryptoData.payment_address || cryptoData.wallet_address;
+        const amountCrypto = cryptoData.amount_crypto || cryptoData.expected_amount;
+        const network = cryptoData.network || cryptoData.blockchain;
+
+        if (!paymentAddress || !amountCrypto) {
+          showError('Payment Error', 'Could not get crypto payment details. Please try again or contact support.');
+          return;
+        }
+
         navigate('/payment-details', {
           state: {
             paymentMethod: 'crypto',
@@ -420,9 +430,11 @@ const Checkout: React.FC = () => {
             orderData: { ...createdOrder, email: formData.email },
             paymentInfo: {
               order_id: orderId,
-              payment_address: cryptoData.payment_address,
-              amount_crypto: cryptoData.amount_crypto,
-              network: cryptoData.network,
+              payment_address: paymentAddress,
+              wallet_address: paymentAddress,
+              amount_crypto: amountCrypto,
+              expected_amount: amountCrypto,
+              network: network || cryptoType,
               expires_at: cryptoData.expires_at,
               currency: 'USDT',
             }
