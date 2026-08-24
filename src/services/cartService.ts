@@ -151,7 +151,7 @@ class CartService {
             body: JSON.stringify({
                 product_id: productId,
                 quantity: quantity,
-                ...(cartToken ? { cart_token: cartToken } : {}),
+                cart_token: cartToken
             })
         });
 
@@ -190,7 +190,7 @@ class CartService {
             headers,
             body: JSON.stringify({
                 product_id: productId,
-                ...(cartToken ? { cart_token: cartToken } : {}),
+                cart_token: cartToken
             })
         });
 
@@ -271,7 +271,7 @@ class CartService {
                 ...(authToken ? { 'Authorization': `Token ${authToken}` } : {}),
             },
             body: JSON.stringify({
-                ...(cartToken ? { cart_token: cartToken } : {}),
+                cart_token: cartToken
             })
         });
 
