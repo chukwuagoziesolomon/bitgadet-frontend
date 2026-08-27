@@ -85,7 +85,7 @@ const CategoryPage: React.FC = () => {
       slug: product.slug,
       name: product.name,
       brand: product.brand_name || product.brand,
-      image: product.main_image,
+      image: product.image || product.main_image,
       price: parseFloat(product.current_price),
       originalPrice: parseFloat(product.original_price),
       usdtPrice: product.current_price_usdt,

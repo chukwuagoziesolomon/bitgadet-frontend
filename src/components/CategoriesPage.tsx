@@ -18,6 +18,33 @@ interface Category {
   updated_at?: string;
 }
 
+const CATEGORY_IMAGE_MAP: Record<string, string> = {
+  phones: '/phone1.png',
+  laptops: '/laptop1.png',
+  tablets: '/tablet.png',
+  games: '/games.png',
+  smartwatches: '/phonewatch2.png',
+  watches: '/watch.png',
+  accessories: '/icon1.png',
+};
+
+const getCategoryImage = (category: Category): string => {
+  const raw =
+    (category as any).image ||
+    (category as any).category_image ||
+    (category as any).main_image ||
+    (category as any).thumbnail ||
+    (category as any).image_url ||
+    '';
+
+  if (raw && raw.trim()) return raw.trim();
+
+  const mapped = CATEGORY_IMAGE_MAP[category.name.toLowerCase()];
+  if (mapped) return mapped;
+
+  return 'https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=' + encodeURIComponent(category.display_name || category.name);
+};
+
 const CategoriesPage: React.FC = () => {
   const { showError } = useToast();
   const { setLoading } = useGlobalLoading();
@@ -191,11 +218,11 @@ const CategoriesPage: React.FC = () => {
             <Link key={category.id} to={`/categories/${category.name}`} className="category-card">
               <div className="category-image">
                 <img
-                  src={category.image}
+                  src={getCategoryImage(category)}
                   alt={category.display_name}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = 'https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=No+Image';
+                    target.src = 'https://via.placeholder.com/300x200/f3f4f6/9ca3af?text=' + encodeURIComponent(category.display_name || category.name);
                   }}
                 />
                 <div className="product-count-badge">
