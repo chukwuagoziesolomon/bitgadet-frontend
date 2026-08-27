@@ -86,7 +86,6 @@ export const API_CONFIG = {
     CART_SUMMARY: '/api/v1/cart/summary/',
     // Payment Verification Endpoints
     PAYMENT_PAYSTACK_VERIFY: '/api/v1/payments/paystack/{reference}/verify/',
-    PAYMENT_CRYPTO_STATUS: '/api/v1/crypto/payments/{payment_id}/status/',
     PAYMENT_DVA_VERIFY: '/api/v1/payments/dva/{order_id}/verify/',
   },
   TIMEOUT: 10000, // 10 seconds

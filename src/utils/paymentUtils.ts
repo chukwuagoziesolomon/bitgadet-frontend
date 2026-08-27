@@ -169,7 +169,6 @@ export const getPaymentMethodName = (method: string): string => {
   const names: Record<string, string> = {
     paystack: 'Credit/Debit Card',
     bank_transfer: 'Bank Transfer (Pay with Transfer)',
-    crypto: 'Cryptocurrency'
   };
   return names[method] || method;
 };
@@ -181,7 +180,6 @@ export const getPaymentMethodDescription = (method: string): string => {
   const descriptions: Record<string, string> = {
     paystack: 'Pay securely with your credit or debit card via Paystack',
     bank_transfer: 'Receive temporary bank account details for payment. Valid for 8 hours.',
-    crypto: 'Pay with Bitcoin or Ethereum. Instant confirmation.'
   };
   return descriptions[method] || '';
 };

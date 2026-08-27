@@ -48,36 +48,6 @@ class PaymentService {
   }
 
   /**
-   * Check cryptocurrency payment status
-   */
-  async checkCryptoPaymentStatus(paymentId: string): Promise<PaymentVerificationResult> {
-    try {
-      console.log('🔍 Checking crypto payment status for ID:', paymentId);
-      const endpoint = API_CONFIG.ENDPOINTS.PAYMENT_CRYPTO_STATUS.replace('{payment_id}', paymentId);
-      const data = await publicApiRequest<any>(endpoint);
-
-      console.log('✅ Crypto status response:', data);
-
-      const status = data.status;
-      const isFinished = status === 'finished';
-      const isFailed = status === 'failed' || status === 'expired';
-
-      return {
-        success: isFinished,
-        status: status,
-        data: data
-      };
-    } catch (error: any) {
-      console.error('❌ Crypto status check failed:', error);
-      return {
-        success: false,
-        status: 'error',
-        error: error.message || 'Crypto status check failed'
-      };
-    }
-  }
-
-  /**
    * Verify bank transfer (DVA) payment
    */
   async verifyBankTransfer(orderId: string): Promise<PaymentVerificationResult> {
@@ -111,8 +81,8 @@ class PaymentService {
    * Start polling for payment verification
    */
   startPolling(
-    paymentMethod: 'paystack' | 'crypto' | 'bank',
-    identifier: string, // reference for paystack, paymentId for crypto, orderId for bank
+    paymentMethod: 'paystack' | 'bank',
+    identifier: string,
     options: PollingOptions
   ): string {
     const pollingId = `${paymentMethod}_${identifier}_${Date.now()}`;
@@ -133,9 +103,6 @@ class PaymentService {
         switch (paymentMethod) {
           case 'paystack':
             result = await this.verifyPaystackPayment(identifier);
-            break;
-          case 'crypto':
-            result = await this.checkCryptoPaymentStatus(identifier);
             break;
           case 'bank':
             result = await this.verifyBankTransfer(identifier);
@@ -212,17 +179,9 @@ class PaymentService {
   private shouldStopPolling(paymentMethod: string, result: PaymentVerificationResult): boolean {
     switch (paymentMethod) {
       case 'paystack':
-        // Paystack: stop after first check (no polling needed)
         return true;
-
-      case 'crypto':
-        // Crypto: stop when finished, failed, or expired
-        return ['finished', 'failed', 'expired'].includes(result.status);
-
       case 'bank':
-        // Bank: stop when completed or error
         return result.status === 'completed' || result.status === 'error';
-
       default:
         return true;
     }
@@ -233,8 +192,6 @@ class PaymentService {
    */
   getPollingInterval(paymentMethod: string): number {
     switch (paymentMethod) {
-      case 'crypto':
-        return 15000; // 15 seconds
       case 'bank':
         return 30000; // 30 seconds
       case 'paystack':

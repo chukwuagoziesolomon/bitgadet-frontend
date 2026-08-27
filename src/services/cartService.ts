@@ -135,8 +135,7 @@ class CartService {
         const authToken = localStorage.getItem('authToken');
         let cartToken = this.getCartToken();
 
-        // For guest users, ensure we have a cart token
-        if (!authToken && !cartToken) {
+        if (!cartToken) {
             cartToken = initializeCartToken();
         }
 
@@ -175,8 +174,7 @@ class CartService {
         const authToken = localStorage.getItem('authToken');
         let cartToken = this.getCartToken();
 
-        // For guest users, ensure we have a cart token
-        if (!authToken && !cartToken) {
+        if (!cartToken) {
             cartToken = initializeCartToken();
         }
 
@@ -259,8 +257,7 @@ class CartService {
         const authToken = localStorage.getItem('authToken');
         let cartToken = this.getCartToken();
 
-        // For guest users, ensure we have a cart token
-        if (!authToken && !cartToken) {
+        if (!cartToken) {
             cartToken = initializeCartToken();
         }
 

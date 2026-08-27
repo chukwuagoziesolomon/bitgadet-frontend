@@ -13,7 +13,7 @@ export interface CheckoutFormData {
   state: string;
   country: string;
   postal_code?: string;
-  payment_method: 'paystack' | 'bank_transfer' | 'crypto';
+  payment_method: 'paystack' | 'bank_transfer';
   shipping_method?: string;
   coupon_code?: string | null;
   cart_token: string | null;
@@ -40,7 +40,6 @@ export interface CheckoutResponse {
     // Optional fields persisted by backend
     discount_amount?: number;
     coupon_code?: string | null;
-    total_amount_usdt?: number;
     payment_method: string;
     status: string;
     created_at: string;
@@ -92,7 +91,6 @@ export interface OrderStatusResponse {
   // Optional fields for backwards-compatibility
   discount_amount?: number;
   coupon_code?: string | null;
-  total_amount_usdt?: number;
   created_at: string;
   updated_at: string;
   payment_reference?: string;

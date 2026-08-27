@@ -216,12 +216,9 @@ const PaymentDetails: React.FC = () => {
                   </div>
                   <div className="order-amount">
                     <span className="amount-label">Total Amount</span>
-                    <span className="amount-value">
-                      {paymentMethod === 'crypto' 
-                        ? `${(paymentData.payment_info.amount_crypto || paymentData.payment_info.expected_amount || 0)} ${paymentData.payment_info.currency || 'USDT'}`
-                        : `₦${paymentData.payment_info.total_amount?.toLocaleString() || paymentData.order?.total?.toLocaleString() || '0'}`
-                      }
-                    </span>
+                     <span className="amount-value">
+                       ₦{paymentData.payment_info.total_amount?.toLocaleString() || paymentData.order?.total_amount?.toLocaleString() || '0'}
+                     </span>
                   </div>
                 </div>
 
@@ -303,122 +300,6 @@ const PaymentDetails: React.FC = () => {
                   </div>
                 )}
 
-                {paymentMethod === 'crypto' && paymentData.payment_info.error && (
-                  <div className="payment-method-card error-payment">
-                    <div className="method-header">
-                      <div className="method-icon">
-                        <AlertTriangle />
-                      </div>
-                      <div className="method-info">
-                        <h2>Payment Unavailable</h2>
-                        <p>{paymentData.payment_info.error}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === 'crypto' && !paymentData.payment_info.error && (
-                  <div className="payment-method-card crypto-payment">
-                    <div className="method-header">
-                      <div className="method-icon">
-                        <Gamepad2 />
-                      </div>
-                      <div className="method-info">
-                        <h2>Cryptocurrency Payment</h2>
-                        <p>Pay with {paymentData.payment_info.currency} on {paymentData.payment_info.network} network</p>
-                      </div>
-                    </div>
-
-                    <div className="crypto-details">
-                      <div className="crypto-wallet-section">
-                        <label>Wallet Address</label>
-                        <div className="wallet-address-input">
-                          <input
-                            type="text"
-                            value={paymentData.payment_info.payment_address || paymentData.payment_info.wallet_address || 'N/A'}
-                            readOnly
-                            className="wallet-input"
-                          />
-                          <button
-                            className="copy-btn"
-                            title="Copy Wallet Address"
-                            aria-label="Copy Wallet Address"
-                            onClick={() => handleCopy(paymentData.payment_info.payment_address || paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
-                          >
-                            {copied === 'wallet' ? <Check /> : <Copy />}
-                            <span className="copy-text">Copy</span>
-                          </button>
-                        </div>
-                        
-                        {/* Mobile wallet address display - shows full address */}
-                        <div className="wallet-address-mobile">
-                          <span>Full Address: </span>
-                          <span className="wallet-address-text">{paymentData.payment_info.payment_address || paymentData.payment_info.wallet_address || 'N/A'}</span>
-                        </div>
-                        {/* Mobile-only copy control: visible below the input on small screens */}
-                        <button
-                          className="copy-btn copy-btn-mobile"
-                          title="Copy Wallet Address"
-                          aria-label="Copy Wallet Address"
-                            onClick={() => handleCopy(paymentData.payment_info.payment_address || paymentData.payment_info.wallet_address, 'Wallet Address', 'wallet')}
-                        >
-                          {copied === 'wallet' ? <Check /> : <Copy />} <span>Copy wallet address</span>
-                        </button>
-                      </div>
-
-                      <div className="crypto-info-grid">
-                        <div className="crypto-detail-card">
-                          <label>Network</label>
-                          <div className="detail-input">
-                            {paymentData.payment_info.network || 'N/A'}
-                          </div>
-                        </div>
-
-                        <div className="crypto-detail-card">
-                          <label>Currency</label>
-                          <div className="detail-input">
-                            {paymentData.payment_info.currency || 'N/A'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="crypto-amount-section">
-                        <div className="amount-card">
-                          <span className="amount-label">Expected Amount</span>
-                          <span className="amount-value">{paymentData.payment_info.amount_crypto || paymentData.payment_info.expected_amount || '0'} {paymentData.payment_info.currency || 'USDT'}</span>
-                        </div>
-                        {paymentData.payment_info.expires_at && (
-                          <div className="amount-card" style={{ marginTop: '8px', backgroundColor: '#fff7ed', borderColor: '#fed7aa' }}>
-                            <span className="amount-label" style={{ color: '#c2410c' }}>Payment Expires</span>
-                            <span className="amount-value" style={{ color: '#c2410c', fontSize: '14px' }}>
-                              {new Date(paymentData.payment_info.expires_at).toLocaleString()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="crypto-instructions">
-                        <div className="instructions-header">
-                          <span className="instruction-icon"><Lock /></span>
-                          <h4>Payment Instructions</h4>
-                        </div>
-                        <div className="instructions-list">
-                          <div className="instruction-item">
-                            <span className="step-number">1</span>
-                            <span>Send the exact amount to the wallet address above</span>
-                          </div>
-                          <div className="instruction-item">
-                            <span className="step-number">2</span>
-                            <span>Include your Order ID in the transaction memo</span>
-                          </div>
-                          <div className="instruction-item">
-                            <span className="step-number">3</span>
-                            <span>Wait for blockchain confirmation</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 )}
 
                 {paymentMethod === 'paystack' && (

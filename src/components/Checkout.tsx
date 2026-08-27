@@ -7,14 +7,11 @@ import { cartService } from '../services/cartService';
 import './Checkout.css';
 
 const Checkout: React.FC = () => {
-  const [paymentMethod, setPaymentMethod] = useState('crypto');
-  const [cryptoType, setCryptoType] = useState('btc');
+  const [paymentMethod, setPaymentMethod] = useState('paystack');
   const [agree, setAgree] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const [cryptoCurrencies, setCryptoCurrencies] = useState<any[]>([]);
-  const [cryptoLoading, setCryptoLoading] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
   const [couponLoading, setCouponLoading] = useState(false);
@@ -47,11 +44,6 @@ const Checkout: React.FC = () => {
   const summaryTaxNgn = orderSummary?.tax_ngn ?? orderSummary?.tax ?? 0;
   const summaryShippingNgn = orderSummary?.shipping_cost_ngn ?? orderSummary?.shipping_cost ?? 0;
   const summaryTotalNgn = orderSummary?.total_ngn ?? orderSummary?.total_amount ?? orderSummary?.total ?? 0;
-  const summarySubtotalUsdt = orderSummary?.subtotal_usdt ?? 0;
-  const summaryDiscountUsdt = orderSummary?.discount_usdt ?? orderSummary?.discount_amount_usdt ?? orderSummary?.discount_amount_secondary ?? 0;
-  const summaryTaxUsdt = orderSummary?.tax_usdt ?? orderSummary?.tax_amount_usdt ?? 0;
-  const summaryShippingUsdt = orderSummary?.shipping_cost_usdt ?? 0;
-  const summaryTotalUsdt = orderSummary?.total_usdt ?? 0;
   const hasOrderSummary = !!orderSummary && (
     orderSummary.subtotal_ngn !== undefined ||
     orderSummary.total_ngn !== undefined ||
@@ -70,11 +62,10 @@ const Checkout: React.FC = () => {
   const fetchOrderSummary = async (state?: string, couponCode?: string) => {
     try {
       setSummaryLoading(true);
-      const apiPaymentMethod = paymentMethod === 'crypto' ? 'nowpayments' : 'paystack';
       const summaryData = await cartService.getCartSummary({
         ...(state ? { state } : {}),
         ...(couponCode ? { coupon_code: couponCode } : {}),
-        payment_method: apiPaymentMethod,
+        payment_method: 'paystack',
       });
       if (summaryData && (
         summaryData.total_ngn !== undefined ||
@@ -149,16 +140,6 @@ const Checkout: React.FC = () => {
       fetchOrderSummary(formData.state.trim(), appliedCoupon?.code || couponCode || undefined);
     }
   }, [paymentMethod]);
-
-  // Fetch available cryptocurrencies when crypto payment is selected
-  useEffect(() => {
-    if (paymentMethod === 'crypto') {
-      // We only accept USDT on BEP20 for now; provide a static option instead of calling the unused endpoint
-      const usdtOption = { id: 'usdt_bep20', name: 'USDT (BEP20)', symbol: 'USDT', network: 'BEP20' };
-      setCryptoCurrencies([usdtOption]);
-      setCryptoType(prev => prev || usdtOption.id);
-    }
-  }, [paymentMethod, addToast]);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -336,10 +317,6 @@ const Checkout: React.FC = () => {
       console.log('Order summary:', orderSummary);
 
       // Use actual order summary data instead of hardcoded values
-      // Map UI payment method to API values
-      const apiPaymentMethod = paymentMethod === 'crypto' ? 'nowpayments' : 'paystack';
-      const apiCurrency = paymentMethod === 'crypto' ? 'USDT' : 'NGN';
-
       const orderPayload: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -350,8 +327,8 @@ const Checkout: React.FC = () => {
         state: formData.state,
         postal_code: formData.postalCode,
         country: formData.country || 'Nigeria',
-        payment_method: apiPaymentMethod,
-        currency: apiCurrency,
+        payment_method: 'paystack',
+        currency: 'NGN',
       };
       if (appliedCoupon?.code) orderPayload.coupon_code = appliedCoupon.code;
       if (cartToken) orderPayload.cart_token = cartToken;
@@ -373,73 +350,21 @@ const Checkout: React.FC = () => {
 
       showSuccess('Order created!', 'Initiating payment...');
 
-      if (paymentMethod === 'paystack') {
-        // Paystack: call payments/create/ and redirect to authorization_url
-        const payRes = await conditionalApiRequest<any>('/api/v1/payments/create/', {
-          method: 'POST',
-          body: JSON.stringify({
-            order_id: orderId,
-            amount: createdOrder.total,
-            currency: 'NGN',
-            email: formData.email,
-          })
-        });
-        const payData = payRes.data || payRes;
-        if (payData.authorization_url) {
-          window.location.href = payData.authorization_url;
-        } else {
-          showError('Payment Error', 'Could not get Paystack payment URL');
-        }
-      } else if (paymentMethod === 'crypto') {
-        // Resolve USDT total: prefer already-fetched cart summary; if missing, fetch order summary
-        let usdtTotal: number = summaryTotalUsdt;
-        if (!usdtTotal) {
-          try {
-            const orderSummaryData = await cartService.getCreatedOrderSummary(orderId);
-            usdtTotal = orderSummaryData?.total_usdt ?? 0;
-          } catch (_) {
-            // fall through to NGN fallback
-          }
-        }
-
-        // Crypto: call payments/crypto/create/ and navigate to PaymentDetails
-        const cryptoRes = await conditionalApiRequest<any>('/api/v1/payments/crypto/create/', {
-          method: 'POST',
-          body: JSON.stringify({
-            order_id: orderId,
-            amount: usdtTotal || createdOrder.total,
-            currency: 'USDT',
-          })
-        });
-        const cryptoData = cryptoRes?.data || cryptoRes || {};
-
-        const paymentAddress = cryptoData.payment_address || cryptoData.wallet_address;
-        const amountCrypto = cryptoData.amount_crypto || cryptoData.expected_amount;
-        const network = cryptoData.network || cryptoData.blockchain;
-
-        if (!paymentAddress || !amountCrypto) {
-          showError('Payment Error', 'Could not get crypto payment details. Please try again or contact support.');
-          return;
-        }
-
-        navigate('/payment-details', {
-          state: {
-            paymentMethod: 'crypto',
-            cryptoType,
-            cartToken,
-            orderData: { ...createdOrder, email: formData.email },
-            paymentInfo: {
-              order_id: orderId,
-              payment_address: paymentAddress,
-              wallet_address: paymentAddress,
-              amount_crypto: amountCrypto,
-              expected_amount: amountCrypto,
-              network: network || cryptoType,
-              expires_at: cryptoData.expires_at,
-              currency: 'USDT',
-            }
-          }
-        });
+      // Paystack: call payments/create/ and redirect to authorization_url
+      const payRes = await conditionalApiRequest<any>('/api/v1/payments/create/', {
+        method: 'POST',
+        body: JSON.stringify({
+          order_id: orderId,
+          amount: createdOrder.total,
+          currency: 'NGN',
+          email: formData.email,
+        })
+      });
+      const payData = payRes.data || payRes;
+      if (payData.authorization_url) {
+        window.location.href = payData.authorization_url;
+      } else {
+        showError('Payment Error', 'Could not get Paystack payment URL');
       }
     } catch (error) {
       console.error('Error submitting order:', error);
@@ -516,9 +441,6 @@ const Checkout: React.FC = () => {
                       <span>Subtotal ({orderSummary.items_count || orderSummary.total_items || 0} items)</span>
                       <span>
                         {formatNgn(summarySubtotalNgn)}
-                        <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                          ({summarySubtotalUsdt.toFixed(2)} USDT)
-                        </small>
                       </span>
                     </div>
 
@@ -529,11 +451,6 @@ const Checkout: React.FC = () => {
                             <span style={{ color: '#10b981', fontWeight: '600' }}>Discount:</span>
                             <span style={{ color: '#10b981', fontWeight: '700' }}>
                               -{formatNgn(summaryDiscountNgn)}
-                              {summaryDiscountUsdt > 0 && (
-                                <span style={{ fontSize: '0.9rem', marginLeft: '8px' }}>
-                                  ({summaryDiscountUsdt.toFixed(2)} USDT)
-                                </span>
-                              )}
                             </span>
                           </div>
                         </div>
@@ -544,9 +461,6 @@ const Checkout: React.FC = () => {
                       <span>Tax</span>
                       <span>
                         {formatNgn(summaryTaxNgn)}
-                        <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                          ({summaryTaxUsdt.toFixed(2)} USDT)
-                        </small>
                       </span>
                     </div>
 
@@ -554,9 +468,6 @@ const Checkout: React.FC = () => {
                       <span>Shipping</span>
                       <span>
                         {formatNgn(summaryShippingNgn)}
-                        <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                          ({summaryShippingUsdt.toFixed(2)} USDT)
-                        </small>
                       </span>
                     </div>
 
@@ -564,9 +475,6 @@ const Checkout: React.FC = () => {
                       <span>Total</span>
                       <span>
                         {formatNgn(summaryTotalNgn)}
-                        <small style={{ display: 'block', color: '#059669', fontSize: '14px', fontWeight: '500' }}>
-                          ({summaryTotalUsdt.toFixed(2)} USDT)
-                        </small>
                       </span>
                     </div>
                     
@@ -712,13 +620,6 @@ const Checkout: React.FC = () => {
           <section className="checkout-section">
             <div className="section-title"><span className="section-number">3</span> Payment Method</div>
             <div className="payment-options">
-              {/* <label className={`payment-option${paymentMethod === 'card' ? ' selected' : ''}`}>
-                <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} />
-                <div>
-                  <div>Credit/Debit Card</div>
-                  <small>Pay with Visa, Mastercard, or Verve</small>
-                </div>
-              </label> */}
               <label className={`payment-option${paymentMethod === 'paystack' ? ' selected' : ''}`}>
                 <input type="radio" name="payment" value="paystack" checked={paymentMethod === 'paystack'} onChange={() => setPaymentMethod('paystack')} />
                 <div>
@@ -726,66 +627,7 @@ const Checkout: React.FC = () => {
                   <small>Pay with debit card or bank transfer via Paystack</small>
                 </div>
               </label>
-              <label className={`payment-option${paymentMethod === 'crypto' ? ' selected' : ''}`}>
-                <input type="radio" name="payment" value="crypto" checked={paymentMethod === 'crypto'} onChange={() => setPaymentMethod('crypto')} />
-                <div>
-                  <div>Cryptocurrency <span className="recommended">Recommended</span></div>
-                  <small>Pay with USDT</small>
-                </div>
-              </label>
             </div>
-            {paymentMethod === 'crypto' && (
-              <div className="crypto-select">
-                <div className="crypto-label">Select Cryptocurrency</div>
-                {cryptoLoading ? (
-                  <div className="crypto-loading">Loading cryptocurrencies...</div>
-                ) : cryptoCurrencies.length > 0 ? (
-                  cryptoCurrencies.map((currency) => (
-                    <label key={currency.id}>
-                      <input
-                        type="radio"
-                        name="crypto"
-                        value={currency.id}
-                        checked={cryptoType === currency.id}
-                        onChange={() => setCryptoType(currency.id)}
-                      />
-                      <div className="crypto-option">
-                        <div className="crypto-icon" style={currency.symbol === 'USDT' ? {backgroundColor: '#26a17b', color: 'white'} : {}}>
-                          {currency.symbol}
-                        </div>
-                        <div className="crypto-info">
-                          <div className="crypto-name">{currency.name}</div>
-                          <div className="crypto-network">{currency.network_name}</div>
-                        </div>
-                      </div>
-                    </label>
-                  ))
-                ) : (
-                  <>
-                    <label>
-                      <input type="radio" name="crypto" value="btc" checked={cryptoType === 'btc'} onChange={() => setCryptoType('btc')} />
-                      <div className="crypto-option">
-                        <div className="crypto-icon">₿</div>
-                        <div className="crypto-info">
-                          <div className="crypto-name">Bitcoin (BTC)</div>
-                          <div className="crypto-network">BTC Network</div>
-                        </div>
-                      </div>
-                    </label>
-                    <label>
-                      <input type="radio" name="crypto" value="eth" checked={cryptoType === 'eth'} onChange={() => setCryptoType('eth')} />
-                      <div className="crypto-option">
-                        <div className="crypto-icon">Ξ</div>
-                        <div className="crypto-info">
-                          <div className="crypto-name">Ethereum (ETH)</div>
-                          <div className="crypto-network">ERC20 Network</div>
-                        </div>
-                      </div>
-                    </label>
-                  </>
-                )}
-              </div>
-            )}
           </section>
 
           {/* Additional Information */}
@@ -892,72 +734,57 @@ const Checkout: React.FC = () => {
                       </div>
                     </div>
                   )}
-                  <div className="summary-details">
-                    {summaryLoading ? (
-                      <div className="summary-loading">Loading order summary...</div>
-                    ) : hasOrderSummary ? (
-                      <>
-                        <div className="summary-row">
-                          <span>Subtotal ({orderSummary.items_count || orderSummary.total_items || 0} items)</span>
-                          <span>
-                            {formatNgn(summarySubtotalNgn)}
-                            <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                              ({summarySubtotalUsdt.toFixed(2)} USDT)
-                            </small>
-                          </span>
-                        </div>
-
-                        {orderSummary.coupon_applied && summaryDiscountNgn > 0 && (
-                          <div className="summary-row" style={{ color: '#10b981' }}>
-                            <span>Discount</span>
+                    <div className="summary-details">
+                      {summaryLoading ? (
+                        <div className="summary-loading">Loading order summary...</div>
+                      ) : hasOrderSummary ? (
+                        <>
+                          <div className="summary-row">
+                            <span>Subtotal ({orderSummary.items_count || orderSummary.total_items || 0} items)</span>
                             <span>
-                              -{formatNgn(summaryDiscountNgn)}
-                              <small style={{ display: 'block', color: '#10b981', fontSize: '12px' }}>
-                                ({summaryDiscountUsdt.toFixed(2)} USDT)
-                              </small>
+                              {formatNgn(summarySubtotalNgn)}
                             </span>
                           </div>
-                        )}
 
-                        <div className="summary-row">
-                          <span>Tax</span>
-                          <span>
-                            {formatNgn(summaryTaxNgn)}
-                            <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                              ({summaryTaxUsdt.toFixed(2)} USDT)
-                            </small>
-                          </span>
-                        </div>
+                          {orderSummary.coupon_applied && summaryDiscountNgn > 0 && (
+                            <div className="summary-row" style={{ color: '#10b981' }}>
+                              <span>Discount</span>
+                              <span>
+                                -{formatNgn(summaryDiscountNgn)}
+                              </span>
+                            </div>
+                          )}
 
-                        <div className="summary-row">
-                          <span>Shipping</span>
-                          <span>
-                            {formatNgn(summaryShippingNgn)}
-                            <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                              ({summaryShippingUsdt.toFixed(2)} USDT)
-                            </small>
-                            {orderSummary.shipping_note && (
-                              <small style={{ display: 'block', color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
-                                {orderSummary.shipping_note}
-                              </small>
-                            )}
-                          </span>
-                        </div>
+                          <div className="summary-row">
+                            <span>Tax</span>
+                            <span>
+                              {formatNgn(summaryTaxNgn)}
+                            </span>
+                          </div>
 
-                        <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
-                          <span>Total</span>
-                          <span>
-                            {formatNgn(summaryTotalNgn)}
-                            <small style={{ display: 'block', color: '#059669', fontSize: '14px', fontWeight: '500' }}>
-                              ({summaryTotalUsdt.toFixed(2)} USDT)
-                            </small>
-                          </span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="summary-error">Unable to load order summary</div>
-                    )}
-                  </div>
+                          <div className="summary-row">
+                            <span>Shipping</span>
+                            <span>
+                              {formatNgn(summaryShippingNgn)}
+                              {orderSummary.shipping_note && (
+                                <small style={{ display: 'block', color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
+                                  {orderSummary.shipping_note}
+                                </small>
+                              )}
+                            </span>
+                          </div>
+
+                          <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
+                            <span>Total</span>
+                            <span>
+                              {formatNgn(summaryTotalNgn)}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="summary-error">Unable to load order summary</div>
+                      )}
+                    </div>
                   
                   {/* Coupon notice */}
                   {hasCouponProducts && (
@@ -1055,11 +882,6 @@ const Checkout: React.FC = () => {
                       <span>Subtotal ({orderSummary.items_count || orderSummary.total_items || 0} items)</span>
                       <span>
                         {formatNgn(summarySubtotalNgn)}
-                        {summarySubtotalUsdt >= 0 && (
-                          <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                            ({summarySubtotalUsdt.toFixed(2)} USDT)
-                          </small>
-                        )}
                       </span>
                     </div>
 
@@ -1068,11 +890,6 @@ const Checkout: React.FC = () => {
                         <span style={{ color: '#10b981' }}>Discount</span>
                         <span style={{ color: '#10b981' }}>
                           -{formatNgn(summaryDiscountNgn)}
-                          {summaryDiscountUsdt > 0 && (
-                            <small style={{ display: 'block', color: '#10b981', fontSize: '12px' }}>
-                              (-{summaryDiscountUsdt.toFixed(2)} USDT)
-                            </small>
-                          )}
                         </span>
                       </div>
                     )}
@@ -1081,11 +898,6 @@ const Checkout: React.FC = () => {
                       <span>Tax</span>
                       <span>
                         {formatNgn(summaryTaxNgn)}
-                        {summaryTaxUsdt >= 0 && (
-                          <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                            ({summaryTaxUsdt.toFixed(2)} USDT)
-                          </small>
-                        )}
                       </span>
                     </div>
 
@@ -1093,9 +905,6 @@ const Checkout: React.FC = () => {
                       <span>Shipping</span>
                       <span>
                         {formatNgn(summaryShippingNgn)}
-                        <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                          ({summaryShippingUsdt.toFixed(2)} USDT)
-                        </small>
                         {orderSummary.shipping_note && (
                           <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
                             {orderSummary.shipping_note}
@@ -1114,9 +923,6 @@ const Checkout: React.FC = () => {
                       <span>Total</span>
                       <span>
                         {formatNgn(summaryTotalNgn)}
-                        <small style={{ display: 'block', color: '#059669', fontSize: '14px', fontWeight: '500' }}>
-                          ({summaryTotalUsdt.toFixed(2)} USDT)
-                        </small>
                       </span>
                     </div>
                   </>

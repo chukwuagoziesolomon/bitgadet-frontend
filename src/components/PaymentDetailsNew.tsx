@@ -173,16 +173,12 @@ const PaymentDetails: React.FC = () => {
 
       // Start polling with appropriate identifier
       let identifier: string;
-      let method: 'paystack' | 'crypto' | 'bank';
+      let method: 'paystack' | 'bank';
 
       switch (paymentMethod) {
         case 'card':
           method = 'paystack';
           identifier = paymentData.reference || paymentData.order_id;
-          break;
-        case 'crypto':
-          method = 'crypto';
-          identifier = paymentData.payment_id || paymentData.order_id;
           break;
         case 'bank':
           method = 'bank';
@@ -248,10 +244,7 @@ const PaymentDetails: React.FC = () => {
                   <div className="order-amount">
                     <span className="amount-label">Total Amount</span>
                     <span className="amount-value">
-                      {paymentMethod === 'crypto' 
-                        ? `${paymentData.expected_amount?.toFixed(6) || paymentData.total_amount_usdt?.toFixed(6) || paymentData.payment_info?.expected_amount?.toFixed(6) || '0.000000'} ${paymentData.currency || paymentData.payment_info?.currency || 'USDT'}`
-                        : `₦${paymentData.total_amount?.toLocaleString() || paymentData.payment_info?.total_amount?.toLocaleString() || '0'}`
-                      }
+                      ₦{paymentData.total_amount?.toLocaleString() || paymentData.payment_info?.total_amount?.toLocaleString() || '0'}
                     </span>
                   </div>
                 </div>
@@ -346,116 +339,6 @@ const PaymentDetails: React.FC = () => {
                         <div className="instruction-item">
                           <span className="step-number">3</span>
                           <span>Click "I've Made the Transfer" after transferring</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === 'crypto' && paymentData.payment_info?.error && (
-                  <div className="payment-method-card error-payment">
-                    <div className="method-header">
-                      <div className="method-icon">
-                        <AlertTriangle />
-                      </div>
-                      <div className="method-info">
-                        <h2>Payment Unavailable</h2>
-                        <p>{paymentData.payment_info.error}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === 'crypto' && !paymentData.payment_info?.error && (
-                  <div className="payment-method-card crypto-payment">
-                    <div className="method-header">
-                      <div className="method-icon">
-                        <Gamepad2 />
-                      </div>
-                      <div className="method-info">
-                        <h2>Cryptocurrency Payment</h2>
-                        <p>Pay with {paymentData.currency} on {paymentData.network} network</p>
-                      </div>
-                    </div>
-
-                    <div className="crypto-details">
-                      <div className="crypto-wallet-section">
-                        <label>Wallet Address</label>
-                        <div className="wallet-address-input">
-                          <input
-                            type="text"
-                            value={paymentData.wallet_address || paymentData.payment_info?.wallet_address || 'N/A'}
-                            readOnly
-                            className="wallet-input"
-                          />
-                          <button
-                            className="copy-btn"
-                            title="Copy Wallet Address"
-                            aria-label="Copy Wallet Address"
-                            onClick={() => handleCopy(paymentData.wallet_address || paymentData.payment_info?.wallet_address, 'Wallet Address', 'wallet')}
-                          >
-                            {copied === 'wallet' ? <Check /> : <Copy />}
-                            <span className="copy-text">Copy</span>
-                          </button>
-                        </div>
-                        
-                        {/* Mobile wallet address display - shows full address */}
-                        <div className="wallet-address-mobile">
-                          <span>Full Address: </span>
-                          <span className="wallet-address-text">{paymentData.wallet_address || paymentData.payment_info?.wallet_address || 'N/A'}</span>
-                        </div>
-                        {/* Mobile-only copy control: visible below the input on small screens */}
-                        <button
-                          className="copy-btn copy-btn-mobile"
-                          title="Copy Wallet Address"
-                          aria-label="Copy Wallet Address"
-                          onClick={() => handleCopy(paymentData.wallet_address || paymentData.payment_info?.wallet_address, 'Wallet Address', 'wallet')}
-                        >
-                          {copied === 'wallet' ? <Check /> : <Copy />} <span>Copy wallet address</span>
-                        </button>
-                      </div>
-
-                      <div className="crypto-info-grid">
-                        <div className="crypto-detail-card">
-                          <label>Network</label>
-                          <div className="detail-input">
-                            {paymentData.network || paymentData.blockchain || paymentData.payment_info?.network || 'N/A'}
-                          </div>
-                        </div>
-
-                        <div className="crypto-detail-card">
-                          <label>Currency</label>
-                          <div className="detail-input">
-                            {paymentData.currency || paymentData.payment_info?.currency || 'N/A'}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="crypto-amount-section">
-                        <div className="amount-card">
-                          <span className="amount-label">Expected Amount</span>
-                          <span className="amount-value">{paymentData.expected_amount?.toFixed(6) || paymentData.total_amount_usdt?.toFixed(6) || paymentData.payment_info?.expected_amount?.toFixed(6)} {paymentData.currency || paymentData.payment_info?.currency}</span>
-                        </div>
-                      </div>
-
-                      <div className="crypto-instructions">
-                        <div className="instructions-header">
-                          <span className="instruction-icon"><Lock /></span>
-                          <h4>Payment Instructions</h4>
-                        </div>
-                        <div className="instructions-list">
-                          <div className="instruction-item">
-                            <span className="step-number">1</span>
-                            <span>Send the exact amount to the wallet address above</span>
-                          </div>
-                          <div className="instruction-item">
-                            <span className="step-number">2</span>
-                            <span>Include your Order ID in the transaction memo</span>
-                          </div>
-                          <div className="instruction-item">
-                            <span className="step-number">3</span>
-                            <span>Wait for blockchain confirmation</span>
-                          </div>
                         </div>
                       </div>
                     </div>
