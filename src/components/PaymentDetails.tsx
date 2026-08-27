@@ -297,12 +297,10 @@ const PaymentDetails: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                   </div>
+                 )}
 
-                )}
-
-                {paymentMethod === 'paystack' && (
+                 {paymentMethod === 'paystack' && (
                   <div className="payment-method-card card-payment">
                     <div className="method-header">
                       <div className="method-icon">
