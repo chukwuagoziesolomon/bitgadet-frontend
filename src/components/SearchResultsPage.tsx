@@ -69,8 +69,10 @@ const SearchResultsPage: React.FC = () => {
   const { showError, showSuccess } = useToast();
 
   useEffect(() => {
-    if (query.trim()) {
+    if (query.trim().length >= 2) {
       performSearch(query);
+    } else {
+      setResults(null);
     }
   }, [query]);
 
@@ -123,7 +125,7 @@ const SearchResultsPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await conditionalApiRequest<SearchResults>(`/api/v1/search/?q=${encodeURIComponent(searchQuery)}`);
+      const response = await conditionalApiRequest<SearchResults>(`/api/v1/search?q=${encodeURIComponent(searchQuery)}`);
       setResults(response);
     } catch (err) {
       console.error('Search failed:', err);
