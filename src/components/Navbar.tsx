@@ -6,7 +6,14 @@ import { cartService } from '../services/cartService';
 import './Navbar.css';
 
 const normalizeSearchSection = (section: any) => {
-  const results = Array.isArray(section) ? section : (section?.results || []);
+  const rawResults = Array.isArray(section) ? section : (section?.results || []);
+  const results = rawResults.map((item: any) => ({
+    ...item,
+    main_image: item.main_image || item.image,
+    current_price: item.current_price ?? item.discounted_price ?? item.price,
+    url: item.url || (item.slug ? `/product/${item.slug}` : undefined),
+    display_name: item.display_name || item.name,
+  }));
   return {
     count: Number(section?.count ?? results.length),
     results,
@@ -109,7 +116,7 @@ const Navbar: React.FC = () => {
 
     setIsSearching(true);
     try {
-      const response = await conditionalApiRequest<any>(`/api/v1/search?q=${encodeURIComponent(query)}`);
+      const response = await conditionalApiRequest<any>(`/api/search?q=${encodeURIComponent(query)}`);
       setSearchResults(normalizeSearchResponse(response));
       setIsSearchDropdownOpen(true);
     } catch (error) {

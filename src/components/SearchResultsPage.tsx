@@ -21,6 +21,10 @@ interface Product {
   is_in_stock: boolean;
   stock_quantity: number;
   url: string;
+  image?: string;
+  price?: number | string;
+  discounted_price?: number | string;
+  category?: string;
   is_coupon?: boolean;
   coupon_value?: number;
 }
@@ -59,7 +63,17 @@ interface SearchResults {
 }
 
 const normalizeSearchSection = (section: any) => {
-  const sectionResults = Array.isArray(section) ? section : (section?.results || []);
+  const rawResults = Array.isArray(section) ? section : (section?.results || []);
+  const sectionResults = rawResults.map((item: any) => ({
+    ...item,
+    id: Number(item.id),
+    category_name: item.category_name || item.category,
+    main_image: item.main_image || item.image || '/logo.png',
+    current_price: item.current_price ?? item.discounted_price ?? item.price ?? 0,
+    original_price: item.original_price ?? item.price ?? null,
+    url: item.url || (item.slug ? `/product/${item.slug}` : `/product/${item.id}`),
+    is_in_stock: item.is_in_stock ?? true,
+  }));
   return {
     count: Number(section?.count ?? sectionResults.length),
     results: sectionResults,
@@ -150,7 +164,7 @@ const SearchResultsPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await conditionalApiRequest<SearchResults>(`/api/v1/search?q=${encodeURIComponent(searchQuery)}`);
+      const response = await conditionalApiRequest<SearchResults>(`/api/search?q=${encodeURIComponent(searchQuery)}`);
       setResults(normalizeSearchResponse(response));
     } catch (err) {
       console.error('Search failed:', err);
