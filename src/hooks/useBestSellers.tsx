@@ -11,8 +11,13 @@ export const useBestSellers = () => {
     const fetchBestSellers = async () => {
       try {
         setLoading(true);
-        const data = await conditionalApiRequest<any>(API_CONFIG.ENDPOINTS.PRODUCTS_BEST_SELLERS_COLLECTION);
-        setProducts(data?.data?.results || data?.results || data?.products || []);
+        const data = await conditionalApiRequest<any>(API_CONFIG.ENDPOINTS.PRODUCTS_BEST_SELLERS);
+        const products = data?.data?.results || data?.results || data?.products || [];
+        setProducts(products.slice(0, 5).map((product: any) => ({
+          ...product,
+          product_condition: product.product_condition || product.productCondition,
+          productCondition: product.productCondition,
+        })));
         setError(null);
       } catch (err) {
         setError('Failed to fetch best sellers');
