@@ -25,6 +25,8 @@ interface Product {
   price?: number | string;
   discounted_price?: number | string;
   category?: string;
+  product_condition?: string;
+  productCondition?: string;
   is_coupon?: boolean;
   coupon_value?: number;
 }
@@ -69,6 +71,8 @@ const normalizeSearchSection = (section: any) => {
     id: Number(item.id),
     category_name: item.category_name || item.category,
     main_image: item.main_image || item.image || '/logo.png',
+    product_condition: item.product_condition || item.productCondition,
+    productCondition: item.productCondition,
     current_price: item.current_price ?? item.discounted_price ?? item.price ?? 0,
     original_price: item.original_price ?? item.price ?? null,
     url: item.url || (item.slug ? `/product/${item.slug}` : `/product/${item.id}`),
@@ -315,6 +319,8 @@ const SearchResultsPage: React.FC = () => {
                   onToggleWishlist={handleToggleWishlist}
                   is_coupon={product.is_coupon}
                   coupon_value={product.coupon_value}
+                  product_condition={product.product_condition}
+                  productCondition={product.productCondition}
                 />
               ))}
             </div>

@@ -316,7 +316,8 @@ const WishlistPage: React.FC = () => {
                       is_featured={item.is_featured}
                       is_new_arrival={item.is_new_arrival}
                       is_best_seller={item.is_best_seller}
-                      product_condition={item.product_condition}
+                      product_condition={item.product_condition || item.productCondition}
+                      productCondition={item.productCondition}
                       condition_display={item.condition_display}
                       stock_quantity={item.stock_quantity}
                       is_coupon={item.is_coupon}

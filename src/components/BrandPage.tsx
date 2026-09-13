@@ -259,7 +259,8 @@ const BrandPage: React.FC = () => {
                 isInCart={cart[product.id] > 0}
                 isInWishlist={wishlist.includes(product.id)}
                 onToggleWishlist={handleToggleWishlist}
-                product_condition={product.product_condition}
+                product_condition={product.product_condition || product.productCondition}
+                productCondition={product.productCondition}
                 condition_display={product.condition_display}
                 is_featured={product.is_featured}
                 is_on_sale={product.is_on_sale}

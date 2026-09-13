@@ -93,6 +93,7 @@ interface Product {
   is_new: boolean;
   is_bestseller: boolean;
   product_condition?: string;
+  productCondition?: string;
   condition_display?: string;
   is_coupon?: boolean;
   coupon_value?: number;
@@ -174,6 +175,8 @@ const ProductDetails: React.FC = () => {
     ram_count: payload?.ram_count ?? 0,
     average_rating: Number(payload?.average_rating ?? payload?.rating_average ?? payload?.rating ?? 0),
     review_count: Number(payload?.review_count ?? payload?.reviews_count ?? 0),
+    product_condition: payload?.product_condition || payload?.productCondition,
+    productCondition: payload?.productCondition,
     is_new: payload?.is_new ?? false,
     is_bestseller: payload?.is_bestseller ?? false,
     is_on_sale: payload?.is_on_sale ?? false,
@@ -267,6 +270,16 @@ const ProductDetails: React.FC = () => {
       }
     }
     return stars;
+  };
+
+  const formatCondition = (value?: string): string => {
+    switch (value) {
+      case 'new': return 'New';
+      case 'uk_used': return 'UK Used';
+      case 'nigerian_used': return 'Nigerian Used';
+      case 'refurbished': return 'Refurbished';
+      default: return value || '';
+    }
   };
 
   // Map admin-provided color strings to visual colors. Supports common names and hex.
@@ -550,13 +563,13 @@ const ProductDetails: React.FC = () => {
                 target.src = 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image+Available'; // Fallback placeholder
               }}
             />
-            {(product.is_bestseller || product.is_new || product.is_featured || product.condition_display || product.product_condition) && (
+            {(product.is_bestseller || product.is_new || product.is_featured || product.condition_display || product.product_condition || product.productCondition) && (
               <div className="product-badges">
                 {product.is_bestseller && <span className="badge bestseller">Best Seller</span>}
                 {product.is_new && <span className="badge new-arrival">New</span>}
                 {product.is_featured && <span className="badge featured">Featured</span>}
-                {(product.condition_display || product.product_condition) && (
-                  <span className="badge default">{product.condition_display || product.product_condition}</span>
+                {(product.condition_display || product.product_condition || product.productCondition) && (
+                  <span className="badge default">{formatCondition(product.condition_display || product.product_condition || product.productCondition)}</span>
                 )}
               </div>
             )}

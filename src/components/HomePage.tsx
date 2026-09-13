@@ -638,7 +638,8 @@ const HomePage: React.FC = () => {
                   isInCart={cart[product.id] > 0}
                   isInWishlist={wishlist.includes(product.id)}
                   onToggleWishlist={handleToggleWishlist}
-                  product_condition={product.product_condition}
+                  product_condition={product.product_condition || product.productCondition}
+                  productCondition={product.productCondition}
                   condition_display={product.condition_display}
                   is_coupon={product.is_coupon}
                   coupon_value={product.coupon_value}

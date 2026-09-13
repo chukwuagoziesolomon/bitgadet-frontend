@@ -36,6 +36,7 @@ interface ProductCardProps {
   is_new_arrival?: boolean;
   is_best_seller?: boolean;
   product_condition?: string;
+  productCondition?: string;
   condition_display?: string;
   stock_quantity?: number;
   
@@ -76,6 +77,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   is_new_arrival,
   is_best_seller,
   product_condition,
+  productCondition,
   condition_display,
   stock_quantity,
   // Coupon fields
@@ -95,6 +97,16 @@ const ProductCard: React.FC<ProductCardProps> = ({
     const brandStr = String(brandValue).trim();
     // Return the brand name as-is since backend now returns actual brand names
     return brandStr || 'Unknown Brand';
+  };
+
+  const formatCondition = (value?: string): string => {
+    switch (value) {
+      case 'new': return 'New';
+      case 'uk_used': return 'UK Used';
+      case 'nigerian_used': return 'Nigerian Used';
+      case 'refurbished': return 'Refurbished';
+      default: return value || '';
+    }
   };
 
   // Generate badges based on product properties
@@ -135,7 +147,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
 
     // Condition badge
-    const conditionBadge = condition_display || product_condition;
+    const conditionBadge = formatCondition(condition_display || product_condition || productCondition);
     if (conditionBadge) {
       generatedBadges.push(conditionBadge);
     }
