@@ -129,8 +129,13 @@ const LoginPage: React.FC = () => {
         }),
       });
 
-      // Extract from response.data
-      const { token, user, isAdmin } = response.data;
+      // publicApiRequest unwraps the standard { data: ... } API envelope.
+      const loginData = response?.data ?? response;
+      const { token, user, isAdmin } = loginData || {};
+
+      if (!token || !user) {
+        throw new Error('Login succeeded but the server did not return account credentials.');
+      }
 
       // Store token and user data
       localStorage.setItem('authToken', token);

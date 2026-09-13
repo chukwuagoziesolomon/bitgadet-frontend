@@ -63,15 +63,20 @@ const SignUpPage: React.FC = () => {
         }),
       });
 
-      // Extract from response.data
-      const { token, user, isAdmin } = response.data;
+      // publicApiRequest unwraps the standard { data: ... } API envelope.
+      const signupData = response?.data ?? response;
+      const { token, user, isAdmin } = signupData || {};
+
+      if (!token || !user) {
+        throw new Error('Signup succeeded but the server did not return account credentials.');
+      }
 
       // Store token and user data
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('isAdmin', isAdmin ? 'true' : 'false');
 
-      showSuccess('Account Created', response.message || 'Welcome to BitGadgetz!');
+      showSuccess('Account Created', response?.message || 'Welcome to BitGadgetz!');
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Signup failed:', error);
