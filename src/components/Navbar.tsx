@@ -5,6 +5,31 @@ import { conditionalApiRequest } from '../config/api';
 import { cartService } from '../services/cartService';
 import './Navbar.css';
 
+const normalizeSearchSection = (section: any) => {
+  const results = Array.isArray(section) ? section : (section?.results || []);
+  return {
+    count: Number(section?.count ?? results.length),
+    results,
+  };
+};
+
+const normalizeSearchResponse = (response: any) => {
+  const payload = response?.data && !Array.isArray(response.data) ? response.data : response;
+  const products = normalizeSearchSection(payload?.products);
+  const categories = normalizeSearchSection(payload?.categories);
+  const brands = normalizeSearchSection(payload?.brands);
+  const totalResults = Number(payload?.total_results ?? products.count + categories.count + brands.count);
+
+  return {
+    ...payload,
+    products,
+    categories,
+    brands,
+    total_results: totalResults,
+    has_results: Boolean(payload?.has_results ?? totalResults > 0),
+  };
+};
+
 // Custom hook for responsive breakpoints
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -85,7 +110,7 @@ const Navbar: React.FC = () => {
     setIsSearching(true);
     try {
       const response = await conditionalApiRequest<any>(`/api/v1/search?q=${encodeURIComponent(query)}`);
-      setSearchResults(response);
+      setSearchResults(normalizeSearchResponse(response));
       setIsSearchDropdownOpen(true);
     } catch (error) {
       console.error('Search failed:', error);
@@ -178,7 +203,7 @@ const Navbar: React.FC = () => {
                             {searchResults.products.results.map((product: any) => (
                               <Link
                                 key={product.id}
-                                to={product.url}
+                                to={product.url || `/product/${product.slug || product.id}`}
                                 className="search-item"
                                 onClick={() => setIsSearchDropdownOpen(false)}
                               >
@@ -202,7 +227,7 @@ const Navbar: React.FC = () => {
                             {searchResults.brands.results.map((brand: any) => (
                               <Link
                                 key={brand.id}
-                                to={brand.url}
+                                to={brand.url || `/brands/${brand.name || brand.id}`}
                                 className="search-item"
                                 onClick={() => setIsSearchDropdownOpen(false)}
                               >
@@ -269,7 +294,7 @@ const Navbar: React.FC = () => {
                             {searchResults.products.results.map((product: any) => (
                               <Link
                                 key={product.id}
-                                to={product.url}
+                                to={product.url || `/product/${product.slug || product.id}`}
                                 className="search-item"
                                 onClick={() => setIsSearchDropdownOpen(false)}
                               >
@@ -293,7 +318,7 @@ const Navbar: React.FC = () => {
                             {searchResults.brands.results.map((brand: any) => (
                               <Link
                                 key={brand.id}
-                                to={brand.url}
+                                to={brand.url || `/brands/${brand.name || brand.id}`}
                                 className="search-item"
                                 onClick={() => setIsSearchDropdownOpen(false)}
                               >

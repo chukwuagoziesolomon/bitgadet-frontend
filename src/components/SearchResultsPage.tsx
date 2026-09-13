@@ -58,6 +58,31 @@ interface SearchResults {
   has_results: boolean;
 }
 
+const normalizeSearchSection = (section: any) => {
+  const sectionResults = Array.isArray(section) ? section : (section?.results || []);
+  return {
+    count: Number(section?.count ?? sectionResults.length),
+    results: sectionResults,
+  };
+};
+
+const normalizeSearchResponse = (response: any): SearchResults => {
+  const payload = response?.data && !Array.isArray(response.data) ? response.data : response;
+  const products = normalizeSearchSection(payload?.products);
+  const categories = normalizeSearchSection(payload?.categories);
+  const brands = normalizeSearchSection(payload?.brands);
+  const totalResults = Number(payload?.total_results ?? products.count + categories.count + brands.count);
+
+  return {
+    ...payload,
+    products,
+    categories,
+    brands,
+    total_results: totalResults,
+    has_results: Boolean(payload?.has_results ?? totalResults > 0),
+  };
+};
+
 const SearchResultsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
@@ -126,7 +151,7 @@ const SearchResultsPage: React.FC = () => {
     setError(null);
     try {
       const response = await conditionalApiRequest<SearchResults>(`/api/v1/search?q=${encodeURIComponent(searchQuery)}`);
-      setResults(response);
+      setResults(normalizeSearchResponse(response));
     } catch (err) {
       console.error('Search failed:', err);
       setError('Failed to load search results. Please try again.');
