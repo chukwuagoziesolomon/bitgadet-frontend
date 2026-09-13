@@ -135,8 +135,9 @@ const ProductCard: React.FC<ProductCardProps> = ({
     }
 
     // Condition badge
-    if (condition_display) {
-      generatedBadges.push(condition_display);
+    const conditionBadge = condition_display || product_condition;
+    if (conditionBadge) {
+      generatedBadges.push(conditionBadge);
     }
 
     return generatedBadges;

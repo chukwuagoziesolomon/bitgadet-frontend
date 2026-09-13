@@ -28,6 +28,21 @@ const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const { showError } = useToast();
 
+  const sortBannersNewestFirst = (items: any[]) => {
+    return [...items].sort((a, b) => {
+      const aDate = a?.uploaded_at || a?.created_at || a?.createdAt || a?.updated_at;
+      const bDate = b?.uploaded_at || b?.created_at || b?.createdAt || b?.updated_at;
+      const aTime = aDate ? new Date(aDate).getTime() : NaN;
+      const bTime = bDate ? new Date(bDate).getTime() : NaN;
+
+      if (Number.isFinite(aTime) && Number.isFinite(bTime) && aTime !== bTime) {
+        return bTime - aTime;
+      }
+
+      return Number(b?.id || 0) - Number(a?.id || 0);
+    });
+  };
+
   // Use the new hooks for product data
   const { products: featuredProducts, loading: featuredLoading, error: featuredError } = useFeaturedProducts();
   const { products: bestSellers, loading: bestSellersLoading, error: bestSellersError } = useBestSellers();
@@ -57,7 +72,7 @@ const HomePage: React.FC = () => {
         const data = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.BANNERS_ACTIVE);
         // API returns raw array (no envelope)
         const items = Array.isArray(data) ? data : [];
-        setBanners(items);
+        setBanners(sortBannersNewestFirst(items));
         setBannersError(null);
       } catch (error: any) {
         setBannersError('Failed to load banners');
@@ -300,12 +315,25 @@ const HomePage: React.FC = () => {
   const handleHeroCTAClick = (slideIndex: number) => {
     const slide = banners[slideIndex];
     const url = slide?.cta_button_url || slide?.link_url;
-    if (url) {
-      navigate(url);
+    navigateToBannerUrl(url);
+  };
+
+  const navigateToBannerUrl = (url?: string) => {
+    if (!url) {
+      navigate('/all-products');
       return;
     }
-    // If no specific URL, navigate to products page
-    navigate('/all-products');
+
+    try {
+      const target = new URL(url, window.location.origin);
+      if (target.origin === window.location.origin) {
+        navigate(`${target.pathname}${target.search}${target.hash}`);
+      } else {
+        window.location.assign(target.toString());
+      }
+    } catch {
+      navigate('/all-products');
+    }
   };
 
   // Format time as D:HH:MM:SS if days > 0, else HH:MM:SS
@@ -366,7 +394,7 @@ const HomePage: React.FC = () => {
                     key={slide.id || index}
                     className={`slide ${index === currentSlide ? 'active' : ''}`}
                   >
-                    <img src={slide?.image || '/logo.png'} alt={slide?.title || 'Banner'} className="slide-image" onClick={() => navigate(slide?.cta_button_url || slide?.link_url || '/products')} style={{ cursor: 'pointer' }} />
+                    <img src={slide?.image || '/logo.png'} alt={slide?.title || 'Banner'} className="slide-image" onClick={() => navigateToBannerUrl(slide?.cta_button_url || slide?.link_url)} style={{ cursor: 'pointer' }} />
                     <div className="slide-overlay">
                       <div className="slide-content">
                         <h1>{slide?.title || 'Shop Now'}</h1>

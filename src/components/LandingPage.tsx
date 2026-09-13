@@ -368,7 +368,19 @@ const LandingPage: React.FC = () => {
         const data = await publicApiRequest<any>(API_CONFIG.ENDPOINTS.BANNERS_ACTIVE);
         // API returns raw array (no envelope)
         const items = Array.isArray(data) ? data : [];
-        setBanners(items);
+        const sortedItems = [...items].sort((a, b) => {
+          const aDate = a?.uploaded_at || a?.created_at || a?.createdAt || a?.updated_at;
+          const bDate = b?.uploaded_at || b?.created_at || b?.createdAt || b?.updated_at;
+          const aTime = aDate ? new Date(aDate).getTime() : NaN;
+          const bTime = bDate ? new Date(bDate).getTime() : NaN;
+
+          if (Number.isFinite(aTime) && Number.isFinite(bTime) && aTime !== bTime) {
+            return bTime - aTime;
+          }
+
+          return Number(b?.id || 0) - Number(a?.id || 0);
+        });
+        setBanners(sortedItems);
       } catch (error: any) {
         console.error('Failed to load banners:', error);
         setBanners([]);

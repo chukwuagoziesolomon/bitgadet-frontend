@@ -157,6 +157,34 @@ const ProductDetails: React.FC = () => {
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewErrors, setReviewErrors] = useState<Record<string, string[]>>({});
 
+  const normalizeProduct = (payload: any): Product => ({
+    ...payload,
+    colors: Array.isArray(payload?.colors) ? payload.colors : [],
+    storage_options: Array.isArray(payload?.storage_options) ? payload.storage_options : [],
+    ram_options: Array.isArray(payload?.ram_options) ? payload.ram_options : [],
+    images: Array.isArray(payload?.images) ? payload.images : [],
+    features: Array.isArray(payload?.features) ? payload.features : [],
+    main_image: payload?.main_image ?? '',
+    short_description: payload?.short_description ?? '',
+    has_colors: payload?.has_colors ?? false,
+    has_storage_options: payload?.has_storage_options ?? false,
+    has_ram_options: payload?.has_ram_options ?? false,
+    color_count: payload?.color_count ?? 0,
+    storage_count: payload?.storage_count ?? 0,
+    ram_count: payload?.ram_count ?? 0,
+    average_rating: Number(payload?.average_rating ?? payload?.rating_average ?? payload?.rating ?? 0),
+    review_count: Number(payload?.review_count ?? payload?.reviews_count ?? 0),
+    is_new: payload?.is_new ?? false,
+    is_bestseller: payload?.is_bestseller ?? false,
+    is_on_sale: payload?.is_on_sale ?? false,
+    specifications: payload?.specifications ?? '',
+    camera_specs: payload?.camera_specs ?? '',
+    storage_specs: payload?.storage_specs ?? '',
+    battery_specs: payload?.battery_specs ?? '',
+    operating_system: payload?.operating_system ?? '',
+    weight: payload?.weight ?? '',
+  });
+
   useEffect(() => {
     const fetchProductData = async () => {
       if (!slug) return;
@@ -170,33 +198,7 @@ const ProductDetails: React.FC = () => {
         const productData = await publicApiRequest<any>(`/api/v1/products/${slug}/`);
         console.log('Product data received:', productData);
         const payload = productData?.data ?? productData;
-        const normalized: Product = {
-          ...payload,
-          colors: Array.isArray(payload?.colors) ? payload.colors : [],
-          storage_options: Array.isArray(payload?.storage_options) ? payload.storage_options : [],
-          ram_options: Array.isArray(payload?.ram_options) ? payload.ram_options : [],
-          images: Array.isArray(payload?.images) ? payload.images : [],
-          features: Array.isArray(payload?.features) ? payload.features : [],
-          main_image: payload?.main_image ?? '',
-          short_description: payload?.short_description ?? '',
-          has_colors: payload?.has_colors ?? false,
-          has_storage_options: payload?.has_storage_options ?? false,
-          has_ram_options: payload?.has_ram_options ?? false,
-          color_count: payload?.color_count ?? 0,
-          storage_count: payload?.storage_count ?? 0,
-          ram_count: payload?.ram_count ?? 0,
-          average_rating: payload?.average_rating ?? 0,
-          review_count: payload?.review_count ?? 0,
-          is_new: payload?.is_new ?? false,
-          is_bestseller: payload?.is_bestseller ?? false,
-          is_on_sale: payload?.is_on_sale ?? false,
-          specifications: payload?.specifications ?? '',
-          camera_specs: payload?.camera_specs ?? '',
-          storage_specs: payload?.storage_specs ?? '',
-          battery_specs: payload?.battery_specs ?? '',
-          operating_system: payload?.operating_system ?? '',
-          weight: payload?.weight ?? '',
-        };
+        const normalized = normalizeProduct(payload);
         setProduct(normalized);
 
         // Set default selections (guard against missing arrays)
@@ -463,13 +465,26 @@ const ProductDetails: React.FC = () => {
           publicApiRequest<any>(`/api/v1/products/${slug}/reviews/`),
         ]);
 
-        const updatedProduct = updatedProductRaw?.data ?? updatedProductRaw;
+        const updatedProduct = normalizeProduct(updatedProductRaw?.data ?? updatedProductRaw);
         const updatedReviews = Array.isArray(updatedReviewsRaw)
           ? updatedReviewsRaw
           : (updatedReviewsRaw?.data ?? updatedReviewsRaw);
+        const reviewList = Array.isArray(updatedReviews) ? updatedReviews : [];
+        const calculatedReviewCount = reviewList.length;
+        const calculatedAverageRating = calculatedReviewCount > 0
+          ? reviewList.reduce((total: number, review: Review) => total + Number(review.rating || 0), 0) / calculatedReviewCount
+          : 0;
 
-        setProduct(updatedProduct);
-        setReviews(updatedReviews || []);
+        setReviews(reviewList);
+        setProduct({
+          ...updatedProduct,
+          average_rating: updatedProduct.average_rating > 0
+            ? updatedProduct.average_rating
+            : calculatedAverageRating,
+          review_count: updatedProduct.review_count > 0
+            ? updatedProduct.review_count
+            : calculatedReviewCount,
+        });
       } catch (refreshErr) {
         console.warn('Review submitted but failed to refresh product/reviews:', refreshErr);
       }
@@ -541,11 +556,14 @@ const ProductDetails: React.FC = () => {
                 target.src = 'https://via.placeholder.com/600x600/f3f4f6/9ca3af?text=No+Image+Available'; // Fallback placeholder
               }}
             />
-            {(product.is_bestseller || product.is_new || product.is_featured) && (
+            {(product.is_bestseller || product.is_new || product.is_featured || product.condition_display || product.product_condition) && (
               <div className="product-badges">
                 {product.is_bestseller && <span className="badge bestseller">Best Seller</span>}
                 {product.is_new && <span className="badge new-arrival">New</span>}
                 {product.is_featured && <span className="badge featured">Featured</span>}
+                {(product.condition_display || product.product_condition) && (
+                  <span className="badge default">{product.condition_display || product.product_condition}</span>
+                )}
               </div>
             )}
             
