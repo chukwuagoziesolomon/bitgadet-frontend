@@ -54,7 +54,6 @@ const ShoppingCart: React.FC = () => {
       // Fetch enhanced order summary
       fetchOrderSummary();
     } catch (error) {
-      console.error('Failed to fetch cart:', error);
       setCartItems([]);
       setItemCount(0);
       setOrderSummary({});
@@ -81,7 +80,6 @@ const ShoppingCart: React.FC = () => {
         setOrderSummary(summaryData);
       }
     } catch (error) {
-      console.error('Error fetching order summary:', error);
     } finally {
       setSummaryLoading(false);
     }
@@ -97,7 +95,6 @@ const ShoppingCart: React.FC = () => {
       await cartService.updateCart(id, newQuantity);
       fetchCart();
     } catch (error) {
-      console.error('Failed to update quantity:', error);
     }
   };
 
@@ -106,7 +103,6 @@ const ShoppingCart: React.FC = () => {
       await cartService.removeFromCart(id);
       fetchCart();
     } catch (error) {
-      console.error('Failed to remove item:', error);
     }
   };
 

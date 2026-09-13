@@ -70,7 +70,6 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ paymentMethod = 'bank_transfe
       interval: 30000, // Check every 30 seconds
       maxAttempts: 960, // 8 hours max
       onUpdate: (result) => {
-        console.log('Payment status update:', result);
         if (result.success) {
           setPaymentStatus('completed');
         } else if (result.status === 'processing') {
@@ -95,7 +94,6 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ paymentMethod = 'bank_transfe
         }
       },
       onError: (error) => {
-        console.error('Polling error:', error);
         setPaymentStatus('failed');
       }
     });
@@ -110,7 +108,6 @@ const PaymentPage: React.FC<PaymentPageProps> = ({ paymentMethod = 'bank_transfe
 
     try {
       const status = await checkoutService.getOrderStatus(order.order_id, order.email);
-      console.log('Order status:', status);
 
       if (status.status === 'paid') {
         setPaymentStatus('completed');

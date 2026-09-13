@@ -32,7 +32,6 @@ const OrderHistory: React.FC = () => {
         setOrders(response.orders || []);
         setPagination(response.pagination);
       } catch (error: any) {
-        console.error('Failed to fetch order history:', error);
         showError('Failed to load order history', error.message || 'Please try again later.');
         setOrders([]);
         setPagination(null);

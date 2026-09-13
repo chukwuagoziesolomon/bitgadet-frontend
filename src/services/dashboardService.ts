@@ -25,7 +25,6 @@ export const dashboardService = {
       const response = await conditionalApiRequest<OrderSummaryStats>('/api/v1/orders/summary/');
       return response;
     } catch (error) {
-      console.error('Failed to fetch order summary stats:', error);
       throw error;
     }
   },

@@ -54,7 +54,6 @@ export const useFeaturedProducts = () => {
         setError(null);
       } catch (err) {
         setError('Failed to fetch featured products');
-        console.error(err);
       } finally {
         setLoading(false);
       }

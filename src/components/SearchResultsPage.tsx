@@ -167,7 +167,6 @@ const SearchResultsPage: React.FC = () => {
       const response = await conditionalApiRequest<SearchResults>(`/api/search?q=${encodeURIComponent(searchQuery)}`);
       setResults(normalizeSearchResponse(response));
     } catch (err) {
-      console.error('Search failed:', err);
       setError('Failed to load search results. Please try again.');
     } finally {
       setLoading(false);
@@ -175,17 +174,14 @@ const SearchResultsPage: React.FC = () => {
   };
 
   const handleAddToCart = async (productId: number) => {
-    console.log('🛒 Attempting to add product to cart:', productId);
 
     // Optimistic update
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
 
     try {
       const result = await cartService.addToCart(productId, 1);
-      console.log('✅ Add to cart API response:', result);
       showSuccess('Added to cart', 'Product added successfully');
     } catch (error: any) {
-      console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
       setCart(prev => {
         const newCart = { ...prev };
@@ -215,7 +211,6 @@ const SearchResultsPage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error: any) {
-      console.error('❌ Wishlist update failed:', error);
       // Revert optimistic update
       setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
       // Only show error if user is actually logged in (has token)

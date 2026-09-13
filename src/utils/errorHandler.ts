@@ -65,8 +65,6 @@ export const extractErrorMessage = (responseData: any): string => {
 
 // Global error handler for API requests
 export const handleApiError = (error: any, context?: string): string => {
-  console.error(`API Error${context ? ` in ${context}` : ''}:`, error);
-
   // First try to extract from response data
   if (error.response?.data) {
     const extractedMessage = extractErrorMessage(error.response.data);

@@ -27,7 +27,6 @@ const OrderSuccess: React.FC = () => {
         const orderData = await checkoutService.getOrderStatus(orderId, email || undefined);
         setOrder(orderData);
       } catch (err: any) {
-        console.error('Failed to load order:', err);
         setError(err.message || 'Failed to load order details');
       } finally {
         setLoading(false);

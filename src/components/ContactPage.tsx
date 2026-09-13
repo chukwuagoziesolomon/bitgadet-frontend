@@ -68,7 +68,6 @@ const ContactPage: React.FC = () => {
         });
       }
     } catch (error: any) {
-      console.error('Failed to submit contact form:', error);
       const errorMessage = handleApiError(error, 'Contact Form Submission');
       showError('Submission Error', errorMessage);
     } finally {

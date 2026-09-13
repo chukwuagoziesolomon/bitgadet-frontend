@@ -196,7 +196,6 @@ const ProductDetails: React.FC = () => {
 
         // Fetch product details and unwrap API envelope if present
         const productData = await publicApiRequest<any>(`/api/v1/products/${slug}/`);
-        console.log('Product data received:', productData);
         const payload = productData?.data ?? productData;
         const normalized = normalizeProduct(payload);
         setProduct(normalized);
@@ -218,7 +217,6 @@ const ProductDetails: React.FC = () => {
           const reviewsPayload = Array.isArray(reviewsData) ? reviewsData : (reviewsData?.data ?? reviewsData);
           setReviews(reviewsPayload || []);
         } catch (reviewError) {
-          console.warn('Failed to fetch reviews:', reviewError);
           setReviews([]);
         }
 
@@ -230,12 +228,10 @@ const ProductDetails: React.FC = () => {
           const productsArray = Array.isArray(recInner) ? recInner : (recInner?.recommended_products || []);
           setRecommendations(productsArray || []);
         } catch (recError) {
-          console.warn('Failed to fetch recommendations:', recError);
           setRecommendations([]);
         }
 
       } catch (error) {
-        console.error('Failed to fetch product:', error);
         setError('Failed to load product details. Please try again.');
       } finally {
         setLoading(false);
@@ -357,7 +353,6 @@ const ProductDetails: React.FC = () => {
       // Reset the added state after a short delay
       setTimeout(() => setAddedToCart(false), 2000);
     } catch (e) {
-      console.error('Failed to add to cart', e);
     } finally {
       setIsAddingToCart(false);
     }
@@ -486,7 +481,6 @@ const ProductDetails: React.FC = () => {
             : calculatedReviewCount,
         });
       } catch (refreshErr) {
-        console.warn('Review submitted but failed to refresh product/reviews:', refreshErr);
       }
 
       // Reset the form

@@ -19,12 +19,10 @@ const ProductCardExample: React.FC = () => {
   };
 
   const handleAddToCart = (productId: number) => {
-    console.log(`Adding product ${productId} to cart`);
     // Cart logic handled by ProductCard component - no alert needed
   };
 
   const handleToggleWishlist = (productId: number) => {
-    console.log(`Toggling wishlist for product ${productId}`);
     // Wishlist logic handled by ProductCard component - no alert needed
   };
 

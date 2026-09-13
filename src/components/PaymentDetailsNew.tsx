@@ -58,7 +58,6 @@ const PaymentDetails: React.FC = () => {
   // Cleanup polling on unmount
   useEffect(() => {
     return () => {
-      console.log('🧹 Cleaning up payment polling on component unmount');
       paymentService.stopAllPolling();
     };
   }, []);
@@ -66,7 +65,6 @@ const PaymentDetails: React.FC = () => {
   // Stop polling when navigating away
   useEffect(() => {
     const handleBeforeUnload = () => {
-      console.log('🧹 Stopping payment polling before page unload');
       paymentService.stopAllPolling();
     };
 
@@ -92,11 +90,9 @@ const PaymentDetails: React.FC = () => {
       else setCopied(label);
       
       showSuccess('Copied!', `${label} copied to clipboard successfully`);
-      console.log(`Copied ${label}:`, fullText); // Debug log to verify full address
       
       setTimeout(() => setCopied(null), 2000);
     } catch (error) {
-      console.error('Failed to copy:', error);
       showSuccess('Error', `Failed to copy ${label}. Please select and copy manually.`);
     }
   };
@@ -122,7 +118,6 @@ const PaymentDetails: React.FC = () => {
         interval: paymentMethod === 'bank' ? 10000 : paymentService.getPollingInterval(paymentMethod), // 10 seconds for bank transfers
         maxAttempts: 100, // Reasonable limit
         onUpdate: (result: PaymentVerificationResult) => {
-          console.log('🔄 Payment verification update:', result);
           setVerificationResult(result);
 
           // Show status updates to user
@@ -131,13 +126,11 @@ const PaymentDetails: React.FC = () => {
           }
         },
         onComplete: (result: PaymentVerificationResult) => {
-          console.log('🏁 Payment verification completed:', result);
           setPollingActive(false);
           setVerificationResult(result);
 
           if (result.success) {
             // Clear cart token on successful payment
-            console.log('✅ Payment successful, clearing cart token');
             cartService.clearCartToken();
 
             // Handle login credentials if provided
@@ -165,7 +158,6 @@ const PaymentDetails: React.FC = () => {
           }
         },
         onError: (error: any) => {
-          console.error('❌ Payment verification error:', error);
           setPollingActive(false);
           setError('Payment verification failed. Please try again.');
         }
@@ -188,11 +180,9 @@ const PaymentDetails: React.FC = () => {
           throw new Error(`Unknown payment method: ${paymentMethod}`);
       }
 
-      console.log(`🚀 Starting ${method} verification polling for identifier: ${identifier}`);
       paymentService.startPolling(method, identifier, pollingOptions);
 
     } catch (err: any) {
-      console.error('❌ Failed to initiate payment verification:', err);
       setError(err.message || 'Failed to start payment verification. Please try again.');
       setPollingActive(false);
     } finally {

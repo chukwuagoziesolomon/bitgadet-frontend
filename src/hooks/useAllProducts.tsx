@@ -68,7 +68,6 @@ export const useAllProducts = (options: UseAllProductsOptions = {}) => {
 
       } catch (err) {
         setError('Failed to fetch products');
-        console.error(err);
         setProducts([]);
         setTotalCount(0);
         setNextPage(null);

@@ -52,7 +52,6 @@ const WishlistPage: React.FC = () => {
       const wishlistData = response?.data || response;
       setWishlistItems(wishlistData.products || wishlistData.wishlist_items || []);
     } catch (error: any) {
-      console.error('Failed to fetch wishlist:', error);
       showError('Failed to load wishlist', error.message || 'Please try again later.');
       setWishlistItems([]);
     } finally {
@@ -96,7 +95,6 @@ const WishlistPage: React.FC = () => {
       setWishlistItems(prev => prev.filter(item => item.product_id !== productId || item.id !== productId));
       showSuccess('Removed from wishlist', 'Item has been removed from your wishlist.');
     } catch (error: any) {
-      console.error('Failed to remove from wishlist:', error);
       showError('Failed to remove item', error.message || 'Please try again.');
     }
   };
@@ -126,7 +124,6 @@ const WishlistPage: React.FC = () => {
 
       showSuccess('Added to cart', 'Item has been added to your cart.');
     } catch (error: any) {
-      console.error('Failed to add to cart:', error);
       showError('Failed to add to cart', error.message || 'Please try again.');
     }
   };

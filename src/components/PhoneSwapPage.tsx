@@ -179,14 +179,12 @@ const PhoneSwapPage: React.FC = () => {
         terms_accepted: additionalInfo.agreeToTerms
       };
 
-      console.log('Submitting phone swap request:', payload);
 
       const response = await publicApiRequest(API_CONFIG.ENDPOINTS.PHONE_SWAP_SUBMIT, {
         method: 'POST',
         body: JSON.stringify(payload),
       });
 
-      console.log('Phone swap request successful:', response);
       setSwapRequestData((response as any).swap_request);
       navigate('/success', {
         state: {
@@ -226,7 +224,6 @@ const PhoneSwapPage: React.FC = () => {
       setAdditionalInfo({ additionalNotes: '', agreeToTerms: false });
 
     } catch (error: any) {
-      console.error('Error submitting phone swap request:', error);
       const errorMessage = handleApiError(error, 'Phone Swap Submission');
       showError('Submission Error', errorMessage);
     } finally {

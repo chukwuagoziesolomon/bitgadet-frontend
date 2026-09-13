@@ -151,7 +151,6 @@ const HomePage: React.FC = () => {
         });
         setCategoryMeta(meta);
       } catch (error) {
-        console.error('Failed to fetch categories:', error);
         // Set default values for all categories
         const defaultMeta: Record<string, { total_items: number; trend?: string }> = {};
         ['phones', 'laptops', 'tablets', 'games', 'smartwatches', 'accessories'].forEach(slug => {
@@ -255,7 +254,6 @@ const HomePage: React.FC = () => {
 
   const handleAddToCart = async (productId: number) => {
     const token = localStorage.getItem('authToken');
-    console.log('🛒 Attempting to add product to cart:', productId, 'User logged in:', !!token);
 
     // Optimistic update
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
@@ -266,10 +264,8 @@ const HomePage: React.FC = () => {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
-      console.log('✅ Add to cart API response:', res);
       // optimistic update already applied above
     } catch (error: any) {
-      console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
       setCart(prev => {
         const newCart = { ...prev };
@@ -302,7 +298,6 @@ const HomePage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error: any) {
-      console.error('❌ Wishlist update failed:', error);
       // Revert optimistic update
       setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
       // Only show error if user is actually logged in (has token)

@@ -37,7 +37,6 @@ const BrandsPage: React.FC = () => {
         setBrands(brandsArray);
         setError(null);
       } catch (err: any) {
-        console.error('Failed to fetch brands:', err);
         setError('Failed to load brands. Please try again later.');
         showError('Error', 'Failed to load brands. Please try again later.');
         // Ensure brands is always an array

@@ -120,7 +120,6 @@ const Navbar: React.FC = () => {
       setSearchResults(normalizeSearchResponse(response));
       setIsSearchDropdownOpen(true);
     } catch (error) {
-      console.error('Search failed:', error);
       setSearchResults(null);
     } finally {
       setIsSearching(false);

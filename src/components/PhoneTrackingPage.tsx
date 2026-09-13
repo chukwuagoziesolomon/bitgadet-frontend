@@ -98,7 +98,6 @@ const PhoneTrackingPage: React.FC = () => {
         });
       }
     } catch (error: any) {
-      console.error('Failed to submit tracking request:', error);
       const errorMessage = handleApiError(error, 'Phone Tracking Submission');
       showError('Submission Error', errorMessage);
     } finally {

@@ -114,7 +114,6 @@ class CheckoutService {
     });
 
     const data = await response.json();
-    console.log('📋 Checkout response:', data);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to create checkout order');
@@ -134,7 +133,6 @@ class CheckoutService {
 
     const response = await fetch(url);
     const data = await response.json();
-    console.log('📊 Order status:', data);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to get order status');
@@ -159,7 +157,6 @@ class CheckoutService {
     });
 
     const data = await response.json();
-    console.log('🎟️ Coupon response:', data);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to apply coupon');
@@ -183,7 +180,6 @@ class CheckoutService {
     });
 
     const data = await response.json();
-    console.log('🎟️ Coupon removed:', data);
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to remove coupon');
@@ -205,7 +201,6 @@ class CheckoutService {
     });
 
     const data = await response.json();
-    console.log('✉️ Email validation:', data);
 
     return data;
   }
@@ -215,7 +210,6 @@ class CheckoutService {
    */
   saveCheckoutData(key: string, data: any): void {
     sessionStorage.setItem(key, JSON.stringify(data));
-    console.log(`💾 Saved checkout data: ${key}`);
   }
 
   /**
@@ -233,7 +227,6 @@ class CheckoutService {
     sessionStorage.removeItem('current_order');
     sessionStorage.removeItem('payment_info');
     sessionStorage.removeItem('account_info');
-    console.log('🗑️ Cleared checkout data');
   }
 }
 

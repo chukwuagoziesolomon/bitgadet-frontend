@@ -136,7 +136,6 @@ const ProfileSettings: React.FC = () => {
           setPasswordValidationStatus(new Array(requirementsArray.length).fill(false));
         }
       } catch (error: any) {
-        console.error('Failed to fetch password requirements:', error);
         // Don't show error for password requirements, as it's not critical
       }
     };
@@ -185,7 +184,6 @@ const ProfileSettings: React.FC = () => {
               }
             }
           } catch (checkoutError) {
-            console.warn('Could not fetch checkout data for fallback:', checkoutError);
             // Continue without checkout fallback
           }
         }
@@ -204,7 +202,6 @@ const ProfileSettings: React.FC = () => {
           date_joined: userData.date_joined || ''
         });
       } catch (error: any) {
-        console.error('Failed to fetch profile:', error);
         showError('Failed to load profile', error.message || 'Please try again later.');
       } finally {
         setLoading(false);
@@ -298,7 +295,6 @@ const ProfileSettings: React.FC = () => {
 
       showSuccess('Profile updated', 'Your profile has been updated successfully.');
     } catch (error: any) {
-      console.error('Failed to update profile:', error);
       const errorMessage = handleApiError(error, 'Profile Update');
       showError('Profile update failed', errorMessage);
     } finally {
@@ -348,7 +344,6 @@ const ProfileSettings: React.FC = () => {
 
       showSuccess('Password changed', 'Your password has been changed successfully.');
     } catch (error: any) {
-      console.error('Failed to change password:', error);
       const errorMessage = handleApiError(error, 'Change Password');
       showError('Password change failed', errorMessage);
     } finally {
@@ -382,15 +377,12 @@ const ProfileSettings: React.FC = () => {
         // It's acceptable to remove the guest cart token when an account is deleted,
         // but avoid blanket clears elsewhere to preserve cart persistence on auth transitions.
         localStorage.removeItem('bitgadgets_cart_token');
-        console.log('🧹 Cleared user-related localStorage keys after account deletion');
       } catch (e) {
-        console.warn('Failed to clear some localStorage keys during account deletion', e);
       }
 
       showSuccess('Account deleted', 'Your account has been successfully deleted.');
       navigate('/login');
     } catch (error: any) {
-      console.error('Failed to delete account:', error);
       const errorMessage = handleApiError(error, 'Delete Account');
       showError('Account deletion failed', errorMessage);
     } finally {

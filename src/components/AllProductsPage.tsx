@@ -90,7 +90,6 @@ const AllProductsPage: React.FC = () => {
         const wishlistData = wishlistRes?.data || wishlistRes;
         setWishlist((wishlistData.products || wishlistData.wishlist_items || []).map((p: any) => typeof p === 'number' ? p : (p.product_id || p.id)));
       } catch (error) {
-        if (token) console.error('Failed to fetch wishlist:', error);
       }
     })();
 
@@ -106,7 +105,6 @@ const AllProductsPage: React.FC = () => {
         (cartData.products || []).forEach((p: any) => { cartMap[p.id] = p.quantity; });
         setCart(cartMap);
       } catch (error) {
-        if (token) console.error('Failed to fetch cart:', error);
       }
     })();
   }, []);
@@ -202,7 +200,6 @@ const AllProductsPage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error) {
-      console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
       setCart(prev => {
         const newCart = { ...prev };
@@ -215,7 +212,6 @@ const AllProductsPage: React.FC = () => {
       });
       // Only log error if user is actually logged in (has token)
       if (token) {
-        console.error('Failed to add to cart:', error);
       }
       // Silent failure - ProductCard already shows success toast
     }
@@ -236,12 +232,10 @@ const AllProductsPage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error) {
-      console.error('❌ Wishlist update failed:', error);
       // Revert optimistic update
       setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
       // Only log error if user is actually logged in (has token)
       if (token) {
-        console.error('Failed to toggle wishlist:', error);
       }
       // Silent failure - ProductCard already shows appropriate toast
     }

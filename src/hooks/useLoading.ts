@@ -124,7 +124,6 @@ export const useMultiLoading = (keys: string[]) => {
   const setLoading = useCallback(
     (key: string, loading: boolean) => {
       if (!keys.includes(key)) {
-        console.warn(`Unknown loading key: ${key}`);
         return;
       }
       setLoadingStates((prev) => ({ ...prev, [key]: loading }));

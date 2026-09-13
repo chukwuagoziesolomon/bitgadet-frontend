@@ -83,11 +83,9 @@ const PaymentDetails: React.FC = () => {
       else setCopied(label);
       
       showSuccess('Copied!', `${label} copied to clipboard successfully`);
-      console.log(`Copied ${label}:`, fullText); // Debug log to verify full address
       
       setTimeout(() => setCopied(null), 2000);
     } catch (error) {
-      console.error('Failed to copy:', error);
       showSuccess('Error', `Failed to copy ${label}. Please select and copy manually.`);
     }
   };
@@ -121,7 +119,6 @@ const PaymentDetails: React.FC = () => {
         ? `${apiUrl}/api/v1/checkout/status/${orderId}/`
         : `/api/v1/checkout/status/${orderId}/`;
       
-      console.log('🔄 Polling payment status - Attempt', pollingAttempts + 1);
       
       const response = await fetch(statusUrl);
       const data = await response.json();
@@ -130,7 +127,6 @@ const PaymentDetails: React.FC = () => {
 
       // Check payment status
       if (data.payment_status?.is_paid) {
-        console.log('✅ Payment confirmed!');
         setPollingActive(false);
         setConfirming(false);
         showSuccess('Payment Confirmed!', 'Redirecting to order confirmation...');
@@ -149,7 +145,6 @@ const PaymentDetails: React.FC = () => {
         });
         return;
       } else if (data.payment_status?.is_failed) {
-        console.log('❌ Payment failed!');
         setPollingActive(false);
         setConfirming(false);
         setError('Payment failed. Please try again.');
@@ -163,7 +158,6 @@ const PaymentDetails: React.FC = () => {
       }, POLLING_INTERVAL);
       
     } catch (err) {
-      console.error('❌ Polling error:', err);
       setPollingAttempts(prev => prev + 1);
       
       // Continue polling even on error (retry)

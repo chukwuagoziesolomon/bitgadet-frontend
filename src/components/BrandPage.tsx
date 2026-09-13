@@ -105,7 +105,6 @@ const BrandPage: React.FC = () => {
         const wishlistData = wishlistRes?.data || wishlistRes;
         setWishlist((wishlistData.products || wishlistData.wishlist_items || []).map((p: any) => typeof p === 'number' ? p : (p.product_id || p.id)));
       } catch (error) {
-        if (token) console.error('Failed to fetch wishlist:', error);
       }
 
       try {
@@ -118,7 +117,6 @@ const BrandPage: React.FC = () => {
         (cartData.products || []).forEach((p: any) => { cartMap[p.id] = p.quantity; });
         setCart(cartMap);
       } catch (error) {
-        if (token) console.error('Failed to fetch cart:', error);
       }
     };
 
@@ -138,7 +136,6 @@ const BrandPage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error) {
-      console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
       setCart(prev => {
         const newCart = { ...prev };
@@ -165,7 +162,6 @@ const BrandPage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error) {
-      console.error('❌ Wishlist update failed:', error);
       // Revert optimistic update
       setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
     }

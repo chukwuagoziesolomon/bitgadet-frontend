@@ -16,7 +16,6 @@ export const useBestSellers = () => {
         setError(null);
       } catch (err) {
         setError('Failed to fetch best sellers');
-        console.error(err);
       } finally {
         setLoading(false);
       }

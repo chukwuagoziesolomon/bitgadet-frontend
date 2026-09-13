@@ -79,7 +79,6 @@ const SignUpPage: React.FC = () => {
       showSuccess('Account Created', response?.message || 'Welcome to BitGadgetz!');
       navigate('/dashboard');
     } catch (error: any) {
-      console.error('Signup failed:', error);
       const errorMessage = handleApiError(error, 'SignUp');
       showError('Signup Failed', errorMessage);
     } finally {

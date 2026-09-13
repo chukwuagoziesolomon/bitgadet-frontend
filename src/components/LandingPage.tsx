@@ -289,7 +289,6 @@ const LandingPage: React.FC = () => {
           setDeals([]);
         }
       } catch (error) {
-        console.error('Failed to fetch deal:', error);
         setDeal(null);
         setDeals([]);
       }
@@ -382,7 +381,6 @@ const LandingPage: React.FC = () => {
         });
         setBanners(sortedItems);
       } catch (error: any) {
-        console.error('Failed to load banners:', error);
         setBanners([]);
       }
     };
@@ -690,7 +688,6 @@ const LandingPage: React.FC = () => {
                 alt={deal.title || deal.product?.name || deal.product_data?.name} 
                 className="deal-product-image"
                 onError={(e) => {
-                  console.log('Image failed to load');
                   (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Deal';
                 }}
               />

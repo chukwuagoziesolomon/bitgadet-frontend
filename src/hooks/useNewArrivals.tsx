@@ -16,7 +16,6 @@ export const useNewArrivals = () => {
         setError(null);
       } catch (err) {
         setError('Failed to fetch new arrivals');
-        console.error(err);
       } finally {
         setLoading(false);
       }

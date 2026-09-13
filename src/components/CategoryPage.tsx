@@ -69,7 +69,6 @@ const CategoryPage: React.FC = () => {
         setCart(cartMap);
       } catch (error) {
         // Silent failure - don't show error toast to user
-        console.error('Failed to fetch wishlist/cart:', error);
       }
     };
 
@@ -118,7 +117,6 @@ const CategoryPage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error) {
-      console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
       setCart(prev => {
         const newCart = { ...prev };
@@ -131,7 +129,6 @@ const CategoryPage: React.FC = () => {
       });
       // Only log error if user is actually logged in (has token)
       if (token) {
-        console.error('Failed to add to cart:', error);
       }
       // Silent failure - ProductCard already shows success toast
     }
@@ -152,12 +149,10 @@ const CategoryPage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error) {
-      console.error('❌ Wishlist update failed:', error);
       // Revert optimistic update
       setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
       // Only log error if user is actually logged in (has token)
       if (token) {
-        console.error('Failed to toggle wishlist:', error);
       }
       // Silent failure - ProductCard already shows appropriate toast
     }

@@ -28,7 +28,6 @@ const CouponSuccessBeautiful: React.FC = () => {
       const response = await conditionalApiRequest<any>(`/api/v1/orders/coupon/${id}/`);
       setCouponData(response);
     } catch (error) {
-      console.error('Failed to fetch coupon data:', error);
     } finally {
       setLoading(false);
     }

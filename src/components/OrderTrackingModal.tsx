@@ -44,10 +44,8 @@ const OrderTrackingModal: React.FC<OrderTrackingModalProps> = ({ isOpen, onClose
 
     try {
       const response = await conditionalApiRequest<any>(`/api/v1/checkout/status/${id}/`);
-      console.log('📍 Tracking data received:', response);
       setTrackingData(response);
     } catch (err: any) {
-      console.error('Failed to fetch tracking data:', err);
       setError(err.message || 'Failed to load tracking information');
       showError('Failed to load tracking data', err.message || 'Please try again later');
     } finally {

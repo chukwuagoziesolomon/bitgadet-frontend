@@ -63,7 +63,6 @@ const CategoriesPage: React.FC = () => {
         setCategories(categoriesArray);
         setError(null);
       } catch (err: any) {
-        console.error('Failed to fetch categories:', err);
         setError('Failed to load categories. Please try again later.');
         showError('Error', 'Failed to load categories. Please try again later.');
         setCategories([]);

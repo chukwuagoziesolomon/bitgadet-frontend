@@ -25,7 +25,6 @@ export const initializeCartToken = (): string => {
   if (!cartToken) {
     cartToken = generateUUID();
     localStorage.setItem(CART_TOKEN_KEY, cartToken);
-    console.log('🛒 Generated new cart token:', cartToken);
   }
 
   return cartToken;
@@ -38,7 +37,6 @@ export const initializeCartToken = (): string => {
 export const clearCartToken = (): void => {
   const CART_TOKEN_KEY = 'bitgadgets_cart_token';
   localStorage.removeItem(CART_TOKEN_KEY);
-  console.log('🛒 Cart token cleared');
 };
 
 /**
@@ -53,7 +51,6 @@ export const getAuthToken = (): string | null => {
  */
 export const saveAuthToken = (token: string): void => {
   localStorage.setItem('authToken', token);
-  console.log('🔐 Auth token saved');
 };
 
 /**
@@ -61,7 +58,6 @@ export const saveAuthToken = (token: string): void => {
  */
 export const clearAuthToken = (): void => {
   localStorage.removeItem('authToken');
-  console.log('🔐 Auth token cleared');
 };
 
 /**

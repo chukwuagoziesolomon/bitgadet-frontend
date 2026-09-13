@@ -153,7 +153,6 @@ const LoginPage: React.FC = () => {
       showSuccess('Login successful', `Welcome back, ${user.firstName || user.first_name || ''}!`);
       navigate('/dashboard');
     } catch (error: any) {
-      console.error('Login failed:', error);
       const errorMessage = handleApiError(error, 'Login');
       showError('Login Failed', errorMessage);
     } finally {

@@ -79,7 +79,6 @@ const Checkout: React.FC = () => {
         }
       }
     } catch (error) {
-      console.error('Error fetching order summary:', error);
     } finally {
       setSummaryLoading(false);
     }
@@ -117,7 +116,6 @@ const Checkout: React.FC = () => {
         total_items: cartData.total_items || 0,
       }));
     } catch (error) {
-      console.error('Failed to fetch cart:', error);
       setCartItems([]);
       setItemCount(0);
     } finally {
@@ -186,7 +184,6 @@ const Checkout: React.FC = () => {
 
         // Now fetch the updated order summary with the coupon code applied
         try {
-          console.log('Fetching updated order summary with coupon...');
           
           const summaryData = await cartService.getCartSummary({
             ...(formData.state ? { state: formData.state } : {}),
@@ -195,7 +192,6 @@ const Checkout: React.FC = () => {
           });
           
           if (summaryData) {
-            console.log('Updated order summary with coupon:', summaryData);
             // Update order summary with discount information
             setOrderSummary((prev: any) => ({
               ...prev,
@@ -205,7 +201,6 @@ const Checkout: React.FC = () => {
             }));
           }
         } catch (summaryError) {
-          console.warn('Could not fetch updated order summary:', summaryError);
           // Continue anyway - the discount will still be shown from the coupon response
           setOrderSummary((prev: any) => ({
             ...prev,
@@ -221,7 +216,6 @@ const Checkout: React.FC = () => {
         setAppliedCoupon(null);
       }
     } catch (error: any) {
-      console.error('Coupon validation failed:', error);
       const errorMessage = handleApiError(error, 'Coupon Validation');
       showError('Coupon Validation Failed', errorMessage);
       setAppliedCoupon(null);
@@ -236,14 +230,12 @@ const Checkout: React.FC = () => {
 
     try {
       // Fetch the original order summary without coupon
-      console.log('Fetching original order summary without coupon...');
       const summaryData = await cartService.getCartSummary({
         ...(formData.state ? { state: formData.state } : {}),
         payment_method: paymentMethod,
       });
       
       if (summaryData) {
-        console.log('Original order summary restored:', summaryData);
         setOrderSummary((prev: any) => ({
           ...prev,
           ...summaryData,
@@ -254,7 +246,6 @@ const Checkout: React.FC = () => {
         }));
       }
     } catch (error) {
-      console.warn('Could not restore original order summary:', error);
       // Restore original total manually
       setOrderSummary((prev: any) => ({
         ...prev,
@@ -313,8 +304,6 @@ const Checkout: React.FC = () => {
         return;
       }
       
-      console.log('Creating order with cart_token:', cartToken);
-      console.log('Order summary:', orderSummary);
 
       // Use actual order summary data instead of hardcoded values
       const orderPayload: any = {
@@ -338,7 +327,6 @@ const Checkout: React.FC = () => {
         body: JSON.stringify(orderPayload)
       });
 
-      console.log('Order creation response:', result);
 
       const createdOrder = result || {};
       const orderId = createdOrder.order_id;
@@ -367,7 +355,6 @@ const Checkout: React.FC = () => {
         showError('Payment Error', 'Could not get Paystack payment URL');
       }
     } catch (error) {
-      console.error('Error submitting order:', error);
       const errorMessage = handleApiError(error as any, 'Order Submission');
       showError('Error submitting order', errorMessage);
     } finally {
@@ -375,7 +362,6 @@ const Checkout: React.FC = () => {
     }
   };
 
-  console.log('Checkout component rendered');
 
   return (
     <div className="checkout-container">

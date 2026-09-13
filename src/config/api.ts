@@ -174,7 +174,6 @@ const saveCartTokenFromResponse = (responseData: any): void => {
 
   if (cartToken) {
     cartService.setCartToken(cartToken);
-    console.log('🛒 Saved cart_token from response:', cartToken);
   }
 };
 
@@ -205,7 +204,6 @@ export const apiRequest = async <T>(
     url = addCartTokenToUrl(url, cartToken);
   }
 
-  console.log('🌐 Making authenticated API request to:', url);
 
   const token = localStorage.getItem('authToken');
 
@@ -241,7 +239,6 @@ export const apiRequest = async <T>(
   try {
     const response = await fetch(url, defaultOptions);
 
-    console.log('📡 Response status:', response.status, response.statusText);
     let responseData;
     try {
       responseData = await response.json();
@@ -258,15 +255,9 @@ export const apiRequest = async <T>(
         status: response.status,
         data: responseData
       };
-      console.error('❌ API Error Response:', {
-        status: response.status,
-        data: responseData,
-        url: url
-      });
 
       // Clear invalid token on 401
       if (response.status === 401) {
-        console.warn('🔒 Received 401, clearing invalid auth token');
         localStorage.removeItem('authToken');
         // Optionally dispatch an event that your app can listen to
         window.dispatchEvent(new CustomEvent('auth:token-invalid'));
@@ -280,12 +271,10 @@ export const apiRequest = async <T>(
       saveCartTokenFromResponse(responseData);
     }
 
-    console.log('📦 Response data:', responseData);
     // Unwrap common API envelope { success, status, message, data }
     const payload = getResponsePayload(responseData);
     return payload;
   } catch (error) {
-    console.error(`❌ API request failed for ${url}:`, error);
     throw error;
   }
 };
@@ -317,7 +306,6 @@ export const publicApiRequest = async <T>(
     url = addCartTokenToUrl(url, cartToken);
   }
 
-  console.log('🌐 Making public API request to:', url);
 
   const isPostOrPut = options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH';
   const csrfToken = isPostOrPut ? getCsrfToken() : null;
@@ -345,7 +333,6 @@ export const publicApiRequest = async <T>(
   try {
     const response = await fetch(url, defaultOptions);
 
-    console.log('📡 Response status:', response.status, response.statusText);
 
     let responseData;
     try {
@@ -363,11 +350,6 @@ export const publicApiRequest = async <T>(
         status: response.status,
         data: responseData
       };
-      console.error('❌ API Error Response:', {
-        status: response.status,
-        data: responseData,
-        url: url
-      });
       throw error;
     }
 
@@ -376,11 +358,9 @@ export const publicApiRequest = async <T>(
       saveCartTokenFromResponse(responseData);
     }
 
-    console.log('📦 Response data:', responseData);
     const payload = getResponsePayload(responseData);
     return payload;
   } catch (error) {
-    console.error(`❌ Public API request failed for ${url}:`, error);
     throw error;
   }
 };
@@ -408,7 +388,6 @@ export const conditionalApiRequest = async <T>(
     const isSafeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS';
 
     if (status === 401 && isSafeMethod) {
-      console.warn('🔁 Auth request returned 401 on a public/safe endpoint. Retrying without auth...');
       return await publicApiRequest<T>(endpoint, options);
     }
     throw error;
@@ -436,7 +415,6 @@ export const checkoutApiRequest = async <T>(
   const isPostOrPut = options.method === 'POST' || options.method === 'PUT' || options.method === 'PATCH';
   const csrfToken = isPostOrPut ? getCsrfToken() : null;
 
-  console.log('🛒 Making checkout request with cart_token in query parameter');
 
   const defaultOptions: RequestInit = {
     credentials: 'omit',
@@ -451,7 +429,6 @@ export const checkoutApiRequest = async <T>(
   try {
     const response = await fetch(url, defaultOptions);
 
-    console.log('📡 Checkout response status:', response.status, response.statusText);
     let responseData;
     try {
       responseData = await response.json();
@@ -466,19 +443,12 @@ export const checkoutApiRequest = async <T>(
         status: response.status,
         data: responseData
       };
-      console.error('❌ Checkout API Error Response:', {
-        status: response.status,
-        data: responseData,
-        url: url
-      });
       throw error;
     }
 
-    console.log('📦 Checkout response data:', responseData);
     const payload = getResponsePayload(responseData);
     return payload;
   } catch (error) {
-    console.error(`❌ Checkout request failed for ${url}:`, error);
     throw error;
   }
 };

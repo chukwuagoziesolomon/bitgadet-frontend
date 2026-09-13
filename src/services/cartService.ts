@@ -27,7 +27,6 @@ class CartService {
     // Clear cart token from localStorage (after successful checkout)
     clearCartToken(): void {
         localStorage.removeItem(this.CART_TOKEN_KEY);
-        console.log('🛒 Cart token cleared from localStorage');
     }
 
     // Add to cart
@@ -35,7 +34,6 @@ class CartService {
         const authToken = localStorage.getItem('authToken');
         let cartToken = this.getCartToken();
         
-        console.log('CartService addToCart: authToken:', !!authToken, 'cartToken:', cartToken);
 
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
@@ -66,7 +64,6 @@ class CartService {
         });
 
         const json = await response.json();
-        console.log('CartService addToCart: response data:', json);
 
         // Unwrap standard or nested envelope
         const data = this.unwrapResponse(json);
@@ -74,12 +71,8 @@ class CartService {
         // CRITICAL: Save the cart_token returned by the server (for guest users)
         if (data.cart_token) {
             this.setCartToken(data.cart_token);
-            console.log('CartService addToCart: saved cart_token:', data.cart_token);
         } else {
             if (!authToken) {
-                console.warn('CartService addToCart: WARNING — server did not return a cart_token for a guest add-to-cart.');
-                console.warn('CartService addToCart: request body:', body);
-                console.warn('CartService addToCart: response:', json);
             }
         }
 
@@ -94,7 +87,6 @@ class CartService {
     async getCart(): Promise<any> {
         const authToken = localStorage.getItem('authToken');
         let cartToken = this.getCartToken();
-        console.log('CartService getCart: cartToken from localStorage:', cartToken);
 
         // For guest users, ensure we have a cart token
         if (!authToken && !cartToken) {
@@ -102,7 +94,6 @@ class CartService {
         }
 
         const url = cartToken ? buildApiUrl(`/api/v1/cart/?cart_token=${cartToken}`) : buildApiUrl('/api/v1/cart/');
-        console.log('CartService getCart: making request to:', url);
 
         const headers: HeadersInit = {
             'Content-Type': 'application/json',
@@ -116,7 +107,6 @@ class CartService {
         }
 
         const json = await response.json();
-        console.log('CartService getCart: response data:', json);
 
         // Unwrap standard or nested envelope
         const data = this.unwrapResponse(json);
@@ -124,7 +114,6 @@ class CartService {
         // CRITICAL: Save the cart_token returned by the server
         if (data.cart_token) {
             this.setCartToken(data.cart_token);
-            console.log('CartService getCart: saved cart_token:', data.cart_token);
         }
 
         return data;

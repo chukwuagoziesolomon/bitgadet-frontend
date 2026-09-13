@@ -55,23 +55,19 @@ const OrderConfirmation = () => {
           confirmationUrl += `?email=${encodeURIComponent(userEmail)}`;
         }
         
-        console.log('📋 Fetching order confirmation from:', confirmationUrl);
         
         const data = await publicApiRequest<any>(confirmationUrl);
         if (!isMounted) return;
 
-        console.log('✅ Order confirmation received:', data);
         setConfirmationData(data);
         setError(null);
 
         // Clear cart token if order is confirmed
         if (data.order?.status === 'paid' || data.order?.status === 'processing') {
-          console.log('🧹 Clearing cart token for confirmed order');
           cartService.clearCartToken();
         }
       } catch (err: any) {
         if (isMounted) {
-          console.error('❌ Error fetching order confirmation:', err);
           setError(err.message || 'Failed to load order confirmation');
           setConfirmationData(null);
         }
@@ -99,12 +95,9 @@ const OrderConfirmation = () => {
 
       setSummaryLoading(true);
       try {
-        console.log('Fetching created order summary for order:', orderId);
         const data = await cartService.getCreatedOrderSummary(orderId);
-        console.log('Order summary data:', data);
         setOrderStatsData(data);
       } catch (error) {
-        console.error('Error fetching order summary:', error);
         setOrderStatsData(null);
       } finally {
         setSummaryLoading(false);
@@ -121,12 +114,9 @@ const OrderConfirmation = () => {
     const fetchTrackingData = async () => {
       setTrackingLoading(true);
       try {
-        console.log('📍 Fetching tracking data for order:', orderId);
         const data = await conditionalApiRequest<any>(`/api/v1/checkout/status/${orderId}/`);
-        console.log('✅ Tracking data received:', data);
         setTrackingData(data);
       } catch (error) {
-        console.error('Error fetching tracking data:', error);
         setTrackingData(null);
       } finally {
         setTrackingLoading(false);

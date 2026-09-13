@@ -63,7 +63,6 @@ const Dashboard: React.FC = () => {
             wishlist_percentage_change: statsData?.wishlist_percentage_change ?? 0
           });
         } catch (error: any) {
-          console.error('Failed to fetch order stats:', error);
           const errorMessage = handleApiError(error, 'Dashboard Stats');
           showError('Failed to load dashboard stats', errorMessage);
           // Set default values if API fails
@@ -85,7 +84,6 @@ const Dashboard: React.FC = () => {
         const ordersData = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_RECENT_ORDERS);
         setApiRecentOrders(ordersData.recent_orders || []);
       } catch (error: any) {
-        console.error('Failed to fetch recent orders:', error);
         const errorMessage = handleApiError(error, 'Recent Orders');
         showError('Failed to load recent orders', errorMessage);
         // Keep empty array if API fails
@@ -100,7 +98,6 @@ const Dashboard: React.FC = () => {
         const wishlistData = await apiRequest<any>(API_CONFIG.ENDPOINTS.USER_RECENT_WISHLIST);
         setRecentWishlist(wishlistData.recent_wishlist || []);
       } catch (error: any) {
-        console.error('Failed to fetch recent wishlist:', error);
         const errorMessage = handleApiError(error, 'Recent Wishlist');
         showError('Failed to load recent wishlist', errorMessage);
         // Keep empty array if API fails
@@ -176,7 +173,6 @@ const Dashboard: React.FC = () => {
         break;
       case 'support':
         // Navigate to support page when created
-        console.log('Navigate to support page');
         break;
       case 'logout':
         navigate('/login');
@@ -212,7 +208,6 @@ const Dashboard: React.FC = () => {
       setRecentWishlist(prev => prev.filter(item => item.product_id !== productId));
       showSuccess('Removed from wishlist', 'Item has been removed from your wishlist.');
     } catch (error: any) {
-      console.error('Failed to remove from wishlist:', error);
       const errorMessage = handleApiError(error, 'Remove Wishlist');
       showError('Failed to remove item', errorMessage);
     }
@@ -226,7 +221,6 @@ const Dashboard: React.FC = () => {
       });
       showSuccess('Added to cart', 'Item has been added to your cart.');
     } catch (error: any) {
-      console.error('Failed to add to cart:', error);
       const errorMessage = handleApiError(error, 'Add to Cart');
       showError('Failed to add to cart', errorMessage);
     }

@@ -28,7 +28,6 @@ const ProductsPage: React.FC = () => {
         const wishlistData = wishlistRes?.data || wishlistRes;
         setWishlist((wishlistData.products || wishlistData.wishlist_items || []).map((p: any) => typeof p === 'number' ? p : (p.product_id || p.id)));
       } catch (error: any) {
-        if (token) console.error('Failed to fetch wishlist:', error);
       }
 
       try {
@@ -41,7 +40,6 @@ const ProductsPage: React.FC = () => {
         (cartData.products || []).forEach((p: any) => { cartMap[p.id] = p.quantity; });
         setCart(cartMap);
       } catch (error: any) {
-        if (token) console.error('Failed to fetch cart:', error);
       }
     };
 
@@ -166,7 +164,6 @@ const ProductsPage: React.FC = () => {
 
   const handleAddToCart = async (productId: number) => {
     const token = localStorage.getItem('authToken');
-    console.log('🛒 Attempting to add product to cart:', productId, 'User logged in:', !!token);
 
     // Optimistic update
     setCart(prev => ({ ...prev, [productId]: (prev[productId] || 0) + 1 }));
@@ -176,10 +173,8 @@ const ProductsPage: React.FC = () => {
         method: 'POST',
         body: JSON.stringify({ product_id: productId, quantity: 1 }),
       });
-      console.log('✅ Add to cart API response:', res);
       // optimistic update already applied above
     } catch (error: any) {
-      console.error('❌ Add to cart failed:', error);
       // Revert optimistic update
       setCart(prev => {
         const newCart = { ...prev };
@@ -191,7 +186,6 @@ const ProductsPage: React.FC = () => {
         return newCart;
       });
       if (token) {
-        console.error('Failed to add to cart:', error);
       }
     }
   };
@@ -210,11 +204,9 @@ const ProductsPage: React.FC = () => {
       });
       // optimistic update already applied above
     } catch (error: any) {
-      console.error('❌ Wishlist update failed:', error);
       // Revert optimistic update
       setWishlist(prev => willBeInWishlist ? prev.filter(id => id !== productId) : [...prev, productId]);
       if (token) {
-        console.error('Failed to update wishlist:', error);
       }
     }
   };

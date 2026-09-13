@@ -30,7 +30,6 @@ const Footer: React.FC = () => {
       showSuccess('Success!', response.message || 'Successfully joined the waitlist!');
       setEmail('');
     } catch (error: any) {
-      console.error('Waitlist subscription failed:', error);
       const errorMessage = handleApiError(error, 'Waitlist Subscription');
       showError('Subscription Failed', errorMessage);
     } finally {
