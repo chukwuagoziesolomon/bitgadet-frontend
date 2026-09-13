@@ -171,6 +171,34 @@ const BrandPage: React.FC = () => {
     }
   };
 
+  const getBrandName = (product: any): string => {
+    const brand = product?.brand_name || product?.brand;
+    if (typeof brand === 'string' || typeof brand === 'number') {
+      return String(brand);
+    }
+    return brand?.display_name || brand?.name || brandName || 'Unknown Brand';
+  };
+
+  const getProductPricing = (product: any) => {
+    const discountPercentage = Number(product?.discount_percentage ?? 0);
+    const basePrice = Number(product?.price ?? product?.original_price ?? product?.current_price ?? 0);
+    const discountedPrice = Number(
+      product?.discounted_price
+        ?? product?.current_price
+        ?? (discountPercentage > 0 ? basePrice * (1 - discountPercentage / 100) : basePrice)
+    );
+    const originalPrice = Number(
+      product?.original_price
+        ?? (discountPercentage > 0 ? basePrice : discountedPrice / (1 - discountPercentage / 100))
+    );
+    const hasDiscount = discountPercentage > 0;
+
+    return {
+      price: discountedPrice,
+      originalPrice: hasDiscount && originalPrice > discountedPrice ? originalPrice : undefined,
+    };
+  };
+
   if (error) {
     return (
       <div className="brand-page">
@@ -212,34 +240,41 @@ const BrandPage: React.FC = () => {
 
       <div className="brand-products-grid">
         {brandData.results && brandData.results.map((product: any) => (
-          <ProductCard
-            key={product.id}
-            id={product.id}
-            slug={product.slug}
-            name={product.name}
-            brand={product.brand_name || product.brand}
-            price={Number(product.current_price ?? product.price ?? 0)}
-            originalPrice={product.original_price ? Number(product.original_price) : undefined}
-            usdtPrice={product.current_price_usdt ?? product.price_usdt}
-            originalUsdtPrice={product.original_price_usdt}
-            rating={4.5} // Default rating
-            reviews={0} // Default reviews
-            image={product.main_image ?? product.image}
-            inStock={product.is_in_stock}
-            onAddToCart={handleAddToCart}
-            isInCart={cart[product.id] > 0}
-            isInWishlist={wishlist.includes(product.id)}
-            onToggleWishlist={handleToggleWishlist}
-            product_condition={product.product_condition}
-            condition_display={product.condition_display}
-            is_featured={product.is_featured}
-            is_on_sale={product.is_on_sale}
-            discount_percentage={product.discount_percentage}
-            is_new_arrival={product.is_new_arrival}
-            is_best_seller={product.is_best_seller}
-            stock_quantity={product.stock_quantity}
-            is_coupon={product.is_coupon}
-          />
+          (() => {
+            const pricing = getProductPricing(product);
+            const productBrand = getBrandName(product);
+
+            return (
+              <ProductCard
+                key={product.id}
+                id={product.id}
+                slug={product.slug}
+                name={product.name}
+                brand={productBrand}
+                price={pricing.price}
+                originalPrice={pricing.originalPrice}
+                usdtPrice={product.current_price_usdt ?? product.price_usdt}
+                originalUsdtPrice={product.original_price_usdt}
+                rating={Number(product.average_rating ?? product.rating ?? 0)}
+                reviews={Number(product.review_count ?? product.reviews_count ?? 0)}
+                image={product.main_image ?? product.image}
+                inStock={product.is_in_stock}
+                onAddToCart={handleAddToCart}
+                isInCart={cart[product.id] > 0}
+                isInWishlist={wishlist.includes(product.id)}
+                onToggleWishlist={handleToggleWishlist}
+                product_condition={product.product_condition}
+                condition_display={product.condition_display}
+                is_featured={product.is_featured}
+                is_on_sale={product.is_on_sale}
+                discount_percentage={product.discount_percentage}
+                is_new_arrival={product.is_new_arrival}
+                is_best_seller={product.is_best_seller}
+                stock_quantity={product.stock_quantity}
+                is_coupon={product.is_coupon}
+              />
+            );
+          })()
         ))}
       </div>
     </div>
