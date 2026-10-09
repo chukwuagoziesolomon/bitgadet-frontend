@@ -469,7 +469,6 @@ const Checkout: React.FC = () => {
                 <ul>
                   <li>Lagos: 1-3 business days</li>
                   <li>Other states: 4-5 business days</li>
-                  <li>Free shipping on orders above ₦1,000,000</li>
                 </ul>
               </div>
               <div className="trust-badges">
