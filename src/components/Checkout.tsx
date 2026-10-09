@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/useToast';
-import { conditionalApiRequest, checkoutApiRequest, publicApiRequest, API_CONFIG } from '../config/api';
+import { conditionalApiRequest, checkoutApiRequest, API_CONFIG } from '../config/api';
 import { handleApiError } from '../utils/errorHandler';
 import { cartService } from '../services/cartService';
 import './Checkout.css';
@@ -35,13 +35,11 @@ const Checkout: React.FC = () => {
   const [itemCount, setItemCount] = useState(0);
   const [cartLoading, setCartLoading] = useState(false);
   const [hasCouponProducts, setHasCouponProducts] = useState(false);
-  const [shippingRate, setShippingRate] = useState<{ shipping_cost: number; available: boolean } | null>(null);
 
   const navigate = useNavigate();
   const { addToast, showSuccess, showError } = useToast();
   const summarySubtotalNgn = orderSummary?.subtotal_ngn ?? orderSummary?.subtotal ?? 0;
   const summaryDiscountNgn = orderSummary?.discount_ngn ?? orderSummary?.discount_amount ?? orderSummary?.discount ?? 0;
-  const summaryTaxNgn = orderSummary?.tax_ngn ?? orderSummary?.tax ?? 0;
   const summaryShippingNgn = orderSummary?.shipping_cost_ngn ?? orderSummary?.shipping_cost ?? 0;
   const summaryTotalNgn = orderSummary?.total_ngn ?? orderSummary?.total_amount ?? orderSummary?.total ?? 0;
   const hasOrderSummary = !!orderSummary && (
@@ -58,12 +56,11 @@ const Checkout: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Fetch enhanced order summary with state-based shipping
-  const fetchOrderSummary = async (state?: string, couponCode?: string) => {
+  // Fetch the backend-calculated order summary.
+  const fetchOrderSummary = async (couponCode?: string) => {
     try {
       setSummaryLoading(true);
       const summaryData = await cartService.getCartSummary({
-        ...(state ? { state } : {}),
         ...(couponCode ? { coupon_code: couponCode } : {}),
         payment_method: 'paystack',
       });
@@ -135,7 +132,7 @@ const Checkout: React.FC = () => {
   // Re-fetch when payment method changes (if state already entered)
   useEffect(() => {
     if (formData.state.trim()) {
-      fetchOrderSummary(formData.state.trim(), appliedCoupon?.code || couponCode || undefined);
+      fetchOrderSummary(appliedCoupon?.code || couponCode || undefined);
     }
   }, [paymentMethod]);
 
@@ -253,7 +250,6 @@ const Checkout: React.FC = () => {
         discount_amount: 0,
         coupon_applied: false,
         applied_coupon_code: null,
-        total: (prev.subtotal || 0) + (prev.shipping_cost || 0)
       }));
     }
 
@@ -267,17 +263,6 @@ const Checkout: React.FC = () => {
       [name]: value
     }));
     
-    // Fetch updated order summary when state changes
-    if (name === 'state' && value.trim()) {
-      fetchOrderSummary(value.trim());
-          // Fetch shipping rate for display
-          publicApiRequest<any>(`/api/v1/shipping/rates/?state_to=${encodeURIComponent(value.trim())}`)
-            .then(res => {
-              const d = res?.data || res;
-              setShippingRate({ shipping_cost: d.shipping_cost, available: d.available });
-            })
-            .catch(() => setShippingRate(null));
-    }
   };
 
   const handleOrder = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -442,13 +427,6 @@ const Checkout: React.FC = () => {
                         </div>
                       </>
                     )}
-
-                    <div className="summary-row">
-                      <span>Tax</span>
-                      <span>
-                        {formatNgn(summaryTaxNgn)}
-                      </span>
-                    </div>
 
                     <div className="summary-row">
                       <span>Shipping</span>
@@ -742,22 +720,8 @@ const Checkout: React.FC = () => {
                           )}
 
                           <div className="summary-row">
-                            <span>Tax</span>
-                            <span>
-                              {formatNgn(summaryTaxNgn)}
-                            </span>
-                          </div>
-
-                          <div className="summary-row">
                             <span>Shipping</span>
-                            <span>
-                              {formatNgn(summaryShippingNgn)}
-                              {orderSummary.shipping_note && (
-                                <small style={{ display: 'block', color: '#64748b', fontSize: '11px', marginTop: '2px' }}>
-                                  {orderSummary.shipping_note}
-                                </small>
-                              )}
-                            </span>
+                            <span>{formatNgn(summaryShippingNgn)}</span>
                           </div>
 
                           <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
@@ -788,7 +752,6 @@ const Checkout: React.FC = () => {
                     <ul>
                       <li>Lagos: 1-3 business days</li>
                       <li>Other states: 4-5 business days</li>
-                      <li>Free shipping on orders above ₦1,000,000</li>
                     </ul>
                   </div>
                   <div className="trust-badges">
@@ -881,29 +844,9 @@ const Checkout: React.FC = () => {
                     )}
 
                     <div className="summary-row">
-                      <span>Tax</span>
-                      <span>
-                        {formatNgn(summaryTaxNgn)}
-                      </span>
-                    </div>
-
-                    <div className="summary-row">
                       <span>Shipping</span>
-                      <span>
-                        {formatNgn(summaryShippingNgn)}
-                        {orderSummary.shipping_note && (
-                          <small style={{ display: 'block', color: '#64748b', fontSize: '12px' }}>
-                            {orderSummary.shipping_note}
-                          </small>
-                        )}
-                      </span>
+                      <span>{formatNgn(summaryShippingNgn)}</span>
                     </div>
-
-                    {!orderSummary.is_free_shipping && orderSummary.free_shipping_remaining && (
-                      <div style={{ fontSize: '12px', color: '#f59e0b', fontStyle: 'italic', marginTop: '8px', padding: '8px', backgroundColor: '#fffbeb', borderRadius: '4px' }}>
-                        Add ₦{orderSummary.free_shipping_remaining?.toLocaleString()} more for FREE SHIPPING!
-                      </div>
-                    )}
 
                     <div className="summary-row total-row" style={{ fontWeight: '700', fontSize: '1.2rem', color: '#059669', borderTop: '1px solid #e0e0e0', paddingTop: '12px', marginTop: '12px' }}>
                       <span>Total</span>
@@ -933,18 +876,9 @@ const Checkout: React.FC = () => {
               
               <div className="shipping-info">
                 <div className="shipping-title">Shipping Information</div>
-                {shippingRate && (
-                  <div className="summary-row note" style={{ fontSize: '0.9rem', color: '#475569', marginBottom: '10px' }}>
-                    <span>
-                      Estimated shipping: ₦{shippingRate.shipping_cost.toLocaleString()}
-                      {!shippingRate.available ? ' (default rate applied)' : ''}
-                    </span>
-                  </div>
-                )}
                 <ul>
                   <li>Lagos: 1-3 business days</li>
                   <li>Other states: 4-5 business days</li>
-                  <li>Free shipping on orders above ₦1,000,000</li>
                 </ul>
               </div>
               <div className="trust-badges">

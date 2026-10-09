@@ -106,8 +106,8 @@ interface Review {
   customer_email: string;
   rating: number;
   rating_display?: string;
-  title: string;
-  review_text: string;
+  title?: string;
+  comment?: string;
   is_verified_purchase: boolean;
   is_featured?: boolean;
   helpful_votes: number;
@@ -152,7 +152,6 @@ const ProductDetails: React.FC = () => {
   const [reviewName, setReviewName] = useState('');
   const [reviewEmail, setReviewEmail] = useState('');
   const [reviewRating, setReviewRating] = useState<number>(0);
-  const [reviewTitle, setReviewTitle] = useState('');
   const [reviewText, setReviewText] = useState('');
   const [reviewVerified, setReviewVerified] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -456,8 +455,7 @@ const ProductDetails: React.FC = () => {
       const payload = {
         product_slug: slug,
         rating: reviewRating,
-        title: reviewTitle.trim(),
-        comment: reviewText.trim(),
+        review: reviewText.trim(),
         email: reviewEmail.trim() || undefined,
       } as any;
 
@@ -500,7 +498,6 @@ const ProductDetails: React.FC = () => {
       setReviewName('');
       setReviewEmail('');
       setReviewRating(0);
-      setReviewTitle('');
       setReviewText('');
       setReviewVerified(false);
       // Switch to Reviews tab if not already
@@ -986,8 +983,7 @@ const ProductDetails: React.FC = () => {
                             {new Date(review.created_at).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="review-title"><strong>{review.title}</strong></p>
-                        <p className="review-text">{review.review_text}</p>
+                        <p className="review-text">{review.comment || review.title}</p>
                       </div>
                     ))
                   ) : (
@@ -1036,32 +1032,18 @@ const ProductDetails: React.FC = () => {
                     </div>
 
                     <div className="form-row">
-                      <div className="form-field">
+                      <div className="form-field full">
                         <label>Rating</label>
                         {renderInteractiveStars(reviewRating, setReviewRating)}
                         {reviewErrors.rating && (
                           <div className="field-error">{reviewErrors.rating[0]}</div>
                         )}
                       </div>
-                      <div className="form-field">
-                        <label htmlFor="review-title">Title</label>
-                        <input
-                          id="review-title"
-                          type="text"
-                          value={reviewTitle}
-                          onChange={(e) => setReviewTitle(e.target.value)}
-                          placeholder="Great product!"
-                          required
-                        />
-                        {reviewErrors.title && (
-                          <div className="field-error">{reviewErrors.title[0]}</div>
-                        )}
-                      </div>
                     </div>
 
                     <div className="form-row">
                       <div className="form-field full">
-                        <label htmlFor="review-text">Your Review</label>
+                        <label htmlFor="review-text">Review</label>
                         <textarea
                           id="review-text"
                           rows={4}
@@ -1070,8 +1052,8 @@ const ProductDetails: React.FC = () => {
                           placeholder="Share your experience with this product"
                           required
                         />
-                        {reviewErrors.review_text && (
-                          <div className="field-error">{reviewErrors.review_text[0]}</div>
+                        {(reviewErrors.review || reviewErrors.review_text) && (
+                          <div className="field-error">{(reviewErrors.review || reviewErrors.review_text)[0]}</div>
                         )}
                       </div>
                     </div>

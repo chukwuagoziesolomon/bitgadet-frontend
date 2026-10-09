@@ -472,9 +472,9 @@
     font-size: 12px; /* Smaller for mobile */
     margin-bottom: 3px;
     line-height: 1.2;
-    max-height: 24px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    max-height: none;
+    overflow: visible;
+    overflow-wrap: anywhere;
   }
 
   .product-card-component .brands-product-brand {

@@ -17,6 +17,7 @@ const HomePage: React.FC = () => {
   const [bannersLoading, setBannersLoading] = useState<boolean>(true);
   const [bannersError, setBannersError] = useState<string | null>(null);
   const [categoryMeta, setCategoryMeta] = useState<Record<string, { total_items: number; trend?: string }>>({});
+  const [categoryNames, setCategoryNames] = useState<Record<string, string>>({});
   const [wishlist, setWishlist] = useState<number[]>([]); // NEW
   const [cart, setCart] = useState<Record<number, number>>({}); // NEW
 
@@ -143,13 +144,23 @@ const HomePage: React.FC = () => {
         const categoriesArray = Array.isArray(data) ? data : (data.categories || []);
 
         const meta: Record<string, { total_items: number; trend?: string }> = {};
+        const names: Record<string, string> = {};
         categoriesArray.forEach((category: any) => {
           meta[category.category_name] = {
             total_items: category.item_count,
             trend: category.trend_level
           };
+          const name = category.name || category.category_name || category.slug;
+          if (name) {
+            [name, category.category_name, category.slug, category.display_name]
+              .filter(Boolean)
+              .forEach((alias: string) => {
+                names[alias.toLowerCase().replace(/[^a-z0-9]/g, '')] = name;
+              });
+          }
         });
         setCategoryMeta(meta);
+        setCategoryNames(names);
       } catch (error) {
         // Set default values for all categories
         const defaultMeta: Record<string, { total_items: number; trend?: string }> = {};
@@ -313,6 +324,11 @@ const HomePage: React.FC = () => {
     navigateToBannerUrl(url);
   };
 
+  const navigateToCategory = (categorySlug: string) => {
+    const categoryName = categoryNames[categorySlug.toLowerCase().replace(/[^a-z0-9]/g, '')] || categorySlug;
+    navigate(`/categories/${encodeURIComponent(categoryName)}`);
+  };
+
   const navigateToBannerUrl = (url?: string) => {
     if (!url) {
       navigate('/all-products');
@@ -458,7 +474,7 @@ const HomePage: React.FC = () => {
           <h2>Shop by Category</h2>
           <p className="section-subtitle">Discover our wide range of premium gadgets and accessories</p>
           <div className="categories-grid">
-            <div className="category-card" onClick={() => navigate('/categories/phones')}>
+            <div className="category-card" onClick={() => navigateToCategory('phones')}>
               <div className="category-image">
                 <img
                   src="/phone1.png"
@@ -475,10 +491,10 @@ const HomePage: React.FC = () => {
             <h3>Phones</h3>
               <p>Latest smart phones and mobile devices.</p>
               
-              <button className="shop-now-btn" onClick={() => navigate('/categories/phones')}>Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigateToCategory('phones')}>Shop Now →</button>
             </div>
             
-            <div className="category-card" onClick={() => navigate('/categories/laptops')}>
+            <div className="category-card" onClick={() => navigateToCategory('laptops')}>
               <div className="category-image">
                 <img src="/laptop1.png" alt="Laptops" />
                 <div className="category-overlay">
@@ -488,10 +504,10 @@ const HomePage: React.FC = () => {
             <h3>Laptops</h3>
             <p>High-performance laptops and notebooks</p>
               
-              <button className="shop-now-btn" onClick={() => navigate('/categories/laptops')}>Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigateToCategory('laptops')}>Shop Now →</button>
             </div>
             
-            <div className="category-card" onClick={() => navigate('/categories/tablets')}>
+            <div className="category-card" onClick={() => navigateToCategory('tablets')}>
               <div className="category-image">
               <img src="/tablet.png" alt="Tablets" />
                 <div className="category-overlay">
@@ -501,10 +517,10 @@ const HomePage: React.FC = () => {
             <h3>Tablets</h3>
             <p>iPads, Android Tablets and e-Readers</p>
               
-              <button className="shop-now-btn" onClick={() => navigate('/categories/tablets')}>Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigateToCategory('tablets')}>Shop Now →</button>
             </div>
             
-            <div className="category-card" onClick={() => navigate('/categories/games')}>
+            <div className="category-card" onClick={() => navigateToCategory('games')}>
               <div className="category-image">
                 <img src="https://images.unsplash.com/photo-1606813907291-d86efa9b94db?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1200&q=80" alt="Games" />
                 <div className="category-overlay">
@@ -514,10 +530,10 @@ const HomePage: React.FC = () => {
             <h3>Games</h3>
             <p>Gaming consoles and accessories</p>
               
-              <button className="shop-now-btn" onClick={() => navigate('/categories/games')}>Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigateToCategory('games')}>Shop Now →</button>
             </div>
             
-            <div className="category-card" onClick={() => navigate('/categories/smartwatches')}>
+            <div className="category-card" onClick={() => navigateToCategory('smartwatches')}>
               <div className="category-image">
                 <img src="/phonewatch2.png" alt="Smartwatches" />
                 <div className="category-overlay">
@@ -527,10 +543,10 @@ const HomePage: React.FC = () => {
             <h3>Smartwatches</h3>
             <p>Smart wearables and fitness trackers</p>
               
-              <button className="shop-now-btn" onClick={() => navigate('/categories/smartwatches')}>Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigateToCategory('smartwatches')}>Shop Now →</button>
             </div>
             
-            <div className="category-card" onClick={() => navigate('/categories/accessories')}>
+            <div className="category-card" onClick={() => navigateToCategory('accessories')}>
               <div className="category-image">
               <img src="/headphone.png" alt="Accessories" />
                 <div className="category-overlay">
@@ -540,7 +556,7 @@ const HomePage: React.FC = () => {
             <h3>Accessories</h3>
             <p>Phone cases, chargers, and more</p>
               
-              <button className="shop-now-btn" onClick={() => navigate('/categories/accessories')}>Shop Now →</button>
+              <button className="shop-now-btn" onClick={() => navigateToCategory('accessories')}>Shop Now →</button>
             </div>
           </div>
         </div>
